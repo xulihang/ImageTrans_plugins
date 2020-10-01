@@ -1,0 +1,9 @@
+﻿ModuleBookmarks0=
+ModuleBookmarks1=
+ModuleBreakpoints0=
+ModuleBreakpoints1=
+ModuleClosedNodes0=
+ModuleClosedNodes1=
+NavigationStack=paddleOCRPlugin,getMap,94,0,paddleOCRPlugin,readJsonAsMap,105,0,paddleOCRPlugin,textLinesToBoxes,86,0,paddleOCRPlugin,Initialize,11,0,paddleOCRPlugin,Run,35,3,paddleOCRPlugin,GetText,50,6,paddleOCRPlugin,ocr,71,6,paddleOCRPlugin,GetTextWithLocation,69,6,paddleOCRPlugin,convertLang,44,6,paddleOCRPlugin,getUrl,143,4
+SelectedBuild=0
+VisibleModules=1
