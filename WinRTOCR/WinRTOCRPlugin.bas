@@ -36,8 +36,46 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"))) complete (regions As List)
 			Return regions
+		Case "getLangs"
+			wait for (getLangs) complete (langs As Map)
+			Return langs
 	End Select
 	Return ""
+End Sub
+
+Sub getLangs As ResumableSub
+	Dim result As Map
+	result.Initialize
+	Dim names,codes As List
+	names.Initialize
+	codes.Initialize
+	Dim executable As String
+	executable="./WinRTOCR/WinRTOCR.exe"
+	Dim sh As Shell
+	sh.Initialize("sh",executable,Array("-l"))
+	sh.Encoding=GetSystemProperty("file.encoding","UTF8")
+	sh.WorkingDirectory=File.DirApp
+	sh.Run(10000)
+	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+	If Success And ExitCode = 0 Then
+	    Log(StdOut)
+		Dim data As List
+		data.Initialize
+		data.AddAll(Regex.Split(CRLF,StdOut))
+		Try
+			For i=0 To data.Size-1 Step 2
+				Dim name As String=data.Get(i)
+				Dim code As String=data.Get(i+1)
+				names.Add(name.Trim)
+				codes.Add(code.Trim)
+			Next
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	result.Put("names",names)
+	result.Put("codes",codes)
+	Return result
 End Sub
 
 Sub convertLang(lang As String) As String
