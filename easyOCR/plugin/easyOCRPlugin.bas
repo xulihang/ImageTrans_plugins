@@ -298,7 +298,7 @@ Sub getUrl As String
 	If File.Exists(File.DirApp,"preferences.conf") Then
 		Try
 			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
-			url=getMap("easyocr",getMap("api",preferencesMap)).Get("url")
+			url=getMap("easyocr",getMap("api",preferencesMap)).GetDefault("url",url)
 		Catch
 			Log(LastException)
 		End Try
