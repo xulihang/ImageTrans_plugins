@@ -17,7 +17,7 @@ End Sub
 
 ' must be available
 public Sub GetNiceName() As String
-	Return "paddleOCR"
+	Return "easyocrOCR"
 End Sub
 
 ' must be available
@@ -35,22 +35,179 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"))) complete (regions As List)
 			Return regions
+		Case "getLangs"
+			Return getLangs
 	End Select
 	Return ""
 End Sub
 
-Sub convertLang(lang As String) As String
-	If lang.StartsWith("en") Then
-		Return "en"
-	else if lang.StartsWith("ch") Then
-		Return "ch"
-	else if lang.StartsWith("jpn") Then
-		Return "japan"
-	else if lang.StartsWith("kor") Then
-		Return "korean"
-	Else
-		Return lang
-	End If
+Sub getLangs As Map
+	Dim result As Map
+	result.Initialize
+	Dim names,codes As List
+	names.Initialize
+	codes.Initialize
+	names.add("Abaza")
+	names.add("Adyghe")
+	names.add("Afrikaans")
+	names.add("Angika")
+	names.add("Arabic")
+	names.add("Assamese")
+	names.add("Avar")
+	names.add("Azerbaijani")
+	names.add("Belarusian")
+	names.add("Bulgarian")
+	names.add("Bihari")
+	names.add("Bhojpuri")
+	names.add("Bengali")
+	names.add("Bosnian")
+	names.add("Simplified Chinese")
+	names.add("Traditional Chinese")
+	names.add("Chechen")
+	names.add("Czech")
+	names.add("Welsh")
+	names.add("Danish")
+	names.add("Dargwa")
+	names.add("German")
+	names.add("English")
+	names.add("Spanish")
+	names.add("Estonian")
+	names.add("Persian (Farsi)")
+	names.add("French")
+	names.add("Irish")
+	names.add("Goan Konkani")
+	names.add("Hindi")
+	names.add("Croatian")
+	names.add("Hungarian")
+	names.add("Indonesian")
+	names.add("Ingush")
+	names.add("Icelandic")
+	names.add("Italian")
+	names.add("Japanese")
+	names.add("Kabardian")
+	names.add("Korean")
+	names.add("Kurdish")
+	names.add("Latin")
+	names.add("Lak")
+	names.add("Lezghian")
+	names.add("Lithuanian")
+	names.add("Latvian")
+	names.add("Magahi")
+	names.add("Maithili")
+	names.add("Maori")
+	names.add("Mongolian")
+	names.add("Marathi")
+	names.add("Malay")
+	names.add("Maltese")
+	names.add("Nepali")
+	names.add("Newari")
+	names.add("Dutch")
+	names.add("Norwegian")
+	names.add("Occitan")
+	names.add("Polish")
+	names.add("Portuguese")
+	names.add("Romanian")
+	names.add("Russian")
+	names.add("Serbian (cyrillic)")
+	names.add("Serbian (latin)")
+	names.add("Nagpuri")
+	names.add("Slovak")
+	names.add("Slovenian")
+	names.add("Albanian")
+	names.add("Swedish")
+	names.add("Swahili")
+	names.add("Tamil")
+	names.add("Tabassaran")
+	names.add("Thai")
+	names.add("Tagalog")
+	names.add("Turkish")
+	names.add("Uyghur")
+	names.add("Ukranian")
+	names.add("Urdu")
+	names.add("Uzbek")
+	names.add("Vietnamese")
+	codes.add("abq")
+	codes.add("ady")
+	codes.add("af")
+	codes.add("ang")
+	codes.add("ar")
+	codes.add("as")
+	codes.add("ava")
+	codes.add("az")
+	codes.add("be")
+	codes.add("bg")
+	codes.add("bh")
+	codes.add("bho")
+	codes.add("bn")
+	codes.add("bs")
+	codes.add("ch_sim")
+	codes.add("ch_tra")
+	codes.add("che")
+	codes.add("cs")
+	codes.add("cy")
+	codes.add("da")
+	codes.add("dar")
+	codes.add("de")
+	codes.add("en")
+	codes.add("es")
+	codes.add("et")
+	codes.add("fa")
+	codes.add("fr")
+	codes.add("ga")
+	codes.add("gom")
+	codes.add("hi")
+	codes.add("hr")
+	codes.add("hu")
+	codes.add("id")
+	codes.add("inh")
+	codes.add("is")
+	codes.add("it")
+	codes.add("ja")
+	codes.add("kbd")
+	codes.add("ko")
+	codes.add("ku")
+	codes.add("la")
+	codes.add("lbe")
+	codes.add("lez")
+	codes.add("lt")
+	codes.add("lv")
+	codes.add("mah")
+	codes.add("mai")
+	codes.add("mi")
+	codes.add("mn")
+	codes.add("mr")
+	codes.add("ms")
+	codes.add("mt")
+	codes.add("ne")
+	codes.add("new")
+	codes.add("nl")
+	codes.add("no")
+	codes.add("oc")
+	codes.add("pl")
+	codes.add("pt")
+	codes.add("ro")
+	codes.add("ru")
+	codes.add("rs_cyrillic")
+	codes.add("rs_latin")
+	codes.add("sck")
+	codes.add("sk")
+	codes.add("sl")
+	codes.add("sq")
+	codes.add("sv")
+	codes.add("sw")
+	codes.add("ta")
+	codes.add("tab")
+	codes.add("th")
+	codes.add("tl")
+	codes.add("tr")
+	codes.add("ug")
+	codes.add("uk")
+	codes.add("ur")
+	codes.add("uz")
+	codes.add("vi")
+	result.Put("names",names)
+	result.Put("codes",codes)
+	Return result
 End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
@@ -77,7 +234,6 @@ Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
 End Sub
 
 Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
-	lang=convertLang(lang)
 	Dim boxes As List
 	boxes.Initialize
 	Dim out As OutputStream
@@ -111,7 +267,6 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	Return boxes
 End Sub
 
-
 Sub textLinesToBoxes(textLines As List,boxes As List)
 	For Each line As Map In textLines
 		Dim box As Map
@@ -134,7 +289,6 @@ Sub textLinesToBoxes(textLines As List,boxes As List)
 	Next
 End Sub
 
-
 Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)
 End Sub
@@ -144,7 +298,7 @@ Sub getUrl As String
 	If File.Exists(File.DirApp,"preferences.conf") Then
 		Try
 			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
-			url=getMap("paddle",getMap("api",preferencesMap)).Get("url")
+			url=getMap("easyocr",getMap("api",preferencesMap)).Get("url")
 		Catch
 			Log(LastException)
 		End Try
