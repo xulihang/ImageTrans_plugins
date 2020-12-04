@@ -70,7 +70,7 @@ Sub getLangs(loc As Localizator) As Map
 	codes.Add("tha")
 	codes.Add("lat")
 	codes.Add("ara")
-	names.Add(loc.Localize("自动识别"))
+	names.Add(loc.Localize("自动检测"))
 	names.Add(loc.Localize("中文"))
 	names.Add(loc.Localize("日语"))
 	names.Add(loc.Localize("韩语"))
