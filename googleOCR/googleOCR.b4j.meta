@@ -1,9 +1,12 @@
 ﻿ModuleBookmarks0=
 ModuleBookmarks1=
+ModuleBookmarks2=
 ModuleBreakpoints0=
 ModuleBreakpoints1=
+ModuleBreakpoints2=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=googleOCRPlugin,Initialize,7,0,googleOCRPlugin,GetNiceName,14,0,googleOCRPlugin,getLangs,39,5,googleOCRPlugin,Run,23,0,Main,AppStart,17,6,googleOCRPlugin,Paragraph2Box,332,6,googleOCRPlugin,ocr,252,6,Main,Process_Globals,5,0,googleOCRPlugin,Class_Globals,0,0
+ModuleClosedNodes2=
+NavigationStack=googleOCRPlugin,saveImgToDiskWithSizeCheck,345,0,Main,AppStart,18,6,Utils,Process_Globals,4,0,Utils,theSmallerOne,75,0,Utils,OverlappingPercent,6,0,googleOCRPlugin,Class_Globals,0,0,googleOCRPlugin,Paragraph2Box,336,6,googleOCRPlugin,GetArea,352,6,googleOCRPlugin,RemoveOverlapped,344,6,googleOCRPlugin,ocr,204,6
 SelectedBuild=0
-VisibleModules=1
+VisibleModules=1,2

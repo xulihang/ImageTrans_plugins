@@ -233,7 +233,8 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	features.Initialize
 	Dim feature As Map
 	feature.Initialize
-	feature.Put("type","TEXT_DETECTION")
+	'feature.Put("type","TEXT_DETECTION")
+	feature.Put("type","DOCUMENT_TEXT_DETECTION")
 	features.Add(feature)
 	request.Put("image",imageMap)
 	request.Put("features",features)
@@ -280,6 +281,7 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 			Log(LastException)
 		End Try
 	End If
+	RemoveOverlapped(boxes)
 	Return boxes
 End Sub
 
@@ -337,6 +339,39 @@ Sub Paragraph2Box(paragraph As Map) As Map
 	Next
 	box.Put("text",sb.ToString.Trim)
 	Return box
+End Sub
+
+Sub RemoveOverlapped(boxes As List)
+	Dim new As List
+	new.Initialize
+	For i=0 To boxes.Size-1
+		Dim shouldRemove As Boolean=False
+		Dim box1 As Map=boxes.Get(i)
+		Dim geometry1 As Map
+		geometry1=box1.Get("geometry")
+		For j=0 To boxes.Size-1
+			Dim box2 As Map=boxes.Get(j)
+			Dim geometry2 As Map
+			geometry2=box2.Get("geometry")
+			If Utils.OverlappingPercent(geometry1,geometry2)>0.5 Then
+				If GetArea(geometry1)<GetArea(geometry2) Then
+					shouldRemove=True
+				End If
+			End If
+		Next
+		If shouldRemove=False Then
+			new.Add(box1)
+		End If
+	Next
+	boxes.Clear
+	boxes.Addall(new)
+End Sub
+
+Sub GetArea(boxGeometry As Map) As Int
+	Dim width,height As Int
+	width=boxGeometry.Get("width")
+	height=boxGeometry.Get("height")
+	Return width*height
 End Sub
 
 Sub getMap(key As String,parentmap As Map) As Map
