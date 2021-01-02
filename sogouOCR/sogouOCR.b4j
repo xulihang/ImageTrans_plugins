@@ -13,11 +13,13 @@ Library6=jxui
 Library7=javaobject
 Library8=jokhttputils2
 Library9=jstringutils
-Module1=Localizator
-Module2=sogouOCRPlugin
+Module1=sogouOCRPlugin
+Module2=Localizator
+Module3=OCR
+Module4=BoxesSort
 NumberOfFiles=0
 NumberOfLibraries=12
-NumberOfModules=2
+NumberOfModules=4
 Version=7.8
 @EndOfDesignText@
 #Region Project Attributes 

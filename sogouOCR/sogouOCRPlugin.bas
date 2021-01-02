@@ -73,7 +73,7 @@ Sub getLangs(loc As Localizator) As Map
 End Sub
 
 Sub GetText(img As B4XBitmap,lang As String) As ResumableSub
-	wait for (ocr(img,lang)) complete (boxes As List)
+	wait for (DoOCR(img,lang)) complete (boxes As List)
 	Dim sb As StringBuilder
 	sb.Initialize
 	For Each box As Map In boxes
@@ -86,7 +86,7 @@ End Sub
 Sub GetTextWithLocation(img As B4XBitmap,lang As String) As ResumableSub
 	Dim regions As List
 	regions.Initialize
-	wait for (ocr(img,lang)) complete (boxes As List)
+	wait for (DoOCR(img,lang)) complete (boxes As List)
 	For Each box As Map In boxes
 		Dim region As Map=box.Get("geometry")
 		region.Put("text",box.Get("text"))
@@ -95,7 +95,7 @@ Sub GetTextWithLocation(img As B4XBitmap,lang As String) As ResumableSub
 	Return regions
 End Sub
 
-Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
+Sub DoOCR(img As B4XBitmap,lang As String) As ResumableSub
 	Dim id,key As String
 	Try
 		If File.Exists(File.DirApp,"preferences.conf") Then
@@ -132,21 +132,28 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
 			Dim resultList As List=json.NextObject.Get("result")
-			For Each result As Map In resultList
-				Dim content As String=result.Get("content")
-				Dim frame As List=result.Get("frame")
-				Dim box As Map
-				box.Initialize
-				box.Put("text",content.Trim)
-				Dim boxGeometry As Map=FrameToGeometry(frame)
-				box.Put("geometry",boxGeometry)
-				boxes.Add(box)
+			For i=0 To resultList.Size-1
+				AddBox(resultList.Get(i),boxes)
 			Next
+			If OCR.rightToLeft Then
+				BoxesSort.BubbleSortBasedOnX(boxes,True)
+			End If
 		Catch
 			Log(LastException)
 		End Try
 	End If
 	Return boxes
+End Sub
+
+Sub AddBox(result As Map,boxes As List)
+	Dim content As String=result.Get("content")
+	Dim frame As List=result.Get("frame")
+	Dim box As Map
+	box.Initialize
+	box.Put("text",content.Trim)
+	Dim boxGeometry As Map=FrameToGeometry(frame)
+	box.Put("geometry",boxGeometry)
+	boxes.Add(box)
 End Sub
 
 Sub FrameToGeometry(Frame As List) As Map
