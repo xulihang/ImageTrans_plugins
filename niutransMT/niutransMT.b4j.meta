@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=niutransMTPlugin,Initialize,6,0,niutransMTPlugin,Run,24,6,niutransMTPlugin,translate,41,6,Main,AppStart,11,0
+NavigationStack=niutransMTPlugin,Initialize,6,0,niutransMTPlugin,translate,41,6,Main,AppStart,11,0,niutransMTPlugin,Class_Globals,0,0,niutransMTPlugin,Run,18,6,niutransMTPlugin,GetNiceName,15,0
 SelectedBuild=0
 VisibleModules=1
