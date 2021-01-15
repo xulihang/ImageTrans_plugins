@@ -518,7 +518,7 @@ Sub waitForResult(xml As String,url As String,authHeader As String) As Resumable
 	boxes.Initialize
 	Dim id As String=getID(xml)
 	If id<>"" Then
-		Dim timeout As Int=20 'seconds
+		Dim timeout As Int=45 'seconds
 		Dim elapsed As Int=0
 		Dim Completed As Boolean=getCompleted(xml)
 		Do While Completed=False
