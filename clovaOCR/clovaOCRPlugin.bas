@@ -85,7 +85,7 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	Try
 		If File.Exists(File.DirApp,"preferences.conf") Then
 			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
-			url=getMap("clova",getMap("api",preferencesMap)).Get("id")
+			url=getMap("clova",getMap("api",preferencesMap)).Get("url")
 			key=getMap("clova",getMap("api",preferencesMap)).Get("key")
 		End If
 	Catch
