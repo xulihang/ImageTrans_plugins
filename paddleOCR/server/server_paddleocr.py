@@ -3,10 +3,9 @@
 import os
 import time
 import datetime
-import cv2
 from bottle import route, run, template, request, static_file
 import json
-from paddleocr import PaddleOCR, draw_ocr
+from paddleocr import PaddleOCR
     
 @route('/ocr', method='POST')
 def ocr():
