@@ -17,7 +17,7 @@ End Sub
 
 ' must be available
 public Sub GetNiceName() As String
-	Return "paddleOCR"
+	Return "paddleocrOCR"
 End Sub
 
 ' must be available
@@ -92,7 +92,7 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	fd.Dir = File.DirApp
 	fd.FileName = "image.jpg"
 	fd.ContentType = "image/jpg"
-	job.PostMultipart(getUrl,CreateMap("lang":lang), Array(fd))
+	job.PostMultipart(getUrl,CreateMap("lang":lang,"engine":"paddleocr"), Array(fd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
