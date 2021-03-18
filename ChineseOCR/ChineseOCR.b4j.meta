@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=ChineseOCRPlugin,getLangs,51,6,Main,Application_Error,28,0,ChineseOCRPlugin,DetectOS,173,0,ChineseOCRPlugin,Run,37,5,ChineseOCRPlugin,GetText,52,0,ChineseOCRPlugin,GetTextWithLocation,68,6,ChineseOCRPlugin,ocr,115,6,ChineseOCRPlugin,readJsonAsMap,184,0,ChineseOCRPlugin,GetNiceName,13,0,ChineseOCRPlugin,Initialize,11,0
+NavigationStack=ChineseOCRPlugin,getLangs,51,6,Main,Application_Error,28,0,ChineseOCRPlugin,DetectOS,173,0,ChineseOCRPlugin,Run,37,5,ChineseOCRPlugin,GetText,52,0,ChineseOCRPlugin,GetTextWithLocation,68,6,ChineseOCRPlugin,ocr,115,6,ChineseOCRPlugin,readJsonAsMap,184,0,ChineseOCRPlugin,Initialize,11,0,ChineseOCRPlugin,GetNiceName,13,0
 SelectedBuild=0
 VisibleModules=1
