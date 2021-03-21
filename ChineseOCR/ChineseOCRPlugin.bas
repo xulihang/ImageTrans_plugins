@@ -17,7 +17,7 @@ End Sub
 
 ' must be available
 public Sub GetNiceName() As String
-	Return "ChineseOCR"
+	Return "chineseocrOCR"
 End Sub
 
 ' must be available
