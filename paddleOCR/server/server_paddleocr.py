@@ -53,6 +53,6 @@ def server_static(filepath):
     return static_file(filepath, root='www')
 
 current_lang="ch"
-ocr = PaddleOCR(lang=current_lang)
+ocr = PaddleOCR(lang=current_lang,det_db_thresh=0.9,det_db_box_thresh=0.6)
 run(server="paste",host='127.0.0.1', port=8080)     
 

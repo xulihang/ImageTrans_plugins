@@ -17,7 +17,7 @@ End Sub
 
 ' must be available
 public Sub GetNiceName() As String
-	Return "craft+crnnOCR"
+	Return "ImageTransOCR"
 End Sub
 
 ' must be available
@@ -88,9 +88,9 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
 			Dim result As Map=json.NextObject
-			Dim words As List
-			words=result.Get("words")
-			wordsToBoxes(words,boxes)
+			Dim detectedBoxes As List
+			detectedBoxes=result.Get("boxes")
+			addBoxes(detectedBoxes,boxes)
 		Catch
 			Log(LastException)
 		End Try
@@ -99,25 +99,25 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 End Sub
 
 
-Sub wordsToBoxes(words As List,boxes As List)
-	For Each word As Map In words
-		Dim box As Map
-		box.Initialize
-		box.put("text",word.GetDefault("text",""))
+Sub addBoxes(detectedBoxes As List,boxes As List)
+	For Each box As Map In detectedBoxes
+		Dim newBox As Map
+		newBox.Initialize
+		newBox.put("text",box.GetDefault("text",""))
 		Dim boxGeometry As Map
 		boxGeometry.Initialize
 		Dim X,Y,width,height As Int
-		X=Min(word.get("x0"),word.Get("x2"))
-		Y=Min(word.get("y0"),word.Get("y1"))
-		width=Max(word.Get("x1"),word.get("x3"))-X
-		height=Max(word.get("y1"),word.Get("y3"))-Y
+		X=Min(box.get("x0"),box.Get("x2"))
+		Y=Min(box.get("y0"),box.Get("y1"))
+		width=Max(box.Get("x1"),box.get("x3"))-X
+		height=Max(box.get("y1"),box.Get("y3"))-Y
 		boxGeometry.Put("X",X)
 		boxGeometry.Put("Y",Y)
 		boxGeometry.Put("width",width)
 		boxGeometry.Put("height",height)
-		box.Put("geometry",boxGeometry)
+		newBox.Put("geometry",boxGeometry)
 		'box.Put("std",True)
-		boxes.Add(box)
+		boxes.Add(newBox)
 	Next
 End Sub
 
@@ -130,7 +130,7 @@ Sub getUrl As String
 	If File.Exists(File.DirApp,"preferences.conf") Then
 		Try
 			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
-			url=getMap("craft+crnn",getMap("api",preferencesMap)).GetDefault("url",url)
+			url=getMap("ImageTrans",getMap("api",preferencesMap)).GetDefault("url",url)
 		Catch
 			Log(LastException)
 		End Try
