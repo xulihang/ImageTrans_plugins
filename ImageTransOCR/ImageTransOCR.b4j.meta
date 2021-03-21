@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=ImageTransOCRPlugin,Class_Globals,0,0,ImageTransOCRPlugin,ocr,84,0,ImageTransOCRPlugin,addBoxes,111,0,ImageTransOCRPlugin,GetNiceName,13,0,ImageTransOCRPlugin,getUrl,126,0
+NavigationStack=ImageTransOCRPlugin,addBoxes,111,0,ImageTransOCRPlugin,getUrl,126,0,ImageTransOCRPlugin,Initialize,8,0,ImageTransOCRPlugin,Class_Globals,2,6,ImageTransOCRPlugin,ocr,82,5,ImageTransOCRPlugin,GetNiceName,15,0,ImageTransOCRPlugin,BuildCombinations,52,6,Main,AppStart,15,0,ImageTransOCRPlugin,Run,20,6
 SelectedBuild=0
 VisibleModules=1

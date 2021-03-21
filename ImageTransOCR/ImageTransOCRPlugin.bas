@@ -6,6 +6,9 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private detector As String="craft"
+	Private recognizer As String="opencv"
+	Private wordlevel As Boolean=True
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -22,7 +25,6 @@ End Sub
 
 ' must be available
 public Sub Run(Tag As String, Params As Map) As ResumableSub
-	Log("run"&Params)
 	Select Tag
 		Case "getParams"
 			Dim paramsList As List
@@ -36,9 +38,32 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"))) complete (regions As List)
 			Return regions
 		Case "WordLevel"
+			Return wordlevel
+		Case "SetCombination"
+			Dim comb As String=Params.Get("combination")
+			comb=comb.Replace(" (ImageTrans)","")
+			detector=Regex.Split("\+",comb)(0)
+			recognizer=Regex.Split("\+",comb)(1)
+			If detector="craft" Then
+				wordlevel=True
+			Else
+				wordlevel=False
+			End If
+		Case "GetCombinations"
+			Return BuildCombinations
+		Case "Multiple"
 			Return True
 	End Select
 	Return ""
+End Sub
+
+Sub BuildCombinations As List
+	Dim combs As List
+	combs.Initialize
+	For Each comb As String In Array As String("craft+opencv","craft+chineseocr","chineseocr+chineseocr","chineseocr+opencv")
+		combs.Add(comb&" (ImageTrans)")
+	Next
+	Return combs
 End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
@@ -79,7 +104,7 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	fd.Dir = File.DirApp
 	fd.FileName = "image.jpg"
 	fd.ContentType = "image/jpg"
-	job.PostMultipart(getUrl,CreateMap("lang":lang), Array(fd))
+	job.PostMultipart(getUrl,CreateMap("detector":detector,"recognizer":recognizer,"lang":lang), Array(fd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
