@@ -9,12 +9,22 @@ Sub Class_Globals
 	Private detector As String="craft"
 	Private recognizer As String="opencv"
 	Private wordlevel As Boolean=True
+	Private detectors As List
+	Private recognizers As List
+	Private skip_recogniztion As String
+	Private recognize_entire_image As String
+	Private recognizerAffix As String="_recognizer"
+	Private detectorAffix As String="_detector"
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
 Public Sub Initialize() As String
 	Log("Initializing plugin " & GetNiceName)
 	' Here return a key to prevent running unauthorized plugins
+	detectors.Initialize
+	detectors.AddAll(Array As String("craft","chineseocr"))
+	recognizers.Initialize
+	recognizers.AddAll(Array As String("opencv","chineseocr"))
 	Return "MyKey"
 End Sub
 
@@ -41,14 +51,31 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return wordlevel
 		Case "SetCombination"
 			Dim comb As String=Params.Get("combination")
-			comb=comb.Replace(" (ImageTrans)","")
-			detector=Regex.Split("\+",comb)(0)
-			recognizer=Regex.Split("\+",comb)(1)
+			comb=comb.Replace(" (ImageTrans)","")			
+			skip_recogniztion=""
+			recognize_entire_image=""
+			If comb.Contains("+") Then
+				detector=Regex.Split("\+",comb)(0)
+				recognizer=Regex.Split("\+",comb)(1)
+			Else if comb.Contains(recognizerAffix) Then
+				comb=comb.Replace(recognizerAffix,"")
+				recognizer=comb
+				recognize_entire_image="true"
+			else if comb.Contains(detectorAffix) Then
+				comb=comb.Replace(detectorAffix,"")
+				detector=comb
+				skip_recogniztion="true"
+			End If
+
 			If detector="craft" Then
 				wordlevel=True
 			Else
 				wordlevel=False
 			End If
+			
+			If recognize_entire_image="true" Then
+				wordlevel=False
+			End If			
 		Case "GetCombinations"
 			Return BuildCombinations
 		Case "Multiple"
@@ -60,26 +87,40 @@ End Sub
 Sub BuildCombinations As List
 	Dim combs As List
 	combs.Initialize
-	For Each comb As String In Array As String("craft+opencv","craft+chineseocr","chineseocr+chineseocr","chineseocr+opencv")
-		combs.Add(comb&" (ImageTrans)")
+	For Each d_name As String In detectors
+		combs.Add(d_name&detectorAffix&" (ImageTrans)")
+		For Each r_name As String In recognizers			
+			combs.Add(d_name&"+"&r_name&" (ImageTrans)")
+		Next
+	Next
+	For Each r_name As String In recognizers
+		combs.Add(r_name&recognizerAffix&" (ImageTrans)")
 	Next
 	Return combs
 End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
-	wait for (ocr(img,lang)) complete (boxes As List)
-	Dim sb As StringBuilder
-	sb.Initialize
-	For Each box As Map In boxes
-		sb.Append(box.Get("text"))
-		sb.Append(CRLF)
-	Next
-	Return sb.ToString
+	If recognize_entire_image="true" Then
+		wait for (ocr(img,lang)) complete (result As String)
+		Return result
+	Else
+		wait for (ocr(img,lang)) complete (boxes As List)
+		Dim sb As StringBuilder
+		sb.Initialize
+		For Each box As Map In boxes
+			sb.Append(box.Get("text"))
+			sb.Append(CRLF)
+		Next
+		Return sb.ToString
+	End If
 End Sub
 
 Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
 	Dim regions As List
 	regions.Initialize
+	If recognize_entire_image="true" Then
+		Return regions
+	End If
 	wait for (ocr(img,lang)) complete (boxes As List)
 	For Each box As Map In boxes
 		Dim region As Map=box.Get("geometry")
@@ -104,12 +145,15 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	fd.Dir = File.DirApp
 	fd.FileName = "image.jpg"
 	fd.ContentType = "image/jpg"
-	job.PostMultipart(getUrl,CreateMap("detector":detector,"recognizer":recognizer,"lang":lang), Array(fd))
+	job.PostMultipart(getUrl,CreateMap("detector":detector,"recognizer":recognizer,"lang":lang,"skip_recogniztion":skip_recogniztion,"recognize_entire_image":recognize_entire_image), Array(fd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
 			Log(job.GetString)
+			If recognize_entire_image="true" Then
+				Return job.GetString
+			End If			
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
 			Dim result As Map=json.NextObject
