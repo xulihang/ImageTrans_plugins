@@ -10,11 +10,11 @@ Library6=jxui
 Library7=javaobject
 Library8=jokhttputils2
 Library9=jstringutils
-Module1=SickZilInpaintPlugin
+Module1=ExternalMaskGenPlugin
 NumberOfFiles=0
 NumberOfLibraries=9
 NumberOfModules=1
-Version=7.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -31,14 +31,13 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
-    Dim n As SickZilInpaintPlugin
+	Dim n As ExternalMaskGenPlugin
 	n.Initialize
-	Dim origin As Image=fx.LoadImage(File.DirApp,"1.jpg")
-	Dim mask As Image=fx.LoadImage(File.DirApp,"mask.png")
-	wait for (n.inpaint(origin,mask)) complete (result As B4XBitmap)
+	Dim img As Image=fx.LoadImage(File.DirApp,"1.jpg")
+	wait for (n.genMask(img)) complete (result As B4XBitmap)
 	Dim out As OutputStream
-	out=File.OpenOutput(File.DirApp,"removed.jpg",False)
-	result.WriteToStream(out,100,"JPEG")
+	out=File.OpenOutput(File.DirApp,"mask.png",False)
+	result.WriteToStream(out,100,"PNG")
 	out.Close
 End Sub
 
