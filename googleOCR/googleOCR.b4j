@@ -18,7 +18,7 @@ Module2=Utils
 NumberOfFiles=0
 NumberOfLibraries=12
 NumberOfModules=2
-Version=7.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -37,7 +37,8 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim t As googleOCRPlugin
 	t.Initialize
-	wait for (t.GetTextWithLocation(fx.LoadImage(File.DirApp,"18_094.jpg"),"ja")) Complete (done As Object)
+	wait for (t.GetText(fx.LoadImage(File.DirApp,"image.jpg"),"ja")) Complete (done As Object)
+	wait for (t.GetTextWithLocation(fx.LoadImage(File.DirApp,"image.jpg"),"ja")) Complete (done As Object)
 	Log(done)
 End Sub
 

@@ -28,6 +28,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim paramsList As List
 			paramsList.Initialize
 			paramsList.Add("key")
+			paramsList.Add("type (document or text)")
 			Return paramsList
 		Case "getText"
 			wait for (GetText(Params.Get("img"),Params.Get("lang"))) complete (result As String)
@@ -37,6 +38,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return regions
 		Case "getLangs"
 			Return getLangs
+		Case "getDefaultParamValues"
+			Return CreateMap("type (document or text)":"document")
 	End Select
 	Return ""
 End Sub
@@ -175,20 +178,14 @@ Sub getLangs As Map
 End Sub
 
 Sub GetText(img As B4XBitmap,lang As String) As ResumableSub
-	wait for (ocr(img,lang)) complete (boxes As List)
-	Dim sb As StringBuilder
-	sb.Initialize
-	For Each box As Map In boxes
-		sb.Append(box.Get("text"))
-		sb.Append(CRLF)
-	Next
-	Return sb.ToString
+	wait for (ocr(img,lang,True)) complete (text As String)
+	Return text
 End Sub
 
 Sub GetTextWithLocation(img As B4XBitmap,lang As String) As ResumableSub
 	Dim regions As List
 	regions.Initialize
-	wait for (ocr(img,lang)) complete (boxes As List)
+	wait for (ocr(img,lang,False)) complete (boxes As List)
 	For Each box As Map In boxes
 		Dim region As Map=box.Get("geometry")
 		region.Put("text",box.Get("text"))
@@ -197,12 +194,19 @@ Sub GetTextWithLocation(img As B4XBitmap,lang As String) As ResumableSub
 	Return regions
 End Sub
 
-Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
+Sub ocr(img As B4XBitmap,lang As String,textOnly As Boolean) As ResumableSub
 	Dim key As String
+	Dim detectionType As String="DOCUMENT_TEXT_DETECTION"
 	Try
 		If File.Exists(File.DirApp,"preferences.conf") Then
 			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
 			key=getMap("google",getMap("api",preferencesMap)).Get("key")
+			Select getMap("google",getMap("api",preferencesMap)).GetDefault("type (document or text)","document")
+				Case "document"
+					detectionType="DOCUMENT_TEXT_DETECTION"
+				Case "text"
+					detectionType="TEXT_DETECTION"
+			End Select
 		End If
 	Catch
 		Log(LastException)
@@ -233,8 +237,7 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	features.Initialize
 	Dim feature As Map
 	feature.Initialize
-	'feature.Put("type","TEXT_DETECTION")
-	feature.Put("type","DOCUMENT_TEXT_DETECTION")
+	feature.Put("type",detectionType)
 	features.Add(feature)
 	request.Put("image",imageMap)
 	request.Put("features",features)
@@ -256,7 +259,7 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	wait for (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
-			'Log(job.GetString)
+			Log(job.GetString)
 			'File.WriteString(File.DirApp,"out.json",job.GetString)
 			Dim responses As List
 			Dim json As JSONParser
@@ -264,6 +267,9 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 			responses=json.NextObject.Get("responses")
 			Dim response As Map=responses.Get(0)
 			Dim fullTextAnnotation As Map=response.Get("fullTextAnnotation")
+			If textOnly Then
+				Return fullTextAnnotation.GetDefault("text","")
+			End If
 			Dim pages As List=fullTextAnnotation.Get("pages")
 			For Each page As Map In pages
 				Dim blocks As List = page.Get("blocks")
@@ -282,7 +288,11 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 		End Try
 	End If
 	RemoveOverlapped(boxes)
-	Return boxes
+	If textOnly Then
+		Return ""
+	Else
+		Return boxes
+	End If
 End Sub
 
 Sub Paragraph2Box(paragraph As Map) As Map

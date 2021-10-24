@@ -7,6 +7,6 @@ ModuleBreakpoints2=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
 ModuleClosedNodes2=
-NavigationStack=googleOCRPlugin,saveImgToDiskWithSizeCheck,345,0,Main,AppStart,18,6,Utils,Process_Globals,4,0,Utils,theSmallerOne,75,0,Utils,OverlappingPercent,6,0,googleOCRPlugin,Class_Globals,0,0,googleOCRPlugin,Paragraph2Box,336,6,googleOCRPlugin,GetArea,352,6,googleOCRPlugin,RemoveOverlapped,344,6,googleOCRPlugin,ocr,204,6
+NavigationStack=googleOCRPlugin,Run,35,6,googleOCRPlugin,GetTextWithLocation,187,1,googleOCRPlugin,GetText,174,4,googleOCRPlugin,Paragraph2Box,341,6,googleOCRPlugin,GetArea,375,6,googleOCRPlugin,readJsonAsMap,381,0,Main,AppStart,17,2,googleOCRPlugin,saveImgToDiskWithSizeCheck,401,0,googleOCRPlugin,RemoveOverlapped,355,6,googleOCRPlugin,ocr,289,6
 SelectedBuild=0
 VisibleModules=1,2
