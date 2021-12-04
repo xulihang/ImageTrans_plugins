@@ -1,0 +1,52 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.imagetrans
+Group=Default Group
+Library1=byteconverter
+Library10=jxui
+Library11=xmlbuilder
+Library12=jshell
+Library2=encryption
+Library3=javaobject
+Library4=jcore
+Library5=jfx
+Library6=jokhttputils2
+Library7=json
+Library8=jstringutils
+Library9=jxmlsax
+Module1=transliterationMTPlugin
+NumberOfFiles=0
+NumberOfLibraries=12
+NumberOfModules=1
+Version=8.9
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+	Dim preferencesMap As Map
+	preferencesMap.Initialize
+	preferencesMap.Put("api",CreateMap("transliteration":CreateMap("use jakaroma (yes or no)":"yes","key":"")))
+    Dim n As transliterationMTPlugin
+	n.Initialize
+	Dim text As String
+	text = "先生!ココ!ココ!オレの隣が…"
+	text = "中国"
+	wait for (n.translate(text,"ja",preferencesMap)) complete (result As String)
+	Log(result)
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
