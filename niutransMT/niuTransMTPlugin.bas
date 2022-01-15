@@ -28,7 +28,6 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim paramsList As List
 			paramsList.Initialize
 			paramsList.Add("key")
-			paramsList.Add("free mode (yes or no)")
 			Return paramsList
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
@@ -45,13 +44,8 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	job.Initialize("job",Me)
 	Dim params As String
 	params="?apikey="&getMap("niutrans",getMap("mt",preferencesMap)).Get("key")&"&src_text="&su.EncodeUrl(source,"UTF-8")&"&from="&sourceLang&"&to="&targetLang
-	Dim freeMode As String=getMap("niutrans",getMap("mt",preferencesMap)).GetDefault("free mode (yes or no)","yes")
 	Dim URL As String
-	If freeMode<>"no" Then
-		URL="https://free.niutrans.com/NiuTransServer/translation"
-	Else
-		URL="https://api.niutrans.com/NiuTransServer/translation"
-	End If
+	URL="https://api.niutrans.com/NiuTransServer/translation"
 	job.Download(URL&params)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
