@@ -32,5 +32,5 @@ def server_static(filepath):
     return static_file(filepath, root='www')
 
 mocr = MangaOcr()
-run(server="paste",host='127.0.0.1', port=8080)     
+run(server="paste",host='0.0.0.0', port=8080)     
 
