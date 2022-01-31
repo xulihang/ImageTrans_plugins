@@ -75,9 +75,14 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	job.Initialize("job",Me)
 	Dim params As String
 	Dim freemode As String
-	freemode=getMap("deepl",getMap("api",preferencesMap)).GetDefault("freemode","yes")
 	Dim key As String
-	key=getMap("deepl",getMap("api",preferencesMap)).GetDefault("key","")
+	Try
+		freemode=getMap("deepl",getMap("mt",preferencesMap)).GetDefault("freemode","yes")
+		key=getMap("deepl",getMap("mt",preferencesMap)).GetDefault("key","")
+	Catch
+		Log(LastException)
+	End Try
+	
 	If key="" Then
 		Return ""
 	End If
