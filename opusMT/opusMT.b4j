@@ -1,0 +1,48 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.imagetrans
+Group=Default Group
+Library1=jcore
+Library10=xml2map
+Library2=jfx
+Library3=json
+Library4=jxmlsax
+Library5=xmlbuilder
+Library6=jxui
+Library7=javaobject
+Library8=jokhttputils2
+Library9=jstringutils
+Module1=opusMTPlugin
+NumberOfFiles=0
+NumberOfLibraries=10
+NumberOfModules=1
+Version=8.8
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+	Dim map1 As Map
+	map1.Initialize
+	Dim map2 As Map
+	map2.Initialize
+	map1.Put("mt",CreateMap("fiskmo":map2))
+    Dim n As opusMTPlugin
+	n.Initialize
+	wait for (n.translate("Hello","en","zh",map1)) complete (result As String)
+	Log(result)
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
