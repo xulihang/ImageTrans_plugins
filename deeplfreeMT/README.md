@@ -1,0 +1,1 @@
+Free DeepL API using this docker repo: https://hub.docker.com/repository/docker/zu1k/deepl
