@@ -1,3 +1,3 @@
-火山机器翻译
+鐏北鏈哄櫒缈昏瘧
 
-详见：https://github.com/xulihang/ImageTrans-docs/issues/189
+璇﹁锛歨ttps://github.com/xulihang/ImageTrans-docs/issues/189
