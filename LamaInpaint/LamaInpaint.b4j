@@ -1,0 +1,49 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.imagetrans
+Group=Default Group
+Library1=javaobject
+Library10=jbitmapcreator
+Library2=jcore
+Library3=jfx
+Library4=jokhttputils2
+Library5=json
+Library6=jstringutils
+Library7=jxmlsax
+Library8=jxui
+Library9=xmlbuilder
+Module1=LamaInpaintPlugin
+NumberOfFiles=0
+NumberOfLibraries=10
+NumberOfModules=1
+Version=8.9
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+    Dim n As LamaInpaintPlugin
+	n.Initialize
+	Dim origin As Image=fx.LoadImage(File.DirApp,"1.jpg")
+	Dim mask As Image=fx.LoadImage(File.DirApp,"1-mask.png")
+	wait for (n.inpaint(origin,mask)) complete (result As B4XBitmap)
+	Dim out As OutputStream
+	out=File.OpenOutput(File.DirApp,"removed.jpg",False)
+	result.WriteToStream(out,100,"JPEG")
+	out.Close
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
