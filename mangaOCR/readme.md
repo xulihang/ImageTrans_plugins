@@ -13,5 +13,5 @@ Install:
 For convenience, you can also use the Windows package:
 
 1. Download and unzip [manga-ocr](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr.zip).
-2. (Option) Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it to manga-ocr's folder in the previous step.
+2. (Optional) Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it to manga-ocr's folder in the previous step.
 3. Run `run.bat` and wait for the server to get ready.
