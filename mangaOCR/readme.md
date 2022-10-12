@@ -10,7 +10,7 @@ Install:
 3. Run the server: `python server_manga_ocr.py`
 4. Unzip the [plugin files](https://github.com/xulihang/ImageTrans-docs/files/7919869/manga-ocr-plugin.zip) in ImageTrans's `plugins` folder
 
-For convenience, you can also use the Windows package:
+**For convenience**, you can also use the Windows package:
 
 1. Download and unzip [manga-ocr](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr.zip).
 2. (Optional) Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it to manga-ocr's folder in the previous step.
