@@ -5,10 +5,10 @@ See:
 
 Install:
 
-1. Install python3
-2. Install required packages: `pip install -r requirements.txt`
-3. Run the server: `python server_manga_ocr.py`
-4. Unzip the [plugin files](https://github.com/xulihang/ImageTrans-docs/files/7919869/manga-ocr-plugin.zip) in ImageTrans's `plugins` folder
+1. Install python3.
+2. Install required packages: `pip install -r requirements.txt`.
+3. Run the server: `python server_manga_ocr.py`.
+4. Unzip the [plugin files](https://github.com/xulihang/ImageTrans-docs/files/7919869/manga-ocr-plugin.zip) in ImageTrans's `plugins` folder and restart ImageTrans.
 
 **For convenience**, you can also use the Windows package:
 
