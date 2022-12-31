@@ -32,7 +32,8 @@ def ocr():
         os.remove(file_path)
     upload.save(file_path)        
     ret = {}
-    result = ocr.ocr(file_path)
+    result = ocr.ocr(file_path)[0]
+    print(result)
     text_lines=[]
     for line in result:
         text_line={}
