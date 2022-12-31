@@ -34,8 +34,8 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As LamaInpaintPlugin
 	n.Initialize
-	Dim origin As Image=fx.LoadImage(File.DirApp,"1.jpg")
-	Dim mask As Image=fx.LoadImage(File.DirApp,"1-mask.png")
+	Dim origin As Image=fx.LoadImage(File.DirApp,"origin.jpg")
+	Dim mask As Image=fx.LoadImage(File.DirApp,"mask.png")
 	wait for (n.inpaint(origin,mask)) complete (result As B4XBitmap)
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"removed.jpg",False)
