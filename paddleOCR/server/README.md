@@ -1,0 +1,1 @@
+See <https://github.com/xulihang/ImageTrans_plugins/tree/master/paddleOCR>.
