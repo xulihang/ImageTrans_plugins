@@ -27,17 +27,20 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getParams"
 			Dim paramsList As List
 			paramsList.Initialize
-			paramsList.Add("path")
+			paramsList.Add("url")
 			Return paramsList
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
 			Return result
+		Case "getDefaultParamValues"
+			Return CreateMap("url":"http://localhost:14366")
 	End Select
 	Return ""
 End Sub
 
 Sub translate(source As String, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
 	Dim target As String
+	Dim url As String = preferencesMap.GetDefault("url","http://localhost:14366")
 	Dim params As Map
 	params.Initialize
 	params.Put("content",source)
@@ -46,7 +49,7 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	json.Initialize(params)
 	Dim job As HttpJob
 	job.Initialize("",Me)
-	job.PostString("http://localhost:14366/",json.ToString)
+	job.PostString(url,json.ToString)
 	job.GetRequest.SetContentType("application/json")
 	Wait For (job) JobDone (job As HttpJob)
 	If job.Success Then
