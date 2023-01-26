@@ -35,7 +35,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As sugoiMTPlugin
 	n.Initialize
-	wait for (n.translate("人民網日本語版は中国で最も早く開設された日本語ニュースサイトです。","en","zh",CreateMap("url":"http://192.168.3.25:14366"))) complete (result As String)
+	wait for (n.translate("人民網日本語版は中国で最も早く開設された日本語ニュースサイトです。","en","zh",CreateMap("api": CreateMap("sugoi":CreateMap("url":"http://192.168.3.25:8088"))))) complete (result As String)
 	Log(result)
 End Sub
 

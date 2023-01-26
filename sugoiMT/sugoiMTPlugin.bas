@@ -40,7 +40,14 @@ End Sub
 
 Sub translate(source As String, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
 	Dim target As String
-	Dim url As String = preferencesMap.GetDefault("url","http://localhost:14366")
+	Dim url As String = "http://localhost:14366"
+	If preferencesMap.ContainsKey("api") Then
+		Dim api As Map = preferencesMap.Get("api")
+		If api.ContainsKey("sugoi") Then
+			Dim settings As Map = api.Get("sugoi")
+			url=settings.GetDefault("url",url)
+		End If
+	End If
 	Dim params As Map
 	params.Initialize
 	params.Put("content",source)
