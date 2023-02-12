@@ -100,6 +100,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 			Log(LastException)
 		End Try
 	End If
+	job.Release
 	Return origin
 End Sub
 

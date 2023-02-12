@@ -81,6 +81,7 @@ Sub GetText(img As B4XBitmap) As ResumableSub
 			Log(LastException)
 		End Try
 	End If
+	job.Release
 	Return ""
 End Sub
 

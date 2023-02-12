@@ -287,6 +287,7 @@ Sub ocr(img As B4XBitmap,lang As String,textOnly As Boolean) As ResumableSub
 			Log(LastException)
 		End Try
 	End If
+	job.Release
 	RemoveOverlapped(boxes)
 	If textOnly Then
 		Return ""

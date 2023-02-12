@@ -510,6 +510,7 @@ Sub DoOCR(img As B4XBitmap,lang As String) As ResumableSub
 	Else
 		Log(job.ErrorMessage)
 	End If
+	job.Release
 	Return boxes
 End Sub
 

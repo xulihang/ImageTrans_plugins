@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=paddleOCRPlugin,readJsonAsMap,105,0,paddleOCRPlugin,textLinesToBoxes,86,0,paddleOCRPlugin,Run,35,3,paddleOCRPlugin,GetText,50,6,paddleOCRPlugin,GetTextWithLocation,69,6,paddleOCRPlugin,convertLang,44,6,paddleOCRPlugin,ocr,85,6,paddleOCRPlugin,GetNiceName,13,0,paddleOCRPlugin,Initialize,10,0,paddleOCRPlugin,getUrl,140,4
+NavigationStack=paddleOCRPlugin,readJsonAsMap,105,0,paddleOCRPlugin,textLinesToBoxes,86,0,paddleOCRPlugin,Run,35,3,paddleOCRPlugin,GetText,50,6,paddleOCRPlugin,GetTextWithLocation,69,6,paddleOCRPlugin,convertLang,44,6,paddleOCRPlugin,GetNiceName,13,0,paddleOCRPlugin,Initialize,10,0,paddleOCRPlugin,getUrl,139,4,paddleOCRPlugin,ocr,103,6
 SelectedBuild=0
 VisibleModules=1

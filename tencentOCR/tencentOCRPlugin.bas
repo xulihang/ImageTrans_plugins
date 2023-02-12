@@ -176,6 +176,7 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 			Log(LastException)
 		End Try
 	End If
+	job.Release
 	Return boxes
 End Sub
 

@@ -66,6 +66,7 @@ Sub GetText(img As B4XBitmap) As ResumableSub
 	Else
 		result=job.ErrorMessage
 	End If
+	job.Release
 	Return result
 End Sub
 
