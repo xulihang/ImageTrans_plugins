@@ -6,6 +6,7 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private longTextMode As Boolean = False
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -30,8 +31,14 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("url")
 			Return paramsList
 		Case "getText"
-			wait for (GetText(Params.Get("img"))) complete (result As String)
-			Return result
+			If longTextMode Then
+				wait for (GetTextLongTextMode(Params.Get("img"))) complete (result As String)
+				Return result
+			Else
+				wait for (GetText(Params.Get("img"))) complete (result As String)
+				Return result
+			End If
+
 		Case "getTextWithLocation"
 			Dim list1 As List
 			list1.Initialize
@@ -40,8 +47,23 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return CreateMap("url":"http://127.0.0.1:8080/ocr")
 		Case "getLangs"
 			Return getLangs(Params.Get("loc"))
+		Case "SetCombination"
+			Dim comb As String=Params.Get("combination")
+			longTextMode = comb.Contains("long text")
+		Case "GetCombinations"
+			Return BuildCombinations
+		Case "Multiple"
+			Return True
 	End Select
 	Return ""
+End Sub
+
+Sub BuildCombinations As List
+	Dim combs As List
+	combs.Initialize
+	combs.Add("manga-ocr")
+	combs.Add("long text (manga-ocr)")
+	Return combs
 End Sub
 
 Sub getLangs(loc As Localizator) As Map
@@ -83,6 +105,31 @@ Sub GetText(img As B4XBitmap) As ResumableSub
 	End If
 	job.Release
 	Return ""
+End Sub
+
+Sub GetTextLongTextMode(img As B4XBitmap) As ResumableSub
+	Dim imgs As List
+	imgs.Initialize
+	If img.Height / img.Width > 8 Then
+		Dim segHeight As Int = img.Width * 8
+		Dim top As Int = 0
+		Dim heightLeft As Int = img.Height
+		Dim segsNumber As Int = Ceil(img.Height / segHeight)
+		For i = 1 To segsNumber
+			imgs.Add(img.Crop(0,top,img.Width,Min(segHeight,heightLeft)))
+			heightLeft = heightLeft - segHeight
+			top = top + segHeight
+		Next
+	Else
+		imgs.Add(img)
+	End If
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each cropped As Image In imgs
+		wait for (GetText(cropped)) complete (result As String)
+		sb.Append(result)
+	Next
+	Return sb.ToString
 End Sub
 
 Sub getMap(key As String,parentmap As Map) As Map

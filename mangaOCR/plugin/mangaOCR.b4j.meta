@@ -7,6 +7,6 @@ ModuleBreakpoints2=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
 ModuleClosedNodes2=
-NavigationStack=mangaOCRPlugin,Class_Globals,0,0,mangaOCRPlugin,GetNiceName,13,0,mangaOCRPlugin,Initialize,10,0,mangaOCRPlugin,getMap,65,0,mangaOCRPlugin,readJsonAsMap,82,0,mangaOCRPlugin,getUrl,81,2,Localizator,Class_Globals,8,0,mangaOCRPlugin,getLangs,40,0,mangaOCRPlugin,Run,26,6,mangaOCRPlugin,GetText,77,6
+NavigationStack=Localizator,Class_Globals,8,0,mangaOCRPlugin,Class_Globals,2,3,mangaOCRPlugin,Initialize,6,0,mangaOCRPlugin,BuildCombinations,52,6,mangaOCRPlugin,getLangs,65,0,mangaOCRPlugin,Run,44,6,Main,AppStart,18,6,mangaOCRPlugin,GetTextLongTextMode,115,6,mangaOCRPlugin,GetText,81,6
 SelectedBuild=0
 VisibleModules=2,1
