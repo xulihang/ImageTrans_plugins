@@ -62,6 +62,7 @@ Sub BuildCombinations As List
 	Dim combs As List
 	combs.Initialize
 	combs.Add("manga-ocr")
+	combs.Add("normal text (manga-ocr)")
 	combs.Add("long text (manga-ocr)")
 	Return combs
 End Sub
