@@ -27,7 +27,7 @@ But it may not work well for the following long text line image by default:
 
 ![long text](./long_text.jpg)
 
-For such a case, you can select the long text mode of the plugin which will crop the long text line images into segments for the OCR engine to extract the text.
+For such a case, you can select the long text mode of the plugin which will crop the long text line images into segments for the OCR engine to extract the text. It should better be used in combination with a scene text detector which detect the text lines accurately like this one: <https://github.com/xulihang/ImageTrans_plugins/tree/master/mangaTranslatorOCR>
 
 ![list](./list.jpg)
 
