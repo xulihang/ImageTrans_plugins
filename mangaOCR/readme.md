@@ -15,3 +15,19 @@ Install:
 1. Download and unzip [manga-ocr](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr.zip).
 2. (Optional) Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it to manga-ocr's folder in the previous step.
 3. Run `run.bat` and wait for the server to get ready.
+
+
+## Usage Note
+
+The mangaOCR works great for speech bubbles like the following one:
+
+![normal](./normal.jpg)
+
+But it may not work well for the following long text line image by default:
+
+![long text](./long_text.jpg)
+
+For such a case, you can select the long text mode of the plugin which will crop the long text line images into segments for the OCR engine to extract the text.
+
+![list](./list.jpg)
+
