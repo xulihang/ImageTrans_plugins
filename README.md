@@ -2,6 +2,10 @@
 
 This is the repo for ImageTrans plugins.
 
+Go to the sub folders for details.
+
+You can download all the plugins here: <https://github.com/xulihang/ImageTrans_plugins/releases>
+
 ## How to use Sickzil-Machine
 
 1. Download the Windows build of Sickzil-Machine server from [here](https://github.com/xulihang/SickZil-Machine/releases).
