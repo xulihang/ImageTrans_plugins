@@ -9,8 +9,8 @@ What does the plugin do:
 
 Installation:
 
-1. Download the Windows package of manga-image-translator: [manga-image-translator.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/manga-image-translator.zip) and unzip it into a folder.
-2. Download the model files into the folder: [detect.ckpt
+1. Download the Windows package of manga-image-translator: [manga-image-translator.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/manga-image-translator.zip) and unzip it into a folder. In addition, download the new [server.py](https://github.com/xulihang/manga-image-translator/raw/main/server.py) and replace the old one.
+2. Download the model files into the folder in the previous step: [detect.ckpt
 ](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/detect.ckpt), [ocr.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/ocr.ckpt), [inpainting.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/inpainting.ckpt)
 3. Start the server by running `run.bat`.
 4. Put the `mangaTranslatorOCR` plugin files into the `plugins` folder. Get the plugins files [here](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/ImageTrans_plugins.zip)
