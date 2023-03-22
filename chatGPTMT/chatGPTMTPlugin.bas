@@ -72,6 +72,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 			Dim choice As Map = choices.Get(0)
 			Dim message As Map = choice.Get("message")
 			target = message.Get("content")
+			target = target.Trim
 		Catch
 			target=""
 			Log(LastException)
