@@ -49,7 +49,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim message As Map
 	message.Initialize
 	message.Put("role","user")
-	message.Put("content",$"Translate the following into the language whose iso691 code is ${targetLang}: ${source}"$)
+	message.Put("content",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
 	messages.Add(message)
 	Dim params As Map
 	params.Initialize
