@@ -37,8 +37,47 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Return ""
 End Sub
 
+private Sub ConvertLang(lang As String) As String
+	Dim map1 As Map
+	map1.Initialize
+	map1.Put("zh","Chinese")
+	map1.Put("zh-CN","Simplified Chinese")
+	map1.Put("zh-TW","Traditional Chinese")
+	map1.Put("en","English")
+	map1.Put("ja","Japanese")
+	map1.Put("ko","Korean")
+	map1.Put("ar","Arabic")
+	map1.Put("de","German")
+	map1.Put("fi","Finish")
+	map1.Put("el","Greek")
+	map1.Put("da","Danish")
+	map1.Put("cs","Czech")
+	map1.Put("ca","Catalan")
+	map1.Put("fr","French")
+	map1.Put("it","Italian")
+	map1.Put("sv","Swedish")
+	map1.Put("pt","Portuguese")
+	map1.Put("nl","Dutch")
+	map1.Put("pl","Polish")
+	map1.Put("es","Spanish")
+	map1.Put("id","Indonesian")
+	map1.Put("hi","Hindi")
+	map1.Put("vi","Vietnamese")
+	map1.Put("ru","Russian")
+	If map1.ContainsKey(lang) Then
+		Return map1.Get(lang)
+	End If
+	Return lang
+End Sub
+
 
 Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
+	Dim converted As Boolean
+	Dim langCode As String = targetLang
+	targetLang = ConvertLang(targetLang)
+	If langCode <> targetLang Then
+		converted = True
+	End If
 	Dim target As String
 	Dim job As HttpJob
 	job.Initialize("job",Me)
@@ -49,7 +88,11 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim message As Map
 	message.Initialize
 	message.Put("role","user")
-	message.Put("content",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
+	If converted Then
+		message.Put("content",$"Translate the following into ${targetLang}: ${source}"$)
+	Else
+		message.Put("content",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
+	End If
 	messages.Add(message)
 	Dim params As Map
 	params.Initialize
