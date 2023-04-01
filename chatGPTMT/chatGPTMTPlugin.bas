@@ -27,12 +27,15 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim paramsList As List
 			paramsList.Initialize
 			paramsList.Add("key")
+			paramsList.Add("prompt")
 			Return paramsList
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
 			Return result
 		Case "supportBatchTranslation"
 			Return False
+		Case "getDefaultParamValues"
+			Return CreateMap("prompt":"Translate the following into {langcode}: {source}")
 	End Select
 	Return ""
 End Sub
@@ -83,15 +86,21 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	job.Initialize("job",Me)
 	Dim url As String = "https://api.openai.com/v1/chat/completions"
 	Dim key As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
+	Dim prompt As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt","Translate the following into {langcode}: {source}")
 	Dim messages As List
 	messages.Initialize
 	Dim message As Map
 	message.Initialize
 	message.Put("role","user")
-	If converted Then
-		message.Put("content",$"Translate the following into ${targetLang}: ${source}"$)
+	If prompt.Contains("{langcode}") Then
+		If converted Then
+			message.Put("content",prompt.Replace("{langcode}",targetLang).Replace("{source}",source))
+			'$"Translate the following into ${targetLang}: ${source}"$
+		Else
+			message.Put("content",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
+		End If
 	Else
-		message.Put("content",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
+		message.Put("content",prompt.Replace("{source}",source))
 	End If
 	messages.Add(message)
 	Dim params As Map
