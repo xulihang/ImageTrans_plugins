@@ -28,6 +28,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Initialize
 			paramsList.Add("key")
 			paramsList.Add("prompt")
+			paramsList.Add("host")
 			Return paramsList
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
@@ -35,7 +36,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "supportBatchTranslation"
 			Return False
 		Case "getDefaultParamValues"
-			Return CreateMap("prompt":"Translate the following into {langcode}: {source}")
+			Return CreateMap("prompt":"Translate the following into {langcode}: {source}", _ 
+			                 "host":"https://api.openai.com")
 	End Select
 	Return ""
 End Sub
@@ -84,9 +86,11 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim target As String
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	Dim url As String = "https://api.openai.com/v1/chat/completions"
+	
 	Dim key As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
 	Dim prompt As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt","Translate the following into {langcode}: {source}")
+	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com")
+	Dim url As String = host&"/v1/chat/completions"
 	Dim messages As List
 	messages.Initialize
 	Dim message As Map

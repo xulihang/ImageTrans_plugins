@@ -16,7 +16,7 @@ Module1=chatGPTMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=8.9
+Version=9.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -38,6 +38,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	Dim map1 As Map
 	map1.Initialize
 	map1.Put("key","<your key>")
+	map1.Put("host","https://oa.api2d.net")
 	'map1.Put("prompt","翻译下述内容至{langcode}: {source}")
 	wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence2.","en","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As String)
 	'wait for (n.batchTranslate(Array("BasicCAT Documentation."&CRLF&"Sentence2.","Paragraph2"),"en","zh",CreateMap("api":CreateMap("deepl":map1)))) complete (result As Object)
