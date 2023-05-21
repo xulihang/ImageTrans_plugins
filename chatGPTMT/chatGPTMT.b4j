@@ -42,7 +42,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	'map1.Put("prompt","翻译下述内容至{langcode}: {source}")
 	'wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence2.","en","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As String)
 	
-	Dim textToTranslate As List = Array("いつか必ず","地に落ちるのだから","失敗です!!","有人ロケット「あさがお」が爆発!","日本初の有人宇宙飛行は失敗しました!!")
+	Dim textToTranslate As List = Array("お前には夏休みの間","我が天文部手伝いをしてもらう","いつか必ず","地に落ちるのだから","失敗です!!","有人ロケット「あさがお」が爆発!","日本初の有人宇宙飛行は失敗しました!!")
 	'wait for (n.batchTranslate(Array("BasicCAT Documentation."&CRLF&"Sentence2.","Paragraph2"),"en","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As Object)
 	wait for (n.batchTranslate(textToTranslate,"ja","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As Object)
 	Log(result)

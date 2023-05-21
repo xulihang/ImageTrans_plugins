@@ -6,7 +6,7 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Private defaultBatchPrompt As String = "Your task is to translate a text in JSON format into {langcode} and return the text in JSON format. You cannot translate two items into one sentence. Here is the JSON string to translate: {source}"
+	Private defaultBatchPrompt As String = "Your task is to translate a text in JSON format into {langcode} and return the text in JSON format. You should keep the size of the JSON array without translating two items into one. Here is the JSON string to translate: {source}"
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -148,6 +148,10 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Dim translations As List = jsonP.NextArray
 			If translations.Size = sourceList.Size Then
 				targetList.AddAll(translations)
+			Else
+				For Each source As String In sourceList
+					targetList.Add("")
+				Next
 			End If
 		Catch
 			Log(LastException)
