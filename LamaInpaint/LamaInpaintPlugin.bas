@@ -95,6 +95,10 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 	If job.Success Then
 		Try
 			Dim result As B4XBitmap=job.GetBitmap
+			If result.Width <> origin.Width Then
+				Log("Inconsistent size")
+				result = result.Resize(origin.Width,origin.Height,False)
+			End If
 			Return result
 		Catch
 			Log(LastException)
