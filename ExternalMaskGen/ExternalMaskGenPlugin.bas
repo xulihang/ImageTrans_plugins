@@ -56,5 +56,11 @@ Sub genMask(img As B4XBitmap) As ResumableSub
 		End Try
 	End If
 	job.Release
-	Return img
+	Return emptyMask(img)
+End Sub
+
+Private Sub emptyMask(img As B4XBitmap) As B4XBitmap
+	Dim bc As BitmapCreator
+	bc.Initialize(img.Width,img.Height)
+	Return bc.Bitmap
 End Sub
