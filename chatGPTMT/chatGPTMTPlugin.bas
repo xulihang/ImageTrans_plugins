@@ -6,7 +6,7 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Private defaultBatchPrompt As String = "Your task is to translate a text in JSON format into {langcode} and return the text in JSON format. You should keep the size of the JSON array without translating two items into one. Here is the JSON string to translate: {source}"
+	Private defaultBatchPrompt As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -95,7 +95,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	Dim job As HttpJob
 	job.Initialize("job",Me)
 	
-	Dim key As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
+	Dim apikey As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
 	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com")
 	Dim prompt As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
 	Dim url As String = host&"/v1/chat/completions"
@@ -104,9 +104,18 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	Dim message As Map
 	message.Initialize
 	message.Put("role","user")
+
+    Dim keyvalues As Map
+	keyvalues.Initialize	
+	Dim index As Int = 0
+	For Each source As String In sourceList
+		Dim key As String = index
+		keyvalues.Put(key,source)
+		index = index + 1
+	Next
 	
 	Dim jsonG As JSONGenerator
-	jsonG.Initialize2(sourceList)
+	jsonG.Initialize(keyvalues)
 
 	Dim jsonString As String = jsonG.ToString
 	
@@ -115,7 +124,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			message.Put("content",prompt.Replace("{langcode}",targetLang).Replace("{source}",jsonString))
 			'$"Translate the following into ${targetLang}: ${source}"$
 		Else
-			message.Put("content",$"Your task is to translate a text in JSON format into the language whose ISO639-1 code is ${targetLang} and return the text in JSON format. You cannot translate two items into one sentence. Here is the JSON string to translate: ${jsonString}"$)
+			message.Put("content",defaultBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
 		End If
 	Else
 		message.Put("content",prompt.Replace("{source}",jsonString))
@@ -131,7 +140,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	job.PostString(url,jsonG.ToString)
 	Log(jsonG.ToString)
 	job.GetRequest.SetContentType("application/json")
-	job.GetRequest.SetHeader("Authorization","Bearer "&key)
+	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
@@ -145,19 +154,21 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Dim message As Map = choice.Get("message")
 			Dim jsonP As JSONParser
 			jsonP.Initialize(message.Get("content"))
-			Dim translations As List = jsonP.NextArray
-			If translations.Size = sourceList.Size Then
-				targetList.AddAll(translations)
-			Else
-				For Each source As String In sourceList
-					targetList.Add("")
-				Next
-			End If
+			Dim keyvalues As Map = jsonP.NextObject
+			For i = 0 To sourceList.Size - 1
+				Dim key As String = i
+				targetList.Add(keyvalues.GetDefault(key,""))
+			Next
 		Catch
 			Log(LastException)
 		End Try
 	End If
 	job.Release
+	If targetList.Size = 0 Then
+		For Each source As String In sourceList
+			targetList.Add("")
+		Next
+	End If
 	Return targetList
 End Sub
 
