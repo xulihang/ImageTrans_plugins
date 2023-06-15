@@ -31,6 +31,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("prompt")
 			paramsList.Add("batch_prompt")
 			paramsList.Add("host")
+			paramsList.Add("model")
 			Return paramsList
 		Case "batchtranslate"
 			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
@@ -43,7 +44,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getDefaultParamValues"
 			Return CreateMap("prompt":"Translate the following into {langcode}: {source}", _ 
 			                 "batch_prompt":defaultBatchPrompt, _ 
-			                 "host":"https://api.openai.com")
+			                 "host":"https://api.openai.com", _
+							 "model":"gpt-3.5-turbo")
 	End Select
 	Return ""
 End Sub
@@ -98,6 +100,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	Dim apikey As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
 	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com")
 	Dim prompt As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
+	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-3.5-turbo")
 	Dim url As String = host&"/v1/chat/completions"
 	Dim messages As List
 	messages.Initialize
@@ -133,7 +136,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	messages.Add(message)
 	Dim params As Map
 	params.Initialize
-	params.Put("model","gpt-3.5-turbo")
+	params.Put("model",model)
 	params.Put("messages",messages)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
