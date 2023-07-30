@@ -1,5 +1,5 @@
 ﻿AppType=JavaFX
-Build1=Default,org.xulihang.imagetrans
+Build1=Default,org.xulihang.imagetrans,HU2_ACCEPTALL
 Group=Default Group
 Library1=jcore
 Library10=byteconverter
@@ -16,7 +16,7 @@ Module1=chatGPTMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600

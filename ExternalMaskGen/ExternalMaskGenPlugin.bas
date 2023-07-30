@@ -54,6 +54,8 @@ Sub genMask(img As B4XBitmap) As ResumableSub
 		Catch
 			Log(LastException)
 		End Try
+	Else
+		Log(job.ErrorMessage)
 	End If
 	job.Release
 	Return emptyMask(img)

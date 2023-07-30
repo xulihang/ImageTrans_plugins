@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=ExternalMaskGenPlugin,Initialize,6,0,ExternalMaskGenPlugin,GetNiceName,13,0,Main,AppStart,11,0,Main,Process_Globals,6,0,ExternalMaskGenPlugin,Class_Globals,0,0,ExternalMaskGenPlugin,emptyMask,60,6,ExternalMaskGenPlugin,genMask,37,3
+NavigationStack=ExternalMaskGenPlugin,Initialize,6,0,ExternalMaskGenPlugin,GetNiceName,13,0,Main,AppStart,11,0,Main,Process_Globals,6,0,ExternalMaskGenPlugin,Class_Globals,0,0,ExternalMaskGenPlugin,emptyMask,60,6,ExternalMaskGenPlugin,genMask,50,5
 SelectedBuild=0
 VisibleModules=1
