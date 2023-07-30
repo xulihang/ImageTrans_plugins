@@ -42,7 +42,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Return ""
 End Sub
 
-Sub getLangs(loc As Localizator) As Map
+private Sub getLangs(loc As Localizator) As Map
 	Dim result As Map
 	result.Initialize
 	Dim names,codes As List
@@ -95,7 +95,7 @@ Sub getLangs(loc As Localizator) As Map
 	Return result
 End Sub
 
-Sub GetText(img As B4XBitmap,lang As String,targetLang As String) As ResumableSub
+private Sub GetText(img As B4XBitmap,lang As String,targetLang As String) As ResumableSub
 	wait for (GetTextWithLocation(img,lang,targetLang)) complete (boxes As List)
 	Dim sb As StringBuilder
 	sb.Initialize
@@ -109,7 +109,7 @@ Sub GetText(img As B4XBitmap,lang As String,targetLang As String) As ResumableSu
 	Return sb.ToString
 End Sub
 
-Sub GetTextWithLocation(img As B4XBitmap,lang As String,targetLang As String) As ResumableSub
+private Sub GetTextWithLocation(img As B4XBitmap,lang As String,targetLang As String) As ResumableSub
 	Dim regions As List
 	regions.Initialize
 	wait for (ocr(img,lang,targetLang)) complete (boxes As List)
@@ -133,7 +133,7 @@ Private Sub addExtra(region As Map,box As Map)
 	region.Put("extra",extra)
 End Sub
 
-Sub ocr(img As B4XBitmap,lang As String,targetLang As String) As ResumableSub
+private Sub ocr(img As B4XBitmap,lang As String,targetLang As String) As ResumableSub
 	Dim key As String
 	Dim appid As String
 	Try
@@ -222,17 +222,17 @@ Private Sub getSign(appid As String,key As String,salt As Int) As String
 	Return md5
 End Sub
 
-Sub getMap(key As String,parentmap As Map) As Map
+private Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)
 End Sub
 
-Sub readJsonAsMap(s As String) As Map
+private Sub readJsonAsMap(s As String) As Map
 	Dim json As JSONParser
 	json.Initialize(s)
 	Return json.NextObject
 End Sub
 
-Sub saveImgToDiskWithSizeCheck(img As B4XBitmap,quality As Int, sizeLimit As Int)
+private Sub saveImgToDiskWithSizeCheck(img As B4XBitmap,quality As Int, sizeLimit As Int)
 	Dim imgPath As String=File.Combine(File.DirApp,"image.jpg")
 	Dim out As OutputStream=File.OpenOutput(imgPath,"",False)
 	img.WriteToStream(out,quality,"JPEG")
