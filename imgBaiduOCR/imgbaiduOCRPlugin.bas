@@ -139,8 +139,8 @@ private Sub ocr(img As B4XBitmap,lang As String,targetLang As String) As Resumab
 	Try
 		If File.Exists(File.DirApp,"preferences.conf") Then
 			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
-			key=getMap("baiduImg",getMap("api",preferencesMap)).Get("key")
-			appid=getMap("baiduImg",getMap("api",preferencesMap)).Get("appid")
+			key=getMap("imgbaidu",getMap("api",preferencesMap)).Get("key")
+			appid=getMap("imgbaidu",getMap("api",preferencesMap)).Get("appid")
 		End If
 	Catch
 		Log(LastException)
