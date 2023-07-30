@@ -31,7 +31,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("key")
 			Return paramsList
 		Case "getText"
-			wait for (GetText(Params.Get("img"),Params.Get("lang"),Params.Get("targetLang"))) complete (result As String)
+			wait for (GetText(Params.Get("img"),Params.Get("lang"),Params.Get("targetLang"))) complete (result As Map)
 			Return result
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"),Params.Get("targetLang"))) complete (regions As List)
@@ -99,14 +99,18 @@ private Sub GetText(img As B4XBitmap,lang As String,targetLang As String) As Res
 	wait for (GetTextWithLocation(img,lang,targetLang)) complete (boxes As List)
 	Dim sb As StringBuilder
 	sb.Initialize
+	Dim targetSB As StringBuilder
+	targetSB.Initialize
 	For i = 0 To boxes.Size - 1
 		Dim box As Map = boxes.Get(i)
 		sb.Append(box.Get("text"))
+		targetSB.Append(box.Get("target"))
 		If i <> boxes.Size -1 Then
 			sb.Append(CRLF)
+			targetSB.Append(CRLF)
 		End If
 	Next
-	Return sb.ToString
+	Return CreateMap("text":sb.ToString,"extra":CreateMap("target":targetSB.ToString))
 End Sub
 
 private Sub GetTextWithLocation(img As B4XBitmap,lang As String,targetLang As String) As ResumableSub
