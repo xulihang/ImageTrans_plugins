@@ -5,8 +5,7 @@ Type=Class
 Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
-	Private fx As JFX
-	Private Bconv As ByteConverter
+
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -18,7 +17,7 @@ End Sub
 
 ' must be available
 public Sub GetNiceName() As String
-	Return "baiduImgOCR"
+	Return "imgbaiduOCR"
 End Sub
 
 ' must be available
@@ -213,6 +212,7 @@ Private Sub getGeometryFromRect(rect As String) As Map
 End Sub
 
 Private Sub getSign(appid As String,key As String,salt As Int) As String
+	Dim Bconv As ByteConverter
 	Dim md As MessageDigest
 	Dim md5OfImage As String = Bconv.HexFromBytes(md.GetMessageDigest(File.ReadBytes(File.DirApp,"image.jpg"),"MD5")).ToLowerCase
 	Dim rawSign As String
