@@ -6,10 +6,11 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Private wordlevel As Boolean=False
+	Private wordlevel As Boolean = False
 	Private detectors As List
 	Private recognizers As List
 	Private skip_recognization As String
+	Private detectColor As Boolean = False
 	Private recognizerAffix As String="_recognizer"
 	Private detectorAffix As String="_detector"
 	Private nameAffix As String = " (mangaTranslator)"
@@ -50,10 +51,15 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "SetCombination"
 			Dim comb As String=Params.Get("combination")
 			skip_recognization=""
+			detectColor = False
 			If comb.Contains("+")=False Then
 				If comb.Contains(detectorAffix) Then
 					skip_recognization="true"
 					Return ""
+				End If
+			Else
+				If comb.Contains("colordetection") Then
+					detectColor = True
 				End If
 			End If
 		Case "GetCombinations"
@@ -71,6 +77,7 @@ Sub BuildCombinations As List
 		combs.Add(d_name&detectorAffix&nameAffix)
 		For Each r_name As String In recognizers			
 			combs.Add(d_name&"+"&r_name&nameAffix)
+			combs.Add(d_name&"+"&r_name&"+colordetection+"&nameAffix)
 		Next
 	Next
 	Return combs
@@ -78,13 +85,27 @@ End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
 	wait for (ocr(img,lang)) complete (boxes As List)
+	Dim m As Map
+	m.Initialize
 	Dim sb As StringBuilder
 	sb.Initialize
-	For Each box As Map In boxes
+	For i = 0 To boxes.Size - 1
+		Dim box As Map = boxes.Get(i)
 		sb.Append(box.Get("text"))
-		sb.Append(CRLF)
+		If box.ContainsKey("textColor") And m.ContainsKey("extra") = False Then
+			Dim extra As Map
+			extra.Initialize
+			extra.Put("textColor",box.Get("textColor"))
+			m.Put("extra",extra)
+		End If
+		If i <> boxes.Size -1 Then
+			sb.Append(CRLF)
+		End If
 	Next
-	Return sb.ToString
+	m.Put("text",sb.ToString)
+	Dim j As JSONGenerator
+	j.Initialize(m)
+	Return j.ToString
 End Sub
 
 Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
@@ -94,10 +115,23 @@ Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
 	For Each box As Map In boxes
 		Dim region As Map=box.Get("geometry")
 		region.Put("text",box.Get("text"))
+		addExtra(region,box)
 		regions.Add(region)
 	Next
 	Return regions
 End Sub
+
+Private Sub addExtra(region As Map,box As Map)
+	Dim extra As Map
+	extra.Initialize
+	For Each key As String In box.Keys
+		If key <> "geometry" And key <> "text" Then
+			extra.Put(key,box.Get(key))
+		End If
+	Next
+	region.Put("extra",extra)
+End Sub
+
 
 Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	Dim boxes As List
@@ -150,6 +184,15 @@ Sub addBoxes(detectedBoxes As List,boxes As List)
 		boxGeometry.Put("Y",Y)
 		boxGeometry.Put("width",width)
 		boxGeometry.Put("height",height)
+		If detectColor Then
+			If box.ContainsKey("fg_r") Then
+				Dim fgR,fgG,fgB As Int
+				fgR = box.Get("fg_b") 'bgr -> rgb
+				fgG = box.Get("fg_g")
+				fgB = box.Get("fg_r")
+				newBox.Put("textColor",fgR&","&fgG&","&fgB)
+			End If
+		End If
 		newBox.Put("geometry",boxGeometry)
 		'box.Put("std",True)
 		boxes.Add(newBox)

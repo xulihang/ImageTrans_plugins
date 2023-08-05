@@ -31,7 +31,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("key")
 			Return paramsList
 		Case "getText"
-			wait for (GetText(Params.Get("img"),Params.Get("lang"),Params.Get("targetLang"))) complete (result As string)
+			wait for (GetText(Params.Get("img"),Params.Get("lang"),Params.Get("targetLang"))) complete (result As String)
 			Return result
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"),Params.Get("targetLang"))) complete (regions As List)
