@@ -4,7 +4,8 @@ What does the plugin do:
 
 1. Detect the text lines as a scene text detector.
 2. Detect the text lines and recognize the text as an OCR engine.
-3. Create the text mask and remove the text using inpainting. (You need to install the [ExternalInpaint](https://github.com/xulihang/ImageTrans_plugins/tree/master/ExternalInpaint) and [ExternalMaskGen](https://github.com/xulihang/ImageTrans_plugins/tree/master/ExternalMaskGen) plugins as well. Get the plugins files [here](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/ImageTrans_plugins.zip))
+3. Detect the color of the text. [#issue478](https://github.com/xulihang/ImageTrans-docs/issues/478)
+4. Create the text mask and remove the text using inpainting. (You need to install the [ExternalInpaint](https://github.com/xulihang/ImageTrans_plugins/tree/master/ExternalInpaint) and [ExternalMaskGen](https://github.com/xulihang/ImageTrans_plugins/tree/master/ExternalMaskGen) plugins as well. Get the plugins files [here](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/ImageTrans_plugins.zip))
 
 
 Installation:
