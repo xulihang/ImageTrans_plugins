@@ -1,4 +1,4 @@
-Follow the follow link to enable GPU.
+Follow the link to enable GPU.
 
 <https://github.com/xulihang/manga-image-translator#how-to-enable-gpu>
 
