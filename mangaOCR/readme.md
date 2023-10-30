@@ -16,6 +16,7 @@ Install:
 2. (Optional) Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it to manga-ocr's folder in the previous step.
 3. Run `run.bat` and wait for the server to get ready.
 
+If you need to enable GPU, please follow [this guide](GPU.md).
 
 ## Usage Note
 
