@@ -18,6 +18,7 @@ Installation:
 
 If you are using macOS or Linux, please configure the environment by yourself.
 
+If you need to enable GPU, please follow [this guide](GPU.md).
 
 Usage:
 
