@@ -10,7 +10,7 @@ What does the plugin do:
 
 Installation:
 
-1. Download the Windows package of manga-image-translator: [manga-image-translator.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/manga-image-translator.zip) and unzip it into a folder. In addition, download the new [server.py](https://github.com/xulihang/manga-image-translator/raw/main/server.py) and [ocr_utils.py](https://github.com/xulihang/manga-image-translator/raw/main/ocr_utils.py) and replace the old ones.
+1. Download the Windows package of manga-image-translator: [manga-image-translator.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/manga-image-translator.zip) and unzip it into a folder. In addition, download the new [server.py](https://github.com/xulihang/manga-image-translator/raw/main/server.py), [text_mask_utils.py](https://github.com/xulihang/manga-image-translator/raw/main/text_mask_utils.py) and [ocr_utils.py](https://github.com/xulihang/manga-image-translator/raw/main/ocr_utils.py) and replace the old ones.
 2. Download the model files into the folder in the previous step: [detect.ckpt
 ](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/detect.ckpt), [ocr.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/ocr.ckpt), [inpainting.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/inpainting.ckpt)
 3. Start the server by running `run.bat`.
