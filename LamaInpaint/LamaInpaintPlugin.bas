@@ -85,10 +85,40 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 	
 	job.PostMultipart(getUrl, _
                            CreateMap("ldmSteps":"50", _ 
-                           "hdStrategy":"resize", _ 
-						   "hdStrategyCropMargin":"128", _ 
+						   "ldmSampler":"plms", _ 
+						   "zitsWireframe":"true", _ 
+                           "hdStrategy":"Resize", _ 
+						   "hdStrategyCropMargin":"196", _ 
 						   "hdStrategyCropTrigerSize":"2048", _ 
-						   "hdStrategyResizeLimit":"2048"), _ 
+						   "hdStrategyResizeLimit":"2048", _ 
+	                       "prompt":"", _
+						   "negativePrompt":"", _
+						   "useCroper":"false", _
+						   "croperX":"228", _
+						   "croperY":"450", _
+						   "croperWidth":"512", _
+						   "croperHeight":"512", _
+						   "sdScale":"1", _
+						   "sdMaskBlur":"5", _
+						   "sdSteps":"50", _
+						   "sdGuidanceScale":"7.5", _
+						   "sdStrength":"0.75", _
+						   "sdSampler":"uni_pc", _
+						   "sdSeed":"-1", _
+						   "sdMatchHistograms":"false", _
+						   "cv2Flag":"INPAINT_NS", _
+						   "cv2Radius":"5", _
+						   "paintByExampleSteps":"50", _
+						   "paintByExampleGuidanceScale":"7.5", _
+						   "paintByExampleMaskBlur":"5", _
+						   "paintByExampleSeed":"-1", _
+						   "paintByExampleMatchHistograms":"false", _
+						   "p2pSteps":"50", _
+						   "p2pImageGuidanceScale":"1.5", _
+						   "p2pGuidanceScale":"7.5", _
+						   "controlnet_conditioning_scale":"0.4", _
+						   "controlnet_method":"control_v11p_sd15_canny" _
+						   ), _ 
 						   Array(originFd,maskFd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
