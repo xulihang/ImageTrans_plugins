@@ -1,9 +1,6 @@
 ## Lama inpainting plugin for ImageTrans
 
-You can download the plugin files here:
-
-https://github.com/xulihang/ImageTrans-docs/issues/216
-
+You can download the plugin files here: [lamainpaint_plugins.zip](https://github.com/xulihang/ImageTrans_plugins/files/13327440/lamainpaint_plugins.zip)
 
 You need to run [lama-cleaner](https://github.com/Sanster/lama-cleaner) as the backend of the plugin.
 
@@ -17,3 +14,6 @@ You need to run [lama-cleaner](https://github.com/Sanster/lama-cleaner) as the b
 
 
 For convenience, you can also use the Windows package of lama-cleaner. Download and unzip it and then start `run.bat` to keep the server running. [Download link](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/LamaInpaint.zip).
+
+
+Related issue: https://github.com/xulihang/ImageTrans-docs/issues/216
