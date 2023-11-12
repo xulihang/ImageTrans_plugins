@@ -6,6 +6,34 @@ Go to the sub folders for details.
 
 You can download all the plugins here: <https://github.com/xulihang/ImageTrans_plugins/releases>
 
+## Featured Plugins List
+
+These plugins can work offline.
+
+### OCR
+
+* [ChineseOCR](ChineseOCR)
+* [mangaOCR](mangaOCR)
+
+### Machine Translation
+
+* [opusMT](opusMT)
+* [sugoiMT](sugoiMT)
+
+### Mask Generation
+
+* [ExternalMaskGen](ExternalMaskGen)
+* [InsetRectMaskGen](InsetRectMaskGen)
+
+### Inpainting
+
+* [ExternalInpaint](ExternalInpaint)
+* [LamaInpaint](LamaInpaint)
+
+### All-in-One
+
+[mangaTranslator](mangaTranslatorOCR)
+
 ## How to use Sickzil-Machine
 
 1. Download the Windows build of Sickzil-Machine server from [here](https://github.com/xulihang/SickZil-Machine/releases).
