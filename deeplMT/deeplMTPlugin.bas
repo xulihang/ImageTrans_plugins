@@ -82,11 +82,11 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Catch
 		Log(LastException)
 	End Try
-	
+
 	If key="" Then
 		Return ""
 	End If
-	
+
 	Dim url As String
 	If freemode="yes" Then
 		url="https://api-free.deepl.com/v2/translate"
@@ -94,9 +94,10 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 		url="https://api.deepl.com/v2/translate "
 	End If
 	
-	params="?auth_key="&key& _
-	"&text="&su.EncodeUrl(source,"UTF-8")&"&source_lang="&sourceLang&"&target_lang="&targetLang
-	job.Download(url&params)
+	params="text="&su.EncodeUrl(source,"UTF-8")&"&source_lang="&sourceLang&"&target_lang="&targetLang
+
+	job.PostString(url,params)
+	job.GetRequest.SetHeader("Authorization"," DeepL-Auth-Key "&key)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
@@ -112,6 +113,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 		End Try
 	Else
 		target=""
+		Log(job.ErrorMessage)
 	End If
 	job.Release
 	Return target
