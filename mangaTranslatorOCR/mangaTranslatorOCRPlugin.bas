@@ -171,7 +171,7 @@ Sub ocr(img As B4XBitmap,lang As String,path As String,generateMask As Boolean) 
 			If generateMask Then
 				If result.ContainsKey("mask") Then
 					If detectedBoxes.Size > 0 Then
-						Dim box As Map = detectedBoxes.Get(0)
+						Dim box As Map = boxes.Get(0)
 						box.Put("mask",result.get("mask"))
 					End If
 				End If
