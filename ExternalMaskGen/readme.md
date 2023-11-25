@@ -1,0 +1,1 @@
+Use this plugin to use external mask generators like Sickzil-Machine and manga translator.

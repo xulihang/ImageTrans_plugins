@@ -1,0 +1,1 @@
+Use this plugin to use external inpainters like Sickzil-Machine and manga translator.
