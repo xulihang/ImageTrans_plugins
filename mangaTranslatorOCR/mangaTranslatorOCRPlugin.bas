@@ -44,7 +44,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			wait for (GetText(Params.Get("img"),Params.Get("lang"))) complete (result As String)
 			Return result
 		Case "getTextWithLocation"
-			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"))) complete (regions As List)
+			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"),Params.GetDefault("path",""),Params.GetDefault("generateMaskDuringSceneTextDetection",False))) complete (regions As List)
 			Return regions
 		Case "WordLevel"
 			Return wordlevel
@@ -84,7 +84,7 @@ Sub BuildCombinations As List
 End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
-	wait for (ocr(img,lang)) complete (boxes As List)
+	wait for (ocr(img,lang,"",False)) complete (boxes As List)
 	Dim m As Map
 	m.Initialize
 	Dim sb As StringBuilder
@@ -108,10 +108,10 @@ Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
 	Return j.ToString
 End Sub
 
-Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
+Sub GetTextWithLocation(img As B4XBitmap, lang As String, path As String,generateMask As Boolean) As ResumableSub
 	Dim regions As List
 	regions.Initialize
-	wait for (ocr(img,lang)) complete (boxes As List)
+	wait for (ocr(img,lang,path,generateMask)) complete (boxes As List)
 	For Each box As Map In boxes
 		Dim region As Map=box.Get("geometry")
 		region.Put("text",box.Get("text"))
@@ -133,7 +133,7 @@ Private Sub addExtra(region As Map,box As Map)
 End Sub
 
 
-Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
+Sub ocr(img As B4XBitmap,lang As String,path As String,generateMask As Boolean) As ResumableSub
 	Dim boxes As List
 	boxes.Initialize
 	Dim out As OutputStream
@@ -148,7 +148,15 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	fd.Dir = File.DirApp
 	fd.FileName = "image.jpg"
 	fd.ContentType = "image/jpg"
-	job.PostMultipart(getUrl,CreateMap("skip_recognization":skip_recognization), Array(fd))
+	Dim params As Map
+	params.Initialize
+	params.Put("skip_recognization",skip_recognization)
+	If generateMask Then
+		params.Put("generate_mask","true")
+	Else
+		params.Put("generate_mask","false")
+	End If
+	job.PostMultipart(getUrl,params,Array(fd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
@@ -160,13 +168,20 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 			Dim detectedBoxes As List
 			detectedBoxes=result.Get("boxes")
 			addBoxes(detectedBoxes,boxes)
+			If generateMask Then
+				If result.ContainsKey("mask") Then
+					If detectedBoxes.Size > 0 Then
+						Dim box As Map = detectedBoxes.Get(0)
+						box.Put("mask",result.get("mask"))
+					End If
+				End If
+			End If
 		Catch
 			Log(LastException)
 		End Try
 	End If
 	Return boxes
 End Sub
-
 
 Sub addBoxes(detectedBoxes As List,boxes As List)
 	For Each box As Map In detectedBoxes
