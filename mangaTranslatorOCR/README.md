@@ -10,11 +10,12 @@ What does the plugin do:
 
 Installation:
 
-1. Download the Windows package of manga-image-translator: [manga-image-translator.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/manga-image-translator.zip) and unzip it into a folder. In addition, download the new [server.py](https://github.com/xulihang/manga-image-translator/raw/main/server.py), [text_mask_utils.py](https://github.com/xulihang/manga-image-translator/raw/main/text_mask_utils.py) and [ocr_utils.py](https://github.com/xulihang/manga-image-translator/raw/main/ocr_utils.py) and replace the old ones.
+1. Download the Windows package of manga-image-translator: [manga-image-translator.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/manga-image-translator.zip) and unzip it into a folder. In addition, download the [updated.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/updated.zip) and replace the old ones with the files in the zip file.
 2. Download the model files into the folder in the previous step: [detect.ckpt
 ](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/detect.ckpt), [ocr.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/ocr.ckpt), [inpainting.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/inpainting.ckpt)
-3. Start the server by running `run.bat`.
-4. Put the `mangaTranslatorOCR` plugin files into the `plugins` folder. Get the plugins files [here](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/ImageTrans_plugins.zip)
+3. Download and unzip the OCR CTC model into the same folder: [ocr-ctc.zip](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.3/ocr-ctc.zip)
+4. Start the server by running `run.bat`.
+5. Put the `mangaTranslatorOCR` plugin files into the `plugins` folder. Get the plugins files [here](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/ImageTrans_plugins.zip)
 
 If you are using macOS or Linux, please configure the environment by yourself.
 
