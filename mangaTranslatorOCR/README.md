@@ -15,7 +15,7 @@ Installation:
 ](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/detect.ckpt), [ocr.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/ocr.ckpt), [inpainting.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/inpainting.ckpt)
 3. Download and unzip the OCR CTC model into the same folder: [ocr-ctc.zip](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.3/ocr-ctc.zip). This OCR model supports Korean while the OCR model in the previous step only supports English, Chinese and Japanese.
 4. Start the server by running `run.bat`.
-5. Put the `mangaTranslatorOCR` plugin files into the `plugins` folder. Get the plugins files [here](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/ImageTrans_plugins.zip)
+5. Put the `mangaTranslatorOCR` plugin files into the `plugins` folder. Get the plugins files: [mangaTranslatorOCRPlugin.zip](https://github.com/xulihang/ImageTrans_plugins/files/13486589/mangaTranslatorOCRPlugin.zip).
 
 If you are using macOS or Linux, please configure the environment by yourself.
 
