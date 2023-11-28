@@ -31,5 +31,5 @@ Usage:
 
 2. It can work as a scene text detector.
 3. It can be used to generate the text mask and the text-removed image through the external mask generation and inpainting plugins.
-4. If you enable text mask generation through OCR and scene text detection in the project settings. It will automatically save the text mask if there has not been a text mask image.
+4. If you enable text mask generation through OCR and scene text detection in the project settings, it will automatically save the text mask if there has not been a text mask image.
 
