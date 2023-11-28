@@ -22,7 +22,7 @@ Public Sub Initialize() As String
 	Log("Initializing plugin " & GetNiceName)
 	' Here return a key to prevent running unauthorized plugins
 	detectors.Initialize
-	detectors.AddAll(Array As String("detect"))
+	detectors.AddAll(Array As String("db"))
 	recognizers.Initialize
 	recognizers.AddAll(Array As String("OCR","OCR-CTC"))
 	Return "MyKey"
