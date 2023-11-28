@@ -25,10 +25,11 @@ Usage:
 
 1. It can work as an OCR engine.
    
-   Select `db_detector` to detect text lines only and select `db+resnet` to detect text lines and recognize the text as well.
+   Select `db_detector` to detect text lines only and select `db+OCR` to detect text lines and recognize the text as well. If you also need to detect the text color, select the one with `colordetection`.
 
    ![engines](./engines.jpg)
 
 2. It can work as a scene text detector.
 3. It can be used to generate the text mask and the text-removed image through the external mask generation and inpainting plugins.
+4. If you enable text mask generation through OCR and scene text detection in the project settings, it will automatically save the text mask if there has not been a text mask image.
 
