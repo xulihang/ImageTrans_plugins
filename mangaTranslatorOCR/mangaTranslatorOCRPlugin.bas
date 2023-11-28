@@ -11,6 +11,7 @@ Sub Class_Globals
 	Private recognizers As List
 	Private skip_recognization As String
 	Private detectColor As Boolean = False
+	Private useCTC As Boolean = False
 	Private recognizerAffix As String="_recognizer"
 	Private detectorAffix As String="_detector"
 	Private nameAffix As String = " (mangaTranslator)"
@@ -21,9 +22,9 @@ Public Sub Initialize() As String
 	Log("Initializing plugin " & GetNiceName)
 	' Here return a key to prevent running unauthorized plugins
 	detectors.Initialize
-	detectors.AddAll(Array As String("db"))
+	detectors.AddAll(Array As String("detect"))
 	recognizers.Initialize
-	recognizers.AddAll(Array As String("resnet"))
+	recognizers.AddAll(Array As String("OCR","OCR-CTC"))
 	Return "MyKey"
 End Sub
 
@@ -52,6 +53,10 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim comb As String=Params.Get("combination")
 			skip_recognization=""
 			detectColor = False
+			useCTC = False
+			If comb.Contains("CTC") Then
+				useCTC = True
+			End If
 			If comb.Contains("+")=False Then
 				If comb.Contains(detectorAffix) Then
 					skip_recognization="true"
@@ -77,7 +82,7 @@ Sub BuildCombinations As List
 		combs.Add(d_name&detectorAffix&nameAffix)
 		For Each r_name As String In recognizers			
 			combs.Add(d_name&"+"&r_name&nameAffix)
-			combs.Add(d_name&"+"&r_name&"+colordetection+"&nameAffix)
+			combs.Add(d_name&"+"&r_name&"+colordetection"&nameAffix)
 		Next
 	Next
 	Return combs
@@ -155,6 +160,11 @@ Sub ocr(img As B4XBitmap,lang As String,path As String,generateMask As Boolean) 
 		params.Put("generate_mask","true")
 	Else
 		params.Put("generate_mask","false")
+	End If
+	If useCTC Then
+		params.Put("use_ctc","true")
+	Else
+		params.Put("use_ctc","false")
 	End If
 	job.PostMultipart(getUrl,params,Array(fd))
 	job.GetRequest.Timeout=240*1000
