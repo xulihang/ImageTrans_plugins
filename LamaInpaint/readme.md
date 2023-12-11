@@ -17,3 +17,7 @@ For convenience, you can also use the Windows package of lama-cleaner. Download 
 
 
 Related issue: https://github.com/xulihang/ImageTrans-docs/issues/216
+
+PS: lama will resize images too large so it is recommended to process by text areas. You can enable this in the project settings.
+
+
