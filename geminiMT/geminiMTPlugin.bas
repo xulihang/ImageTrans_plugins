@@ -85,7 +85,6 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim target As String
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	Log(preferencesMap)
 	Dim key As String = getMap("gemini",getMap("mt",preferencesMap)).Get("key")
 	Dim prompt As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("prompt","Translate the following into {langcode}: {source}")
 	Dim endpoint As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
