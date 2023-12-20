@@ -1,0 +1,1 @@
+See <https://github.com/xulihang/ImageTrans-docs/issues/538>
