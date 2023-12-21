@@ -6,6 +6,7 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private defaultBatchPrompt As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -28,16 +29,21 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Initialize
 			paramsList.Add("key")
 			paramsList.Add("prompt")
+			paramsList.Add("batch_prompt")
 			paramsList.Add("endpoint")
 			Return paramsList
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
 			Return result
+		Case "batchtranslate"
+			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
+			Return targetList
 		Case "supportBatchTranslation"
-			Return False
+			Return True
 		Case "getDefaultParamValues"
 			Return CreateMap("prompt":"Translate the following into {langcode}: {source}", _ 
-			                 "endpoint":"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
+			                 "batch_prompt": defaultBatchPrompt, _ 
+			                 "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
 	End Select
 	Return ""
 End Sub
@@ -73,6 +79,99 @@ private Sub ConvertLang(lang As String) As String
 		Return map1.Get(lang)
 	End If
 	Return lang
+End Sub
+
+Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
+	Dim targetList As List
+	targetList.Initialize
+	Dim converted As Boolean
+	Dim langCode As String = targetLang
+	targetLang = ConvertLang(targetLang)
+	If langCode <> targetLang Then
+		converted = True
+	End If
+
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	
+	Dim apikey As String = getMap("gemini",getMap("mt",preferencesMap)).Get("key")
+	Dim endpoint As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
+	Dim prompt As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
+	Dim url As String = endpoint&"?key="&apikey
+	
+	Dim body As Map
+	body.Initialize
+	Dim contents As List
+	contents.Initialize
+	body.Put("contents",contents)
+	Dim content As Map
+	content.Initialize
+	Dim parts As List
+	parts.Initialize
+	content.Put("parts",parts)
+	contents.Add(content)
+	Dim part As Map
+	part.Initialize
+	
+	Dim keyvalues As Map
+	keyvalues.Initialize
+	Dim index As Int = 0
+	For Each source As String In sourceList
+		Dim key As String = index
+		keyvalues.Put(key,source)
+		index = index + 1
+	Next
+	Dim jsonG As JSONGenerator
+	jsonG.Initialize(keyvalues)
+	Dim jsonString As String = jsonG.ToString
+	
+	If prompt.Contains("{langcode}") Then
+		If converted Then
+			part.Put("text",prompt.Replace("{langcode}",targetLang).Replace("{source}",jsonString))
+			'$"Translate the following into ${targetLang}: ${source}"$
+		Else
+			part.Put("text",defaultBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
+		End If
+	Else
+		part.Put("text",prompt.Replace("{source}",jsonString))
+	End If
+	
+	parts.Add(part)
+	Dim jsonG As JSONGenerator
+	jsonG.Initialize(body)
+	job.PostString(url,jsonG.ToString)
+	job.GetRequest.SetContentType("application/json")
+	wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Try
+			Log(job.GetString)
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			Dim response As Map = json.NextObject
+			Dim candidates As List = response.Get("candidates")
+			Dim candidate As Map = candidates.Get(0)
+			Dim content As Map = candidate.Get("content")
+			Dim parts As List = content.Get("parts")
+			Dim part As Map = parts.Get(0)
+			Dim text As String = part.Get("text")
+			Dim jsonP As JSONParser
+			jsonP.Initialize(text)
+			Dim keyvalues As Map = jsonP.NextObject
+			For i = 0 To sourceList.Size - 1
+				Dim key As String = i
+				targetList.Add(keyvalues.GetDefault(key,""))
+			Next
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	job.Release
+	If targetList.Size = 0 Then
+		For Each source As String In sourceList
+			targetList.Add("")
+		Next
+	End If
+	Return targetList
 End Sub
 
 Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
