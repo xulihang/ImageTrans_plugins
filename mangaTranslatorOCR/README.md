@@ -10,7 +10,7 @@ What does the plugin do:
 
 Installation:
 
-1. Download the Windows package of manga-image-translator: [manga-image-translator.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/manga-image-translator.zip) and unzip it into a folder. In addition, download the [updated.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/updated.zip) and replace the old ones with the files in the zip file.
+1. Download the Windows package of manga-image-translator: [manga-image-translator.zip](https://github.com/xulihang/manga-image-translator/releases/download/packages/manga-image-translator.zip) and unzip it into a folder.
 2. Download the model files into the folder in the previous step: [detect.ckpt
 ](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/detect.ckpt), [ocr.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/ocr.ckpt), [inpainting.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/inpainting.ckpt)
 3. Download and unzip the OCR CTC model into the same folder: [ocr-ctc.zip](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.3/ocr-ctc.zip). This OCR model supports Korean while the OCR model in the previous step only supports English, Chinese and Japanese. Its speed is also higher.
