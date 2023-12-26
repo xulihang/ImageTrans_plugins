@@ -14,7 +14,7 @@ Installation:
 2. Download the model files into the folder in the previous step: [detect.ckpt
 ](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/detect.ckpt), [ocr.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/ocr.ckpt), [inpainting.ckpt](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.2.1/inpainting.ckpt)
 3. Download and unzip the OCR CTC model into the same folder: [ocr-ctc.zip](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.3/ocr-ctc.zip). This OCR model supports Korean while the OCR model in the previous step only supports English, Chinese and Japanese. Its speed is also higher.
-4. Download the [OCR 48px model](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.3/ocr_ar_48px.ckpt) and its [dictionary](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.3/alphabet-all-v7.txt) into the same folder. This OCR model has a higher accuracy.
+4. Download the [OCR 48px model](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.3/ocr_ar_48px.ckpt) and its [dictionary](https://github.com/zyddnys/manga-image-translator/releases/download/beta-0.3/alphabet-all-v7.txt) into the same folder. This OCR model has a higher accuracy but requires GPU.
 5. Start the server by running `run.bat`.
 6. Put the `mangaTranslatorOCR` plugin files into the `plugins` folder. Get the plugins files: [mangaTranslatorOCRPlugin.zip](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/mangaTranslatorOCRPlugin.zip).
 
