@@ -39,10 +39,10 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("model")
 			Return paramsList
 		Case "batchtranslate"
-			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),Params.Get("terms"))) complete (targetList As List)
+			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),Params.GetDefault("terms",Null))) complete (targetList As List)
 			Return targetList
 		Case "translate"
-			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),Params.Get("terms"))) complete (result As String)
+			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),Params.GetDefault("terms",Null))) complete (result As String)
 			Return result
 		Case "supportBatchTranslation"
 			Return True
