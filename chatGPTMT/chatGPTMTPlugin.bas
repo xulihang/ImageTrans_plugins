@@ -159,7 +159,6 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Else
 				message.Put("content",defaultBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
 			End If
-			
 		End If
 	Else
 		message.Put("content",prompt.Replace("{source}",jsonString))
