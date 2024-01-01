@@ -39,10 +39,22 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("model")
 			Return paramsList
 		Case "batchtranslate"
-			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),Params.GetDefault("terms",Null))) complete (targetList As List)
+			Dim terms As Map
+			If Params.ContainsKey("terms") Then
+			    terms = Params.Get("terms")
+			Else
+				terms.Initialize
+			End If
+			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),terms)) complete (targetList As List)
 			Return targetList
 		Case "translate"
-			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),Params.GetDefault("terms",Null))) complete (result As String)
+			Dim terms As Map
+			If Params.ContainsKey("terms") Then
+				terms = Params.Get("terms")
+			Else
+				terms.Initialize
+			End If
+			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),terms)) complete (result As String)
 			Return result
 		Case "supportBatchTranslation"
 			Return True
@@ -109,7 +121,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com")
 	
 	Dim prompt As String
-	If terms.IsInitialized Then
+	If terms.Size>0 Then
 		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("batch_prompt_with_term",defaultBatchPromptWithTerm)
 	Else
 		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
@@ -142,7 +154,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			message.Put("content",prompt.Replace("{langcode}",targetLang).Replace("{source}",jsonString))
 			'$"Translate the following into ${targetLang}: ${source}"$
 		Else
-			If terms.IsInitialized Then
+			If terms.Size>0 Then
 				message.Put("content",defaultBatchPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
 			Else
 				message.Put("content",defaultBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
@@ -153,7 +165,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		message.Put("content",prompt.Replace("{source}",jsonString))
 	End If
 	
-	If terms.IsInitialized Then
+	If terms.Size>0 Then
 		Dim termsJsonG As JSONGenerator
 		termsJsonG.Initialize(terms)
 		Dim msg As String = message.Get("content")
@@ -217,7 +229,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	
 	Dim key As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
 	Dim prompt As String
-	If terms.IsInitialized Then
+	If terms.Size>0 Then
 		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt_with_term",defaultPromptWithTerm)
 	Else
 		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt",defaultPrompt)
@@ -235,7 +247,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 			message.Put("content",prompt.Replace("{langcode}",targetLang).Replace("{source}",source))
 			'$"Translate the following into ${targetLang}: ${source}"$
 		Else
-			If terms.IsInitialized Then
+			If terms.Size>0 Then
 				message.Put("content",defaultPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",source))
 			Else
 				message.Put("content",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
@@ -246,7 +258,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 		message.Put("content",prompt.Replace("{source}",source))
 	End If
 	
-	If terms.IsInitialized Then
+	If terms.Size>0 Then
 		Dim termsJsonG As JSONGenerator
 		termsJsonG.Initialize(terms)
 		Dim msg As String = message.Get("content")
