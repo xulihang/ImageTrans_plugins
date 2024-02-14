@@ -40,3 +40,9 @@ mangaOCR does not detect text. It can be used together with other text detection
 1. Speech bubble detection model: <https://github.com/xulihang/ImageTrans-docs/issues/135>
 2. manga image translator (detect text lines): <https://github.com/xulihang/ImageTrans_plugins/tree/master/mangaTranslatorOCR>
 
+## Port Settings
+
+You may need to update the port if you also need to run other local OCR engines:
+
+<https://github.com/xulihang/ImageTrans_plugins/tree/master#notes-using-local-servers>
+
