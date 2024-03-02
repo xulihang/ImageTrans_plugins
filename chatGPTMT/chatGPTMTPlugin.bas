@@ -195,8 +195,9 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			choices = response.Get("choices")
 			Dim choice As Map = choices.Get(0)
 			Dim message As Map = choice.Get("message")
+			Dim content As String = message.Get("content")
 			Dim jsonP As JSONParser
-			jsonP.Initialize(message.Get("content"))
+			jsonP.Initialize(content)
 			Dim keyvalues As Map = jsonP.NextObject
 			For i = 0 To sourceList.Size - 1
 				Dim key As String = i
@@ -204,6 +205,18 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Next
 		Catch
 			Log(LastException)
+			Try
+				content = content.SubString2(content.IndexOf("{"),content.Length)
+				Dim jsonP As JSONParser
+				jsonP.Initialize(content)
+				Dim keyvalues As Map = jsonP.NextObject
+				For i = 0 To sourceList.Size - 1
+					Dim key As String = i
+					targetList.Add(keyvalues.GetDefault(key,""))
+				Next
+			Catch
+				Log(LastException)
+			End Try
 		End Try
 	End If
 	job.Release
