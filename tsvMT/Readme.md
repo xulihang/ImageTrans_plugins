@@ -1,5 +1,7 @@
 Store your translation in a tsv file.
 
+You need to specify the file path in the preference.
+
 Sample file:
 
 ```
