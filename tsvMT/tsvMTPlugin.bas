@@ -6,11 +6,14 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private translationMap As Map
+	Private path As String
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
 Public Sub Initialize() As String
 	Log("Initializing plugin " & GetNiceName)
+	translationMap.Initialize
 	' Here return a key to prevent running unauthorized plugins
 	Return "MyKey"
 End Sub
@@ -44,41 +47,53 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 End Sub
 
 Sub getMultipleCandidates(source As String, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
-	Dim filePath As String
+	Dim filepath As String
 	Try
-		filePath = getMap("tsv",getMap("api",preferencesMap)).Get("path")
+		filepath = getMap("tsv",getMap("api",preferencesMap)).Get("path")
+		If path <> filepath Then
+			If File.Exists(filepath,"") Then
+				Log("exist")
+				loadTranslations(filepath)
+			End If
+			path = filepath
+		End If
 	Catch
 		Log(LastException)
 	End Try
 	Dim targetList As List
 	targetList.Initialize
-	Log(filePath)
-	If File.Exists(filePath,"") Then
-		Log("exist")
-		Dim lines As List = File.ReadList(filePath,"")
-		Dim firstLineItems As List = Regex.Split("	",lines.Get(0))
-		Dim index As Int = 0
-		For Each line As String In lines
-			If index > 0 Then
-				Dim items As List = Regex.Split("	",line)
-				Dim storedSource As String = items.Get(0)
-				If storedSource == source Then
-					For i = items.Size - 1 To 1 Step -1
-						Dim target As String = items.Get(i)
-						Dim note As String = firstLineItems.Get(i)
-						Dim result As Map
-						result.Initialize
-						result.Put("source","")
-						result.Put("target",target)
-						result.Put("note",note)
-						targetList.Add(result)
-					Next
-				End If
-			End If
-			index = index + 1
-		Next
-	End If
+    If translationMap.ContainsKey(source) Then
+		Dim resultMap As Map = translationMap.Get(source)
+		For Each key As String In resultMap.Keys
+		    Dim result As Map
+			result.Initialize
+			result.Put("target",resultMap.Get(key))
+			result.Put("note",key)
+			targetList.Add(result)
+	    Next
+    End If
 	Return targetList
+End Sub
+
+Private Sub loadTranslations(filepath As String)
+	Dim lines As List = File.ReadList(filepath,"")
+	Dim firstLineItems As List = Regex.Split("	",lines.Get(0))
+	Dim index As Int = 0
+	For Each line As String In lines
+		If index > 0 Then
+			Dim items As List = Regex.Split("	",line)
+			Dim storedSource As String = items.Get(0)
+			Dim map1 As Map
+			map1.Initialize
+			For i = items.Size - 1 To 1 Step -1
+				Dim target As String = items.Get(i)
+				Dim note As String = firstLineItems.Get(i)
+				map1.Put(note,target)
+			Next
+			translationMap.Put(storedSource,map1)
+		End If
+		index = index + 1
+	Next
 End Sub
 
 Sub translate(source As String, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub

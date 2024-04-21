@@ -35,7 +35,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As tsvMTPlugin
 	n.Initialize
-	wait for (n.getMultipleCandidates("I like you.","en","zh",CreateMap("api": CreateMap("tsv":CreateMap("path":"C:\Users\HP\Desktop\翻译数据.txt"))))) complete (result As List)
+	wait for (n.getMultipleCandidates("I like you.","en","zh",CreateMap("api": CreateMap("tsv":CreateMap("path":"F:\\test.txt"))))) complete (result As List)
 	Log(result)
 End Sub
 
