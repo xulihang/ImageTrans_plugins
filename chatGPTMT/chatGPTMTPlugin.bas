@@ -278,9 +278,10 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	End If
 	Log(message)
 	messages.Add(message)
+	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-3.5-turbo")
 	Dim params As Map
 	params.Initialize
-	params.Put("model","gpt-3.5-turbo")
+	params.Put("model",model)
 	params.Put("messages",messages)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)

@@ -16,7 +16,7 @@ Module1=chatGPTMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
