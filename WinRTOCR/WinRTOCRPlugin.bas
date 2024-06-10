@@ -55,7 +55,12 @@ Sub getEncoding As ResumableSub
 	If Success Then
 		For Each line As String In Regex.Split(CRLF,StdOut)
 			If line.StartsWith("BodyName") Then
-				encoding = line.SubString2(line.IndexOf(":")+1,line.Length).Trim
+				Try
+					encoding = line.SubString2(line.IndexOf(":")+1,line.Length).Trim
+					Exit
+				Catch
+					Log(LastException)
+				End Try
 			End If
 		Next
 	End If
