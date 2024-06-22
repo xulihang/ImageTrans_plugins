@@ -3,6 +3,8 @@
 See: https://github.com/yunwoong7/korean_ocr_using_pororo
 ### How to Install
 
+For Windows users:
+
 1. Download [pororo.zip](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/pororo.zip) and unzip it into a folder.
 2. Download [pororo-models.zip](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/pororo-models.zip) and unzip it to `C:\`.
 3. Download the [plugin](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/pororoPlugin.zip) and unzip the files into ImageTrans's plugins folder.
