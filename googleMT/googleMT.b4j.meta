@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=googleMTPlugin,GetNiceName,13,0,googleMTPlugin,Class_Globals,0,0,googleMTPlugin,Initialize,6,0,googleMTPlugin,translate,93,6,googleMTPlugin,batchTranslate,38,6,googleMTPlugin,Run,32,1,Main,AppStart,17,6
+NavigationStack=googleMTPlugin,GetNiceName,13,0,googleMTPlugin,Class_Globals,0,0,googleMTPlugin,Initialize,6,0,googleMTPlugin,Run,26,1,googleMTPlugin,batchTranslate,48,6,googleMTPlugin,translate,76,6,Main,AppStart,17,6
 SelectedBuild=0
 VisibleModules=1

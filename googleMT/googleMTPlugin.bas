@@ -70,9 +70,9 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	If key="" Then
 		Return ""
 	End If
-	params="?key="&key& _
+	params="key="&key& _
 	"&q="&su.EncodeUrl(source,"UTF-8")&"&format=text&source="&sourceLang&"&target="&targetLang
-	job.Download("https://translation.googleapis.com/language/translate/v2"&params)
+	job.PostString("https://translation.googleapis.com/language/translate/v2",params)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
