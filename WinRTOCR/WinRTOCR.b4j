@@ -15,7 +15,7 @@ Module1=WinRTOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=10
 NumberOfModules=1
-Version=7.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -33,10 +33,12 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As WinRTOCRPlugin
 	n.Initialize
-	wait for (n.GetText(fx.LoadImage(File.DirApp,"image.jpg"),"chi_sim")) Complete (text As String)
-	wait for (n.GetTextWithLocation(fx.LoadImage(File.DirApp,"image.jpg"),"chi_sim")) Complete (result As List)
-	Log(text)
-	Log(result)
+	wait for (n.Langs) Complete (langs As Object)
+	Log(langs)
+	'wait for (n.GetText(fx.LoadImage(File.DirApp,"image.jpg"),"chi_sim")) Complete (text As String)
+	'wait for (n.GetTextWithLocation(fx.LoadImage(File.DirApp,"image.jpg"),"chi_sim")) Complete (result As List)
+	'Log(text)
+	'Log(result)
 	'wait for (n.translate("Hello","en","zh")) complete (result As String)
 	'Log(result)
 End Sub
