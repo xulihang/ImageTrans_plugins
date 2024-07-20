@@ -44,6 +44,13 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsMap.Put("zip","https://github.com/xulihang/RapidOcrOnnxJvm/releases/download/builds/rapid.zip")
 			paramsMap.Put("folder","rapidocr")
 			Return paramsMap
+		Case "getIsInstalled"
+			Dim root As String = Params.Get("root")
+			If File.Exists(root,"rapidocr") Then
+				Return True
+			Else
+				Return False
+			End If
 	End Select
 	Return ""
 End Sub
