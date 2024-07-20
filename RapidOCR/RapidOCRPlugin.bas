@@ -41,7 +41,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getSetupParams"
 			Dim paramsMap As Map
 			paramsMap.Initialize
-			paramsMap.Put("zip","https://github.com/xulihang/RapidOcrOnnxJvm/releases/download/builds/rapid.zip")
+			paramsMap.Put("zip","https://github.com/xulihang/RapidOcrOnnxJvm/releases/download/builds/rapidocr.zip")
 			paramsMap.Put("folder","rapidocr")
 			Dim o As Object = paramsMap
 			Return o
