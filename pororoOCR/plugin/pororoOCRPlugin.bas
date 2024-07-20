@@ -37,6 +37,12 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return regions
 		Case "getLangs"
 			Return getLangs(Params.Get("loc"))
+		Case "getSetupParams"
+			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/pororoOCR")
+			Return o
+		Case "getIsInstalledOrRunning"
+			Wait For (CheckIsRunning) complete (running As Boolean)
+			Return running
 	End Select
 	Return ""
 End Sub
@@ -51,6 +57,22 @@ Sub getLangs(loc As Localizator) As Map
 	names.Add(loc.Localize("韩语"))
 	result.Put("names",names)
 	result.Put("codes",codes)
+	Return result
+End Sub
+
+Private Sub CheckIsRunning As ResumableSub
+	Dim result As Boolean = True
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Head(getUrl)
+	job.GetRequest.Timeout = 500
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success = False Then
+		If job.Response.StatusCode <> 404 Then
+			result = False
+		End If
+	End If
+	job.Release
 	Return result
 End Sub
 
