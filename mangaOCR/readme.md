@@ -37,7 +37,7 @@ For such a case, you can select the long text mode of the plugin which will crop
 
 mangaOCR does not detect text. It can be used together with other text detection methods like the following ones:
 
-1. Speech bubble detection model: <https://github.com/xulihang/ImageTrans-docs/issues/135>
+1. Speech bubble detection models: <https://github.com/xulihang/balloon-dataset>
 2. manga image translator (detect text lines): <https://github.com/xulihang/ImageTrans_plugins/tree/master/mangaTranslatorOCR>
 
 ## Port Settings
