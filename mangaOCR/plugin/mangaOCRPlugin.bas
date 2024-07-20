@@ -161,7 +161,7 @@ Private Sub CheckIsRunning As ResumableSub
 	Dim job As HttpJob
 	job.Initialize("job",Me)
 	job.Head(getUrl)
-	job.GetRequest.Timeout = 1000
+	job.GetRequest.Timeout = 500
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success = False Then
 		If job.Response.StatusCode <> 404 Then
