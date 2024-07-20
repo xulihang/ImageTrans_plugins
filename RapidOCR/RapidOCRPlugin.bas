@@ -23,7 +23,7 @@ End Sub
 ' must be available
 public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Log("run"&Params)
-	Log("winRT")
+	Log("RapidOCR")
 	Select Tag
 		Case "getParams"
 			Dim paramsList As List
@@ -43,14 +43,14 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsMap.Initialize
 			paramsMap.Put("zip","https://github.com/xulihang/RapidOcrOnnxJvm/releases/download/builds/rapid.zip")
 			paramsMap.Put("folder","rapidocr")
-			Return paramsMap
+			Dim o As Object = paramsMap
+			Return o
 		Case "getIsInstalled"
 			Dim root As String = Params.Get("root")
 			If File.Exists(root,"rapidocr") Then
 				Return True
-			Else
-				Return False
 			End If
+			Return False
 	End Select
 	Return ""
 End Sub
