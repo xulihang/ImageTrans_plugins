@@ -62,8 +62,10 @@ Sub getLangs(loc As Localizator) As ResumableSub
 	Dim names,codes As List
 	names.Initialize
 	codes.Initialize
-	names.Add(loc.Localize("中英文"))
+	names.Add(loc.Localize("中文"))
 	codes.Add("zh")
+	names.Add(loc.Localize("英语"))
+	codes.Add("en")
 	names.Add(loc.Localize("繁体中文"))
 	codes.Add("zh-cht")
 	names.Add(loc.Localize("日语"))
@@ -127,6 +129,9 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	else if lang = "zh-cht" Then
 		rec = "rec_chinese_cht_PP-OCRv3_infer.onnx"
 		keys = "dict_chinese_cht.txt"
+	else if lang = "en" Then
+		rec = "rec_en_PP-OCRv3_infer.onnx"
+		keys = "dict_en.txt"
 	Else
 		rec = "ch_PP-OCRv3_rec_infer.onnx"
 		keys = "ppocr_keys_v1.txt"
