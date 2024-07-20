@@ -157,16 +157,19 @@ Sub getUrl As String
 End Sub
 
 Private Sub CheckIsRunning As ResumableSub
+	Dim result As Boolean = True
 	Dim job As HttpJob
 	job.Initialize("job",Me)
+	job.Head(getUrl)
 	job.GetRequest.Timeout = 1000
-	job.Download(getUrl)
 	Wait For (job) JobDone(job As HttpJob)
-	If job.Success Then
-		Return True
+	If job.Success = False Then
+		If job.Response.StatusCode <> 404 Then
+		    result = False
+		End If
 	End If
 	job.Release
-	Return False
+	Return result
 End Sub
 
 Sub readJsonAsMap(s As String) As Map
