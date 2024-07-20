@@ -43,6 +43,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getIsInstalledOrRunning"
 			Wait For (CheckIsRunning) complete (running As Boolean)
 			Return running
+		Case "getDefaultParamValues"
+			Return CreateMap("url":"http://127.0.0.1:8080/ocr")
 	End Select
 	Return ""
 End Sub
