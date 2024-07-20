@@ -42,6 +42,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Initialize
 			paramsList.Add("url")
 			Return paramsList
+		Case "getDefaultParamValues"
+			Return CreateMap("url":"http://127.0.0.1:8080/ocr")
 		Case "getText"
 			wait for (GetText(Params.Get("img"),Params.Get("lang"))) complete (result As String)
 			Return result
