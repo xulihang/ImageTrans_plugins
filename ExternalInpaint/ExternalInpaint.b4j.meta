@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=ExternalInpaintPlugin,GetNiceName,13,0,Main,AppStart,15,1,ExternalInpaintPlugin,Class_Globals,0,0,ExternalInpaintPlugin,inpaint,54,2
+NavigationStack=ExternalInpaintPlugin,GetNiceName,13,0,Main,AppStart,15,1,ExternalInpaintPlugin,Class_Globals,0,0,ExternalInpaintPlugin,getDefaultSettings,36,0,ExternalInpaintPlugin,inpaint,65,6,ExternalInpaintPlugin,Run,28,6
 SelectedBuild=0
 VisibleModules=1

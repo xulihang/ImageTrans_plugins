@@ -24,14 +24,25 @@ End Sub
 public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Log("run"&Params)
 	Select Tag
+		Case "getParams"
+			Dim paramsList As List
+			paramsList.Initialize
+			paramsList.Add("url")
+			Return paramsList
+		Case "getDefaultParamValues"
+			Return getDefaultSettings
 		Case "genMask"
-			wait for (genMask(Params.Get("img"))) complete (result As B4XBitmap)
+			wait for (genMask(Params.Get("img"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
 			Return result
 	End Select
 	Return ""
 End Sub
 
-Sub genMask(img As B4XBitmap) As ResumableSub
+Private Sub getDefaultSettings As Map
+	Return CreateMap("url":"http://127.0.0.1:8080/getmask")
+End Sub
+
+Sub genMask(img As B4XBitmap,settings As Map) As ResumableSub
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"image.jpg",False)
 	img.WriteToStream(out,"100","JPEG")
@@ -44,7 +55,7 @@ Sub genMask(img As B4XBitmap) As ResumableSub
 	fd.Dir = File.DirApp
 	fd.FileName = "image.jpg"
 	fd.ContentType = "image/jpg"
-	job.PostMultipart("http://127.0.0.1:8080/getmask",Null, Array(fd))
+	job.PostMultipart(settings.GetDefault("url","http://127.0.0.1:8080/getmask"),Null, Array(fd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success Then

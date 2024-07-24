@@ -38,9 +38,9 @@ Sub AppStart (Form1 As Form, Args() As String)
 	map1.Initialize
 	map1.Put("key","your key")
 	map1.Put("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
-	map1.Put("prompt","Translate the following into {langcode}: {source}")
-	'wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence2.","en","zh",CreateMap("mt":CreateMap("gemini":map1)))) complete (result As String)
-	wait for (n.batchTranslate(Array("BasicCAT Documentation.","Sentence2."),"en","zh",CreateMap("mt":CreateMap("gemini":map1)))) complete (result As List)
+	'map1.Put("prompt","Translate the following into {langcode}: {source}")
+	wait for (n.translate("Do you want to have more cake, Jenny?","en","zh",CreateMap("mt":CreateMap("gemini":map1)),CreateMap("JENNY":"詹尼"))) complete (result As String)
+	'wait for (n.batchTranslate(Array("BasicCAT Documentation.","Sentence2."),"en","zh",CreateMap("mt":CreateMap("gemini":map1)))) complete (result As List)
 	Log(result)
 End Sub
 

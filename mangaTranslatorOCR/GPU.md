@@ -14,8 +14,7 @@ Then create a file named `use_cuda` under the root of the project to enable GPU.
 
 ## Option 2: Install with Pip
 
-1. Edit `Python\Scripts\pip.exe` and replace `e:\python3810\python.exe` to `python.exe`.
-2. Go to the `Python` folder, and run the following command (you may have to update the command following the guide above):
+Go to the `Python` folder, and run the following command (you may have to update the command following the guide above):
 
    ```
     .\Scripts\pip.exe uninstall torch torchvision torchaudio

@@ -35,9 +35,11 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim p As mangaOCRPlugin
 	p.Initialize
+	'wait for (p.CheckIsRunning) Complete (result As Object)
+	'Log(result)
 	'p.Run("SetCombination",CreateMap("combination":"long text (manga-ocr)"))
-	wait for (p.GetTextLongTextMode(fx.LoadImage(File.DirApp,"test.jpg"))) Complete (result As String)
-	Log(result)
+	'wait for (p.GetTextLongTextMode(fx.LoadImage(File.DirApp,"test.jpg"))) Complete (result As String)
+	'Log(result)
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.

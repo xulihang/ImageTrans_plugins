@@ -12,8 +12,11 @@ These plugins can work offline.
 
 ### OCR
 
-* [ChineseOCR](ChineseOCR)
+* [PaddleOCR](paddleOCR)
 * [mangaOCR](mangaOCR)
+* [PororoOCR for Korean](pororoOCR)
+* [ChineseOCR](ChineseOCR)
+
 
 ### Machine Translation
 

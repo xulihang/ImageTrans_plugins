@@ -12,6 +12,7 @@ Sub Class_Globals
 	Private skip_recognization As String
 	Private detectColor As Boolean = False
 	Private useCTC As Boolean = False
+	Private use48px As Boolean = False
 	Private recognizerAffix As String="_recognizer"
 	Private detectorAffix As String="_detector"
 	Private nameAffix As String = " (mangaTranslator)"
@@ -24,7 +25,7 @@ Public Sub Initialize() As String
 	detectors.Initialize
 	detectors.AddAll(Array As String("db"))
 	recognizers.Initialize
-	recognizers.AddAll(Array As String("OCR","OCR-CTC"))
+	recognizers.AddAll(Array As String("OCR","OCR-CTC","OCR-48px"))
 	Return "MyKey"
 End Sub
 
@@ -41,6 +42,14 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Initialize
 			paramsList.Add("url")
 			Return paramsList
+		Case "getSetupParams"
+			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/mangaTranslatorOCR")
+			Return o
+		Case "getIsInstalledOrRunning"
+			Wait For (CheckIsRunning) complete (running As Boolean)
+			Return running
+		Case "getDefaultParamValues"
+			Return CreateMap("url":"http://127.0.0.1:8080/ocr")
 		Case "getText"
 			wait for (GetText(Params.Get("img"),Params.Get("lang"))) complete (result As String)
 			Return result
@@ -54,8 +63,12 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			skip_recognization=""
 			detectColor = False
 			useCTC = False
+			use48px = False
 			If comb.Contains("CTC") Then
 				useCTC = True
+			End If
+			If comb.Contains("48px") Then
+				use48px = True
 			End If
 			If comb.Contains("+")=False Then
 				If comb.Contains(detectorAffix) Then
@@ -73,6 +86,22 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return True
 	End Select
 	Return ""
+End Sub
+
+Private Sub CheckIsRunning As ResumableSub
+	Dim result As Boolean = True
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Head(getUrl)
+	job.GetRequest.Timeout = 500
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success = False Then
+		If job.Response.StatusCode <> 404 Then
+			result = False
+		End If
+	End If
+	job.Release
+	Return result
 End Sub
 
 Sub BuildCombinations As List
@@ -165,6 +194,11 @@ Sub ocr(img As B4XBitmap,lang As String,path As String,generateMask As Boolean) 
 		params.Put("use_ctc","true")
 	Else
 		params.Put("use_ctc","false")
+	End If
+	If use48px Then
+		params.Put("use_48px","true")
+	Else
+		params.Put("use_48px","false")
 	End If
 	job.PostMultipart(getUrl,params,Array(fd))
 	job.GetRequest.Timeout=240*1000

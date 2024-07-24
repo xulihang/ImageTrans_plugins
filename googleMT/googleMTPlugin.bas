@@ -31,10 +31,33 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
 			Return result
+		Case "batchtranslate"
+			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
+			Return targetList
+		Case "supportBatchTranslation"
+			Return True
 	End Select
 	Return ""
 End Sub
 
+Sub batchTranslate(sourceList As List,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
+	Dim targetList As List
+	targetList.Initialize
+	Dim sb As StringBuilder
+	sb.Initialize
+	For Each source As String In sourceList
+		sb.Append(source.Replace(CRLF,"<br/>"))
+		sb.Append(CRLF)
+	Next
+	wait for (translate(sb.ToString,sourceLang,targetLang,preferencesMap)) Complete (target As String)
+	Dim targetList As List
+	targetList.Initialize
+	For Each result As String In Regex.Split(CRLF,target)
+		result = result.Replace("<br/>",CRLF)
+		targetList.Add(result)
+	Next
+	Return targetList
+End Sub
 
 Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
 	Dim target As String
@@ -47,9 +70,9 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	If key="" Then
 		Return ""
 	End If
-	params="?key="&key& _
+	params="key="&key& _
 	"&q="&su.EncodeUrl(source,"UTF-8")&"&format=text&source="&sourceLang&"&target="&targetLang
-	job.Download("https://translation.googleapis.com/language/translate/v2"&params)
+	job.PostString("https://translation.googleapis.com/language/translate/v2",params)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try

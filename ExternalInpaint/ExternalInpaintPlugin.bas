@@ -24,14 +24,27 @@ End Sub
 public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Log("run"&Params)
 	Select Tag
+		Case "getParams"
+			Dim paramsList As List
+			paramsList.Initialize
+			paramsList.Add("url")
+			Return paramsList
 		Case "inpaint"
-			wait for (inpaint(Params.Get("origin"),Params.Get("mask"))) complete (result As B4XBitmap)
+			wait for (inpaint(Params.Get("origin"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
 			Return result
+		Case "getDefaultParamValues"
+			Return getDefaultSettings
 	End Select
 	Return ""
 End Sub
 
-Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
+
+Private Sub getDefaultSettings As Map
+	Return CreateMap("url":"http://127.0.0.1:8080/gettxtremoved")
+End Sub
+
+
+Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"origin.jpg",False)
 	origin.WriteToStream(out,"100","JPEG")
@@ -58,7 +71,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 	maskFd.FileName = "mask.png"
 	maskFd.ContentType = "image/png"
 	
-	job.PostMultipart("http://127.0.0.1:8080/gettxtremoved",Null, Array(originFd,maskFd))
+	job.PostMultipart(settings.GetDefault("url","http://127.0.0.1:8080/gettxtremoved"),Null, Array(originFd,maskFd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success Then

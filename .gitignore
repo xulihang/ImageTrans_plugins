@@ -1,2 +1,4 @@
 Objects
 *.meta
+*.pyc
+*.zip

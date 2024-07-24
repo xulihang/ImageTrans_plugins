@@ -16,7 +16,7 @@ Module1=googleMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=7.8
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -33,10 +33,17 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
+	Dim map1 As Map
+	map1.Initialize
+	map1.Put("api",CreateMap("google":CreateMap("key":"")))
     Dim n As googleMTPlugin
 	n.Initialize
-	wait for (n.translate("BasicCAT Documentation","en","zh",Null)) complete (result As String)
+	wait for (n.translate("BasicCAT Documentation","en","zh",map1)) complete (result As String)
 	Log(result)
+	wait for (n.batchTranslate(Array("Sentence 1","Sentence 2"),"en","zh",map1)) complete (targetList As List)
+	Log(targetList)
+	wait for (n.batchTranslate(Array("今日からみんなと勉強する事になった、灰原哀さんです!","みんな仲よく してあげてね"),"ja","zh",map1)) complete (targetList As List)
+	Log(targetList)
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.

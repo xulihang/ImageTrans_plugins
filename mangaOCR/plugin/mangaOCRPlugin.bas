@@ -47,6 +47,12 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return CreateMap("url":"http://127.0.0.1:8080/ocr")
 		Case "getLangs"
 			Return getLangs(Params.Get("loc"))
+		Case "getSetupParams"
+			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/mangaOCR")
+			Return o
+		Case "getIsInstalledOrRunning"
+			Wait For (CheckIsRunning) complete (running As Boolean)
+			Return running
 		Case "SetCombination"
 			Dim comb As String=Params.Get("combination")
 			longTextMode = comb.Contains("long text")
@@ -148,6 +154,22 @@ Sub getUrl As String
 		End Try
 	End If
 	Return url
+End Sub
+
+Private Sub CheckIsRunning As ResumableSub
+	Dim result As Boolean = True
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Head(getUrl)
+	job.GetRequest.Timeout = 500
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success = False Then
+		If job.Response.StatusCode <> 404 Then
+		    result = False
+		End If
+	End If
+	job.Release
+	Return result
 End Sub
 
 Sub readJsonAsMap(s As String) As Map

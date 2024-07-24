@@ -24,16 +24,25 @@ End Sub
 public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Log("run"&Params)
 	Select Tag
+		Case "getParams"
+			Dim paramsList As List
+			paramsList.Initialize
+			paramsList.Add("url")
+			Return paramsList
 		Case "inpaint"
-			wait for (inpaint(Params.Get("origin"),Params.Get("mask"))) complete (result As B4XBitmap)
+			wait for (inpaint(Params.Get("origin"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
 			Return result
 		Case "getDefaultParamValues"
-			Return CreateMap("url":"http://localhost:8087/inpaint")
+			Return getDefaultSettings
 	End Select
 	Return ""
 End Sub
 
-Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
+Private Sub getDefaultSettings As Map
+	Return CreateMap("url":"http://localhost:8087/inpaint")
+End Sub
+
+Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"origin.jpg",False)
 	origin.WriteToStream(out,"100","JPEG")
@@ -83,7 +92,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 	
 	
 	
-	job.PostMultipart(getUrl, _
+	job.PostMultipart(settings.GetDefault("url","http://localhost:8087/inpaint"), _
                            CreateMap("ldmSteps":"50", _ 
 						   "ldmSampler":"plms", _ 
 						   "zitsWireframe":"true", _ 
@@ -136,28 +145,4 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 	End If
 	job.Release
 	Return origin
-End Sub
-
-
-Sub getUrl As String
-	Dim url As String = "http://localhost:8087/inpaint"
-	If File.Exists(File.DirApp,"preferences.conf") Then
-		Try
-			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
-			url=getMap("LamaInpaint",getMap("api",preferencesMap)).GetDefault("url",url)
-		Catch
-			Log(LastException)
-		End Try
-	End If
-	Return url
-End Sub
-
-Sub getMap(key As String,parentmap As Map) As Map
-	Return parentmap.Get(key)
-End Sub
-
-Sub readJsonAsMap(s As String) As Map
-	Dim json As JSONParser
-	json.Initialize(s)
-	Return json.NextObject
 End Sub

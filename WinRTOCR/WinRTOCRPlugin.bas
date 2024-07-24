@@ -43,20 +43,51 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Return ""
 End Sub
 
+Sub getEncoding As ResumableSub
+	Dim executable As String
+	executable="powershell"
+	Dim sh As Shell
+	sh.Initialize("sh",executable,Array("[System.Text.Encoding]::Default"))
+	sh.WorkingDirectory=File.DirApp
+	sh.Run(10000)
+	Dim encoding As String = "UTF-8"
+	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+	If Success Then
+		For Each line As String In Regex.Split(CRLF,StdOut)
+			If line.StartsWith("BodyName") Then
+				Try
+					encoding = line.SubString2(line.IndexOf(":")+1,line.Length).Trim
+					Exit
+				Catch
+					Log(LastException)
+				End Try
+			End If
+		Next
+	End If
+	Return encoding
+End Sub
+
 Sub getLangs As ResumableSub
 	Dim result As Map
 	result.Initialize
 	Dim names,codes As List
 	names.Initialize
 	codes.Initialize
+	wait for (getEncoding) complete (encoding As String)
 	Dim executable As String
 	executable="./WinRTOCR/WinRTOCR.exe"
+	Log("System encoding:"&encoding)
 	Dim sh As Shell
 	sh.Initialize("sh",executable,Array("-l"))
-	sh.Encoding=GetSystemProperty("file.encoding","UTF8")
+	'Dim systemEncoding As String = GetSysmProperty("native.encoding","")
+	'Log(systemEncoding)
+	Dim defaultEncoding As String = GetSystemProperty("file.encoding",encoding)
+	SetSystemProperty("file.encoding",encoding)
+	sh.Encoding=GetSystemProperty("file.encoding",encoding)
 	sh.WorkingDirectory=File.DirApp
 	sh.Run(10000)
 	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+	SetSystemProperty("file.encoding",defaultEncoding)
 	If Success And ExitCode = 0 Then
 	    Log(StdOut)
 		Dim data As List

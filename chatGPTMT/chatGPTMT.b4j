@@ -16,7 +16,7 @@ Module1=chatGPTMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -37,16 +37,19 @@ Sub AppStart (Form1 As Form, Args() As String)
 	n.Initialize
 	Dim map1 As Map
 	map1.Initialize
-	map1.Put("key","<your api key>")
+	map1.Put("key","your key")
 	
-	map1.Put("host","https://oa.api2d.net")
-	map1.Put("model","gpt-4")
-	'map1.Put("prompt","翻译下述内容至{langcode}: {source}")
-	wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence2.","en","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As String)
-	
-	'Dim textToTranslate As List = Array("お前には夏休みの間","我が天文部手伝いをしてもらう","いつか必ず","地に落ちるのだから","失敗です!!","有人ロケット「あさがお」が爆発!","日本初の有人宇宙飛行は失敗しました!!")
+	map1.Put("host","https://37cb-35-243-195-191.ngrok-free.app")
+	'map1.Put("model","gpt-4")
+	'map1.Put("prompt",$"翻译下述内容至中文: {source}"$)
+	'wait for (n.translate("Do you want to have more cake, Jenny?","en","zh",CreateMap("mt":CreateMap("chatGPT":map1)),CreateMap("Jenny":"珍妮"))) complete (result As String)
+	'wait for (n.batchTranslate(Array("Do you want to have more cake, Jenny?"),"en","zh",CreateMap("mt":CreateMap("chatGPT":map1)),CreateMap("Jenny":"珍妮"))) complete (result As Object)
+	'wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence2.","en","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As String)
+	Dim terms As Map
+	terms.Initialize
+	Dim textToTranslate As List = Array("お前には夏休みの間","我が天文部手伝いをしてもらう","いつか必ず","地に落ちるのだから","失敗です!!","有人ロケット「あさがお」が爆発!","日本初の有人宇宙飛行は失敗しました!!")
 	'wait for (n.batchTranslate(Array("BasicCAT Documentation."&CRLF&"Sentence2.","Paragraph2"),"en","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As Object)
-	'wait for (n.batchTranslate(textToTranslate,"ja","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As Object)
+	wait for (n.batchTranslate(textToTranslate,"ja","zh",CreateMap("mt":CreateMap("chatGPT":map1)),terms)) complete (result As Object)
 	Log(result)
 End Sub
 

@@ -6,7 +6,10 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private defaultPrompt As String = $"Translate the following into {langcode}: {source}"$
+	Private defaultPromptWithTerm As String = $"With the help of the terms defined in JSON: {term}, translate the following into {langcode}: {source}"$
 	Private defaultBatchPrompt As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
+	Private defaultBatchPromptWithTerm As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should use the terms defined in JSON: {term}. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -30,19 +33,35 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("key")
 			paramsList.Add("prompt")
 			paramsList.Add("batch_prompt")
+			paramsList.Add("prompt_with_term")
+			paramsList.Add("batch_prompt_with_term")
 			paramsList.Add("endpoint")
 			Return paramsList
 		Case "translate"
-			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
+			Dim terms As Map
+			If Params.ContainsKey("terms") Then
+				terms = Params.Get("terms")
+			Else
+				terms.Initialize
+			End If
+			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),terms)) complete (result As String)
 			Return result
 		Case "batchtranslate"
-			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
+			Dim terms As Map
+			If Params.ContainsKey("terms") Then
+				terms = Params.Get("terms")
+			Else
+				terms.Initialize
+			End If
+			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),terms)) complete (targetList As List)
 			Return targetList
 		Case "supportBatchTranslation"
 			Return True
 		Case "getDefaultParamValues"
-			Return CreateMap("prompt":"Translate the following into {langcode}: {source}", _ 
+			Return CreateMap("prompt": defaultPrompt, _
 			                 "batch_prompt": defaultBatchPrompt, _ 
+							 "prompt_with_term":defaultPromptWithTerm, _ 
+			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
 			                 "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
 	End Select
 	Return ""
@@ -81,7 +100,7 @@ private Sub ConvertLang(lang As String) As String
 	Return lang
 End Sub
 
-Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
+Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As String,preferencesMap As Map,terms As Map) As ResumableSub
 	Dim targetList As List
 	targetList.Initialize
 	Dim converted As Boolean
@@ -96,7 +115,12 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	
 	Dim apikey As String = getMap("gemini",getMap("mt",preferencesMap)).Get("key")
 	Dim endpoint As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
-	Dim prompt As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
+	Dim prompt As String
+	If terms.Size>0 Then
+		prompt = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("batch_prompt_with_term",defaultBatchPromptWithTerm)
+	Else
+		prompt = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
+	End If
 	Dim url As String = endpoint&"?key="&apikey
 	
 	Dim body As Map
@@ -133,7 +157,18 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			part.Put("text",defaultBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
 		End If
 	Else
-		part.Put("text",prompt.Replace("{source}",jsonString))
+		If terms.Size>0 Then
+			part.Put("text",defaultBatchPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
+		Else
+			part.Put("text",defaultBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
+		End If
+	End If
+	
+	If terms.Size>0 Then
+		Dim termsJsonG As JSONGenerator
+		termsJsonG.Initialize(terms)
+		Dim msg As String = part.Get("text")
+		part.Put("text",msg.Replace("{term}",termsJsonG.ToString))
 	End If
 	
 	parts.Add(part)
@@ -183,7 +218,7 @@ Private Sub parseResults(jsonString As String,sourceList As List,targetList As L
 	Next
 End Sub
 
-Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
+Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map,terms As Map) As ResumableSub
 	Dim converted As Boolean
 	Dim langCode As String = targetLang
 	targetLang = ConvertLang(targetLang)
@@ -194,7 +229,12 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim job As HttpJob
 	job.Initialize("job",Me)
 	Dim key As String = getMap("gemini",getMap("mt",preferencesMap)).Get("key")
-	Dim prompt As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("prompt","Translate the following into {langcode}: {source}")
+	Dim prompt As String
+	If terms.Size>0 Then
+		prompt = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("prompt_with_term",defaultPromptWithTerm)
+	Else
+		prompt = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("prompt",defaultPrompt)
+	End If
 	Dim endpoint As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
 	Dim url As String = endpoint&"?key="&key
 	Dim body As Map
@@ -215,11 +255,26 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 			part.Put("text",prompt.Replace("{langcode}",targetLang).Replace("{source}",source))
 			'$"Translate the following into ${targetLang}: ${source}"$
 		Else
+			If terms.Size>0 Then
+				part.Put("text",defaultPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",source))
+			Else
+				part.Put("text",defaultPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",source))
+			End If
 			part.Put("text",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
 		End If
 	Else
 		part.Put("text",prompt.Replace("{source}",source))
 	End If
+	
+	If terms.Size>0 Then
+		Dim termsJsonG As JSONGenerator
+		termsJsonG.Initialize(terms)
+		Dim msg As String = part.Get("text")
+		part.Put("text",msg.Replace("{term}",termsJsonG.ToString))
+	End If
+	
+	Log(part)
+	
 	parts.Add(part)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(body)

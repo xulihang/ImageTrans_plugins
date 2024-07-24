@@ -77,7 +77,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim freemode As String
 	Dim key As String
 	Try
-		freemode=getMap("deepl",getMap("mt",preferencesMap)).GetDefault("freemode","yes")
+		freemode=getMap("deepl",getMap("mt",preferencesMap)).GetDefault("freemode (yes or no)","yes")
 		key=getMap("deepl",getMap("mt",preferencesMap)).GetDefault("key","")
 	Catch
 		Log(LastException)
