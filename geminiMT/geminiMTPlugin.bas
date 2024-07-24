@@ -145,22 +145,8 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	If job.Success Then
 		Try
 			Log(job.GetString)
-			Dim json As JSONParser
-			json.Initialize(job.GetString)
-			Dim response As Map = json.NextObject
-			Dim candidates As List = response.Get("candidates")
-			Dim candidate As Map = candidates.Get(0)
-			Dim content As Map = candidate.Get("content")
-			Dim parts As List = content.Get("parts")
-			Dim part As Map = parts.Get(0)
-			Dim text As String = part.Get("text")
-			Dim jsonP As JSONParser
-			jsonP.Initialize(text)
-			Dim keyvalues As Map = jsonP.NextObject
-			For i = 0 To sourceList.Size - 1
-				Dim key As String = i
-				targetList.Add(keyvalues.GetDefault(key,""))
-			Next
+			Dim str As String = job.GetString
+			parseResults(str,sourceList,targetList)
 		Catch
 			Log(LastException)
 		End Try
@@ -172,6 +158,29 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		Next
 	End If
 	Return targetList
+End Sub
+
+Private Sub parseResults(jsonString As String,sourceList As List,targetList As List)
+	Dim json As JSONParser
+	json.Initialize(jsonString)
+	Dim response As Map = json.NextObject
+	Dim candidates As List = response.Get("candidates")
+	Dim candidate As Map = candidates.Get(0)
+	Dim content As Map = candidate.Get("content")
+	Dim parts As List = content.Get("parts")
+	Dim part As Map = parts.Get(0)
+	Dim text As String = part.Get("text")
+	If text.StartsWith("```json") Then
+		text = text.Replace("```json","")
+		text = text.SubString2(0,text.Length - 3)
+	End If
+	Dim jsonP As JSONParser
+	jsonP.Initialize(text)
+	Dim keyvalues As Map = jsonP.NextObject
+	For i = 0 To sourceList.Size - 1
+		Dim key As String = i
+		targetList.Add(keyvalues.GetDefault(key,""))
+	Next
 End Sub
 
 Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
