@@ -304,7 +304,9 @@ Sub addBoxes(detectedBoxes As List,boxes As List)
 				End If
 				maxY = Max(maxY,Y)
 			Next
-			newBox.Put("degree",degree)
+			If degree <> 0 Then
+				newBox.Put("degree",degree)
+			End If
 		End If
 		width = maxX - minX
 		height = maxY - minY
