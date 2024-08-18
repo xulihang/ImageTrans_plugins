@@ -33,8 +33,10 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
 	Dim n As InsetRectMaskGenPlugin
 	n.Initialize
+	Dim box As Map
+	box.Initialize
 	Dim img As Image=fx.LoadImage(File.DirApp,"1.jpg")
-	wait for (n.genMask(img,5)) complete (result As B4XBitmap)
+	wait for (n.genMask(img,box,5)) complete (result As B4XBitmap)
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"mask.png",False)
 	result.WriteToStream(out,100,"PNG")
