@@ -26,7 +26,7 @@ Usage:
 
 1. It can work as an OCR engine.
    
-   Select `db_detector` to detect text lines only and select `db+OCR` to detect text lines and recognize the text as well. If you also need to detect the text color, select the one with `colordetection`.
+   Select `db_detector` to detect text lines only and select `db+OCR` to detect text lines and recognize the text as well. If you need to detect the text color, select the one with `colordetection`. If you need to detect the rotation, select the one with `rotationdetection`.
 
    ![engines](./engines.jpg)
 
