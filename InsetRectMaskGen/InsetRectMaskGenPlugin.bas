@@ -30,9 +30,9 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("pixels")
 			Return paramsList
 		Case "getDefaultParamValues"
-			Return CreateMap("pixels":"5")
+			Return CreateMap("pixels":"0")
 		Case "genMask"
-			Dim pixels As Int = 5
+			Dim pixels As Int = 0
 			Try
 				Dim settings As Map = Params.Get("settings")
 				pixels = settings.Get("pixels")
