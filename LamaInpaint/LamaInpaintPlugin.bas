@@ -32,6 +32,12 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "inpaint"
 			wait for (inpaint(Params.Get("origin"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
 			Return result
+		Case "getSetupParams"
+			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/LamaInpaint")
+			Return o
+		Case "getIsInstalledOrRunning"
+			Wait For (CheckIsRunning) complete (running As Boolean)
+			Return running
 		Case "getDefaultParamValues"
 			Return getDefaultSettings
 	End Select
@@ -145,4 +151,43 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 	End If
 	job.Release
 	Return origin
+End Sub
+
+Sub readJsonAsMap(s As String) As Map
+	Dim json As JSONParser
+	json.Initialize(s)
+	Return json.NextObject
+End Sub
+
+Sub getMap(key As String,parentmap As Map) As Map
+	Return parentmap.Get(key)
+End Sub
+
+Sub getUrl As String
+	Dim url As String = "http://localhost:8087/inpaint"
+	If File.Exists(File.DirApp,"preferences.conf") Then
+		Try
+			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
+			url=getMap("LamaInpaint",getMap("api",preferencesMap)).GetDefault("url",url)
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	Return url
+End Sub
+
+private Sub CheckIsRunning As ResumableSub
+	Dim result As Boolean = True
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Head(getUrl)
+	job.GetRequest.Timeout = 500
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success = False Then
+	    If job.Response.StatusCode <> 404 And job.Response.StatusCode <> 405 Then
+		    result = False
+		End If
+	End If
+	job.Release
+	Return result
 End Sub
