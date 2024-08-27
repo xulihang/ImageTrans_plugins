@@ -13,6 +13,7 @@ These plugins can work offline.
 ### OCR
 
 * [PaddleOCR](paddleOCR)
+* [RapidOCR](RapidOCR). It is based on PaddleOCR's models. It works for Chinese, Korean, English and Japanese.
 * [mangaOCR](mangaOCR)
 * [PororoOCR for Korean](pororoOCR)
 * [ChineseOCR](ChineseOCR)
