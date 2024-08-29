@@ -72,6 +72,9 @@ Sub GetText(img As B4XBitmap) As ResumableSub
 	If Success And ExitCode=0 Then
 		If File.Exists(File.DirApp,"out.txt") Then
 			result = File.ReadString(File.DirApp,"out.txt")
+			If result.StartsWith(Chr(0xFEFF)) Then
+				result = result.SubString(1) 'remove bom
+			End If
 		End If
 	End If
 	Return result.Trim
