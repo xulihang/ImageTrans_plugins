@@ -23,6 +23,7 @@ These plugins can work offline.
 
 * [opusMT](opusMT)
 * [sugoiMT](sugoiMT)
+* [ChatGPT](chatGPTMT)
 
 ### Mask Generation
 
