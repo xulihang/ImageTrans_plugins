@@ -63,7 +63,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			                 "batch_prompt":defaultBatchPrompt, _ 
 							 "prompt_with_term":defaultPromptWithTerm, _ 
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
-			                 "host":"https://api.openai.com", _
+			                 "host":"https://api.openai.com/v1", _
 							 "model":"gpt-3.5-turbo")
 	End Select
 	Return ""
@@ -128,7 +128,8 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	End If
 	
 	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-3.5-turbo")
-	Dim url As String = host&"/v1/chat/completions"
+
+	Dim url As String = host&"/chat/completions"
 	Dim messages As List
 	messages.Initialize
 	Dim message As Map
@@ -248,7 +249,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	End If
 	 
 	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com")
-	Dim url As String = host&"/v1/chat/completions"
+	Dim url As String = host&"/chat/completions"
 	Dim messages As List
 	messages.Initialize
 	Dim message As Map
