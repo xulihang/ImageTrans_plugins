@@ -118,7 +118,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	job.Initialize("job",Me)
 	
 	Dim apikey As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
-	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com")
+	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
 	
 	Dim prompt As String
 	If terms.Size>0 Then
@@ -248,7 +248,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt",defaultPrompt)
 	End If
 	 
-	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com")
+	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
 	Dim url As String = host&"/chat/completions"
 	Dim messages As List
 	messages.Initialize
