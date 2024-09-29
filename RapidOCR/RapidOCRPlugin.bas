@@ -114,7 +114,12 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	    Case "linux"
 			libPath=File.Combine("Linux-JNI-CPU","lib")
 		Case "mac"
-			libPath=File.Combine("Darwin-JNI-CPU","lib")
+			wait for (IsAppleCPU) Complete (appleCPU As Boolean)
+			If appleCPU Then
+				libPath=File.Combine("Darwin-JNI-CPU-arm","lib")
+			Else
+				libPath=File.Combine("Darwin-JNI-CPU-x64","lib")
+			End If
 	End Select
 	env.Put("LIB_PATH",libPath)
 	Dim rec As String
@@ -199,5 +204,18 @@ Sub DetectOS As String
 		Return "mac"
 	Else
 		Return "linux"
+	End If
+End Sub
+
+
+Sub IsAppleCPU As ResumableSub
+	Dim sh As Shell
+	sh.Initialize("sh","uname",Array As String("-m"))
+	sh.Run(-1)
+	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+	If StdOut.Contains("arm64") Then
+		Return True
+	Else
+		Return False
 	End If
 End Sub
