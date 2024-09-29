@@ -109,14 +109,13 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	out.Close
 	Dim env As Map
 	env.Initialize
-	Dim libPath As String="win-JNI-CPU-x64"
+	Dim libPath As String=File.Combine("win-JNI-CPU-x64","bin")
 	Select DetectOS
 	    Case "linux"
-			libPath="Linux-JNI-CPU"
+			libPath=File.Combine("Linux-JNI-CPU","lib")
 		Case "mac"
-			libPath="Darwin-JNI-CPU"
+			libPath=File.Combine("Darwin-JNI-CPU","lib")
 	End Select
-	libPath = File.Combine(libPath,"bin")
 	env.Put("LIB_PATH",libPath)
 	Dim rec As String
 	Dim keys As String

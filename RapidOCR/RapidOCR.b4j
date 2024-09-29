@@ -17,7 +17,7 @@ Module2=RapidOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=2
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
