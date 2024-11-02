@@ -42,7 +42,7 @@ These plugins can work offline.
 ## How to use Sickzil-Machine
 
 1. Download the Windows build of Sickzil-Machine server from [here](https://github.com/xulihang/SickZil-Machine/releases/download/server/dist.zip).
-2. Double-click server.exe to run Sickzil-Machine
+2. Unzip it and double-click server.exe to run Sickzil-Machine
 3. Use External Inpaint and External MaskGen to call it.
 
 ## Notes Using Local Servers
