@@ -28,6 +28,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim paramsList As List
 			paramsList.Initialize
 			paramsList.Add("url")
+			paramsList.Add("model")
 			Return paramsList
 		Case "translate"
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
@@ -53,20 +54,20 @@ Sub translate(source As String, sourceLang As String, targetLang As String,prefe
 	Dim su As StringUtils
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	
+	Dim model As String
 	Dim url As String = "http://localhost:8500/MTRestService/Translate"
 	Try
-		url=getMap("fiskmo",getMap("mt",preferencesMap)).GetDefault("url","http://localhost:8500/MTRestService/Translate")
+		url=getMap("opus",getMap("mt",preferencesMap)).GetDefault("url","http://localhost:8500/MTRestService/Translate")
+		model=getMap("opus",getMap("mt",preferencesMap)).GetDefault("model","")
 	Catch
 		Log(LastException)
 	End Try
 	Dim params As String
-	params="?input="&su.EncodeUrl(source,"UTF8")&"&srcLangCode="&sourceLang&"&trgLangCode="&targetLang&"&modelTag="
+	params="?input="&su.EncodeUrl(source,"UTF8")&"&srcLangCode="&sourceLang&"&trgLangCode="&targetLang&"&modelTag="&model
 	job.Download(url&params)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		target = job.GetString
-		target = target.SubString2(1,target.Length-1)
 		Log(target)
 	Else
 		target=""

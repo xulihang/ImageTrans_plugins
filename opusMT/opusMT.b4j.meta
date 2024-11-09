@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=opusMTPlugin,Class_Globals,0,0,opusMTPlugin,Initialize,11,0,opusMTPlugin,GetNiceName,13,0,Main,Process_Globals,7,0,opusMTPlugin,Run,34,0,opusMTPlugin,convertLang,34,6,opusMTPlugin,translate,47,3,Main,AppStart,14,0
+NavigationStack=opusMTPlugin,Initialize,11,0,opusMTPlugin,GetNiceName,13,0,Main,Process_Globals,5,0,opusMTPlugin,Class_Globals,0,0,Main,AppStart,18,0,opusMTPlugin,convertLang,37,6,opusMTPlugin,Run,24,1,opusMTPlugin,translate,61,6
 SelectedBuild=0
 VisibleModules=1

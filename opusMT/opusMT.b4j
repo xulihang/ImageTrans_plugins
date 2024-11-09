@@ -15,7 +15,7 @@ Module1=opusMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=10
 NumberOfModules=1
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -35,7 +35,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	map1.Initialize
 	Dim map2 As Map
 	map2.Initialize
-	map1.Put("mt",CreateMap("fiskmo":map2))
+	map1.Put("mt",CreateMap("opus":map2))
     Dim n As opusMTPlugin
 	n.Initialize
 	wait for (n.translate("Hello","en","zh",map1)) complete (result As String)
