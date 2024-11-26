@@ -148,7 +148,7 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	sh.SetEnvironmentVariables(env)
 	sh.Encoding="UTF-8"
 	sh.WorkingDirectory=File.Combine(File.DirApp,"rapidocr")
-	sh.Run(10000)
+	sh.Run(60000)
 	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
 	Log("done")
 	Log(StdOut)
