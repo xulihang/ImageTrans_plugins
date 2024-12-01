@@ -124,6 +124,14 @@ Sub BuildCombinations As List
 End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
+	If img.Width < 1024 And img.Height < 1024 Then
+		Dim bc As BitmapCreator
+		bc.Initialize(1024,1024)
+		Dim r As B4XRect
+		r.Initialize(0,0,img.Width,img.Height)
+		bc.DrawBitmap(img,r,False)
+		img = bc.Bitmap
+	End If
 	wait for (ocr(img,lang,"",False)) complete (boxes As List)
 	Dim m As Map
 	m.Initialize

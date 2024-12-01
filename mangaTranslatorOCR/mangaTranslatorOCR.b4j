@@ -2,6 +2,7 @@
 Build1=Default,org.xulihang.imagetrans
 Group=Default Group
 Library1=javaobject
+Library10=jbitmapcreator
 Library2=jcore
 Library3=jfx
 Library4=jokhttputils2
@@ -12,7 +13,7 @@ Library8=jxui
 Library9=xmlbuilder
 Module1=mangaTranslatorOCRPlugin
 NumberOfFiles=0
-NumberOfLibraries=9
+NumberOfLibraries=10
 NumberOfModules=1
 Version=8.9
 @EndOfDesignText@
