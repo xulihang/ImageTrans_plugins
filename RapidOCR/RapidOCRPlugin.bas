@@ -144,7 +144,12 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	Dim imgPath As String=File.Combine(File.DirApp,"image.jpg")
 	Dim args As List = Array As String("-Djava.library.path="&env.Get("LIB_PATH"),"-Dfile.encoding=UTF-8","-jar","RapidOcrOnnxJvm.jar","models","ch_PP-OCRv3_det_infer.onnx","ch_ppocr_mobile_v2.0_cls_infer.onnx",rec,keys,imgPath)
 	Log(args)
-	sh.Initialize("sh","java",args)
+	Dim javaPath As String = "java"
+	Dim localJavaPath As String = File.Combine(File.DirApp,"jdk-23/Contents/Home/bin/java")
+	If DetectOS == "mac" And File.Exists(localJavaPath,"") Then
+		javaPath = localJavaPath
+	End If
+	sh.Initialize("sh",javaPath,args)
 	sh.SetEnvironmentVariables(env)
 	sh.Encoding="UTF-8"
 	sh.WorkingDirectory=File.Combine(File.DirApp,"rapidocr")
