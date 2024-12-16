@@ -3,8 +3,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+if torch.mps.is_available():
+    device = torch.device("mps")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
 
 class TpsSpatialTransformerNetwork(nn.Module):
     """ Rectification Network of RARE, namely TPS based STN """
@@ -39,8 +43,7 @@ class TpsSpatialTransformerNetwork(nn.Module):
         #     batch_I_r = F.grid_sample(batch_I, build_P_prime_reshape, padding_mode='border', align_corners=True)
         # else:
         batch_I_r = F.grid_sample(batch_I,
-                                  build_P_prime_reshape,
-                                  padding_mode="border")
+                                  build_P_prime_reshape)
 
         return batch_I_r
 

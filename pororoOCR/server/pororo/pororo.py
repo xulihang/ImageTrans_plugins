@@ -67,7 +67,13 @@ class Pororo:
         lang = LANG_ALIASES[lang] if lang in LANG_ALIASES else lang
 
         # Get device information from torch API
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if torch.mps.is_available():
+            device = torch.device("mps")
+        elif torch.cuda.is_available():
+            device = torch.device("cuda")
+        else:
+            device = torch.device("cpu")
+        
 
         # Instantiate task-specific pipeline module, if possible
         task_module = SUPPORTED_TASKS[task](

@@ -6,9 +6,13 @@ import torch.nn.init as init
 from torchvision import models
 from torchvision.models.vgg import model_urls
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
+if torch.mps.is_available():
+    device = torch.device("mps")
+elif torch.cuda.is_available():
+    device = torch.device("cuda")
+else:
+    device = torch.device("cpu")
+    
 def init_weights(modules):
     for m in modules:
         if isinstance(m, nn.Conv2d):
