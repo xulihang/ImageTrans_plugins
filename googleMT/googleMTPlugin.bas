@@ -43,19 +43,43 @@ End Sub
 Sub batchTranslate(sourceList As List,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
 	Dim targetList As List
 	targetList.Initialize
-	Dim sb As StringBuilder
-	sb.Initialize
-	For Each source As String In sourceList
-		sb.Append(source.Replace(CRLF,"<br/>"))
-		sb.Append(CRLF)
-	Next
-	wait for (translate(sb.ToString,sourceLang,targetLang,preferencesMap)) Complete (target As String)
-	Dim targetList As List
-	targetList.Initialize
-	For Each result As String In Regex.Split(CRLF,target)
-		result = result.Replace("<br/>",CRLF)
-		targetList.Add(result)
-	Next
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	Dim params As String
+	Dim key As String
+	key=getMap("google",getMap("api",preferencesMap)).GetDefault("key","")
+	If key="" Then
+		Return targetList
+	End If
+	params="key="&key
+	Dim body As Map
+	body.Initialize
+	body.Put("q",sourceList)
+	body.Put("format","text")
+	body.Put("source",sourceLang)
+	body.Put("target",targetLang)
+	Dim jsonG As JSONGenerator
+	jsonG.Initialize(body)
+	job.PostString("https://translation.googleapis.com/language/translate/v2?"&params,jsonG.ToString)
+	job.GetRequest.SetContentType("application/json")
+	wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Try
+			Dim result,data As Map
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			result=json.NextObject
+			data=result.Get("data")
+			Dim translations As List
+			translations=data.Get("translations")
+			For Each translation As Map In translations
+				targetList.Add(translation.Get("translatedText"))
+			Next
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	job.Release
 	Return targetList
 End Sub
 

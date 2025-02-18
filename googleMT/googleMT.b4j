@@ -16,7 +16,7 @@ Module1=googleMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -38,10 +38,10 @@ Sub AppStart (Form1 As Form, Args() As String)
 	map1.Put("api",CreateMap("google":CreateMap("key":"")))
     Dim n As googleMTPlugin
 	n.Initialize
-	wait for (n.translate("BasicCAT Documentation","en","zh",map1)) complete (result As String)
-	Log(result)
-	wait for (n.batchTranslate(Array("Sentence 1","Sentence 2"),"en","zh",map1)) complete (targetList As List)
-	Log(targetList)
+	'wait for (n.translate("BasicCAT Documentation","en","zh",map1)) complete (result As String)
+	'Log(result)
+	'wait for (n.batchTranslate(Array("Sentence 1","Sentence 2"),"en","zh",map1)) complete (targetList As List)
+	'Log(targetList)
 	wait for (n.batchTranslate(Array("今日からみんなと勉強する事になった、灰原哀さんです!","みんな仲よく してあげてね"),"ja","zh",map1)) complete (targetList As List)
 	Log(targetList)
 End Sub
