@@ -22,8 +22,6 @@ End Sub
 
 ' must be available
 public Sub Run(Tag As String, Params As Map) As ResumableSub
-	Log("run"&Params)
-	Log("RapidOCR")
 	Select Tag
 		Case "getParams"
 			Dim paramsList As List
