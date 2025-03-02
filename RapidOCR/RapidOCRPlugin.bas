@@ -100,11 +100,18 @@ Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
 	Return regions
 End Sub
 
+private Sub GenerateUniqueName As String
+	Dim randomNumber As Int = Rnd(0,1000)
+	Dim timestamp As String = DateTime.Now
+	Return timestamp&"-"&randomNumber&".jpg"
+End Sub
+
 Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	Dim boxes As List
 	boxes.Initialize
+	Dim imgName As String = GenerateUniqueName
 	Dim out As OutputStream
-	out=File.OpenOutput(File.DirApp,"image.jpg",False)
+	out=File.OpenOutput(File.DirApp,imgName,False)
 	img.WriteToStream(out,"100","JPEG")
 	out.Close
 	Dim env As Map
@@ -141,7 +148,7 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 		keys = "ppocr_keys_v1.txt"
 	End If
 	Dim sh As Shell
-	Dim imgPath As String=File.Combine(File.DirApp,"image.jpg")
+	Dim imgPath As String=File.Combine(File.DirApp,imgName)
 	Dim args As List = Array As String("-Djava.library.path="&env.Get("LIB_PATH"),"-Dfile.encoding=UTF-8","-jar","RapidOcrOnnxJvm.jar","models","ch_PP-OCRv3_det_infer.onnx","ch_ppocr_mobile_v2.0_cls_infer.onnx",rec,keys,imgPath)
 	Log(args)
 	Dim javaPath As String = "java"
@@ -159,8 +166,8 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	Log(StdOut)
 	Log(StdErr)
 	If Success Then
-		If File.Exists(File.DirApp,"image.jpg-out.json") Then
-			Dim jsonString As String=File.ReadString(File.DirApp,"image.jpg-out.json")
+		If File.Exists(File.DirApp,imgName&"-out.json") Then
+			Dim jsonString As String=File.ReadString(File.DirApp,imgName&"-out.json")
 			Log(jsonString)
 			Dim json As JSONParser
 			json.Initialize(jsonString)
@@ -193,8 +200,10 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 				boxes.Add(box)
 			Next
 			For i=0 To textBlocks.Size-1
-				File.Delete(File.DirApp,$"image.jpg-part-${i}.jpg"$)
+				File.Delete(File.DirApp,$"${imgName}-part-${i}.jpg"$)
 			Next
+			File.Delete(File.DirApp,imgName)
+			File.Delete(File.DirApp,imgName&"-out.json")
 		End If
 	End If
 	Return boxes
