@@ -166,7 +166,6 @@ Sub ocr(img As B4XBitmap,lang As String,imgName As String) As ResumableSub
 	Dim sh As Shell
 	Dim imgPath As String=File.Combine(File.DirApp,imgName)
 	Dim args As List = Array As String("-Djava.library.path="&env.Get("LIB_PATH"),"-Dfile.encoding=UTF-8","-jar","RapidOcrOnnxJvm.jar","models","ch_PP-OCRv3_det_infer.onnx","ch_ppocr_mobile_v2.0_cls_infer.onnx",rec,keys,imgPath)
-	Log(args)
 	Dim javaPath As String = "java"
 	Dim localJavaPath As String = File.Combine(File.DirApp,"jdk-23/Contents/Home/bin/java")
 	If DetectOS == "mac" And File.Exists(localJavaPath,"") Then
@@ -178,9 +177,6 @@ Sub ocr(img As B4XBitmap,lang As String,imgName As String) As ResumableSub
 	sh.WorkingDirectory=File.Combine(File.DirApp,"rapidocr")
 	sh.Run(60000)
 	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
-	Log("done")
-	Log(StdOut)
-	Log(StdErr)
 	If Success Then
 		ParseResult(boxes,imgName,Not(imgNamePassed))
 	End If
@@ -189,11 +185,8 @@ End Sub
 
 Private Sub ParseResult(boxes As List,imgName As String,deleteResult As Boolean) As Boolean
 	Dim jsonPath As String = File.Combine(File.DirApp,imgName&"-out.json")
-	Log(jsonPath)
 	If File.Exists(jsonPath,"") Then
-		Log("exist")
 		Dim jsonString As String=File.ReadString(jsonPath,"")
-		Log(jsonString)
 		Dim json As JSONParser
 		json.Initialize(jsonString)
 		Dim textBlocks As List=json.NextObject.Get("textBlocks")
