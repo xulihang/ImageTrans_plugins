@@ -30,14 +30,25 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Initialize
 			Return paramsList
 		Case "getText"
-			wait for (GetText(Params.Get("img"),Params.Get("lang"))) complete (result As String)
+			wait for (GetText(Params.Get("img"),Params.Get("lang"),Params.GetDefault("imgName",""))) complete (result As String)
 			Return result
 		Case "getTextWithLocation"
-			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"))) complete (regions As List)
+			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"),Params.GetDefault("imgName",""))) complete (regions As List)
 			Return regions
 		Case "getLangs"
 			wait for (getLangs(Params.Get("loc"))) complete (langs As Map)
 			Return langs
+		Case "isUsingShell"
+			Return True
+		Case "getResult"
+			Dim boxes As List
+			boxes.Initialize
+			Dim parsed As Boolean = ParseResult(boxes,Params.Get("imgName"),True)
+			If parsed Then
+				Return boxes
+			Else
+				Return False
+			End If
 		Case "getSetupParams"
 			Dim paramsMap As Map
 			paramsMap.Initialize
@@ -77,8 +88,8 @@ Sub getLangs(loc As Localizator) As ResumableSub
 	Return result
 End Sub
 
-Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
-	wait for (ocr(img,lang)) complete (boxes As List)
+Sub GetText(img As B4XBitmap, lang As String,imgName As String) As ResumableSub
+	wait for (ocr(img,lang,imgName)) complete (boxes As List)
 	Dim sb As StringBuilder
 	sb.Initialize
 	For Each box As Map In boxes
@@ -88,8 +99,8 @@ Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
 	Return sb.ToString
 End Sub
 
-Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
-	wait for (ocr(img,lang)) complete (boxes As List)
+Sub GetTextWithLocation(img As B4XBitmap, lang As String,imgName As String) As ResumableSub
+	wait for (ocr(img,lang,imgName)) complete (boxes As List)
 	Dim regions As List
 	regions.Initialize
 	For Each box As Map In boxes
@@ -106,10 +117,15 @@ private Sub GenerateUniqueName As String
 	Return timestamp&"-"&randomNumber&".jpg"
 End Sub
 
-Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
+Sub ocr(img As B4XBitmap,lang As String,imgName As String) As ResumableSub
 	Dim boxes As List
 	boxes.Initialize
-	Dim imgName As String = GenerateUniqueName
+	Dim imgNamePassed As Boolean = False
+	If imgName = "" Then
+		imgName = GenerateUniqueName
+	Else
+		imgNamePassed = True
+	End If
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,imgName,False)
 	img.WriteToStream(out,"100","JPEG")
@@ -166,47 +182,59 @@ Sub ocr(img As B4XBitmap,lang As String) As ResumableSub
 	Log(StdOut)
 	Log(StdErr)
 	If Success Then
-		If File.Exists(File.DirApp,imgName&"-out.json") Then
-			Dim jsonString As String=File.ReadString(File.DirApp,imgName&"-out.json")
-			Log(jsonString)
-			Dim json As JSONParser
-			json.Initialize(jsonString)
-			Dim textBlocks As List=json.NextObject.Get("textBlocks")
-			For Each textBlock As Map In textBlocks
-				Dim minX,minY,maxX,maxY As Int
-				Dim boxPoints As List=textBlock.Get("boxPoint")
-				Dim index As Int=0
-				For Each point As Map In boxPoints
-					If index=0 Then
-						minX=point.Get("x")
-						minY=point.Get("y")
-					End If
-					minX=Min(point.Get("x"),minX)
-					minY=Min(point.Get("y"),minY)
-					maxX=Max(point.Get("x"),maxX)
-					maxY=Max(point.Get("y"),maxY)
-					index=index+1
-				Next
-				Dim box As Map
-				box.Initialize
-			    box.Put("text",textBlock.GetDefault("text",""))
-				Dim boxGeometry As Map
-				boxGeometry.Initialize
-				boxGeometry.Put("X",minX)
-				boxGeometry.Put("Y",minY)
-				boxGeometry.Put("width",maxX-minX)
-				boxGeometry.Put("height",maxY-minY)
-				box.Put("geometry",boxGeometry)
-				boxes.Add(box)
-			Next
-			For i=0 To textBlocks.Size-1
-				File.Delete(File.DirApp,$"${imgName}-part-${i}.jpg"$)
-			Next
-			File.Delete(File.DirApp,imgName)
-			File.Delete(File.DirApp,imgName&"-out.json")
-		End If
+		ParseResult(boxes,imgName,Not(imgNamePassed))
 	End If
 	Return boxes
+End Sub
+
+Private Sub ParseResult(boxes As List,imgName As String,deleteResult As Boolean) As Boolean
+	Dim jsonPath As String = File.Combine(File.DirApp,imgName&"-out.json")
+	Log(jsonPath)
+	If File.Exists(jsonPath,"") Then
+		Log("exist")
+		Dim jsonString As String=File.ReadString(jsonPath,"")
+		Log(jsonString)
+		Dim json As JSONParser
+		json.Initialize(jsonString)
+		Dim textBlocks As List=json.NextObject.Get("textBlocks")
+		For Each textBlock As Map In textBlocks
+			Dim minX,minY,maxX,maxY As Int
+			Dim boxPoints As List=textBlock.Get("boxPoint")
+			Dim index As Int=0
+			For Each point As Map In boxPoints
+				If index=0 Then
+					minX=point.Get("x")
+					minY=point.Get("y")
+				End If
+				minX=Min(point.Get("x"),minX)
+				minY=Min(point.Get("y"),minY)
+				maxX=Max(point.Get("x"),maxX)
+				maxY=Max(point.Get("y"),maxY)
+				index=index+1
+			Next
+			Dim box As Map
+			box.Initialize
+			box.Put("text",textBlock.GetDefault("text",""))
+			Dim boxGeometry As Map
+			boxGeometry.Initialize
+			boxGeometry.Put("X",minX)
+			boxGeometry.Put("Y",minY)
+			boxGeometry.Put("width",maxX-minX)
+			boxGeometry.Put("height",maxY-minY)
+			box.Put("geometry",boxGeometry)
+			boxes.Add(box)
+		Next
+		For i=0 To textBlocks.Size-1
+			File.Delete(File.DirApp,$"${imgName}-part-${i}.jpg"$)
+		Next
+		File.Delete(File.DirApp,imgName)
+		If deleteResult Then
+			File.Delete(jsonPath,"")
+		End If
+	Else
+		Return False
+	End If
+	Return True
 End Sub
 
 'windows, mac or linux

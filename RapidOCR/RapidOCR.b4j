@@ -35,8 +35,8 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As RapidOCRPlugin
 	n.Initialize
-	wait for (n.GetText(fx.LoadImage(File.DirApp,"capture001.jpg"),"ko")) Complete (text As String)
-	wait for (n.GetTextWithLocation(fx.LoadImage(File.DirApp,"capture001.jpg"),"ko")) Complete (result As List)
+	wait for (n.GetText(fx.LoadImage(File.DirApp,"capture001.jpg"),"ko","")) Complete (text As String)
+	wait for (n.GetTextWithLocation(fx.LoadImage(File.DirApp,"capture001.jpg"),"ko","")) Complete (result As List)
 	Log(text)
 	Log(result)
 	'wait for (n.translate("Hello","en","zh")) complete (result As String)
