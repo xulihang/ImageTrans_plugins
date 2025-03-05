@@ -6,6 +6,7 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	private detectOnly as Boolean = False
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -31,12 +32,29 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return paramsList
 		Case "getText"
 			wait for (GetText(Params.Get("img"),Params.Get("lang"))) complete (result As String)
+			detectOnly = False
 			Return result
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"))) complete (regions As List)
+			detectOnly = False
 			Return regions
+		Case "SetCombination"
+			Dim comb As String=Params.Get("combination")
+			detectOnly = comb.Contains("detect only")
+		Case "GetCombinations"
+			Return BuildCombinations
+		Case "Multiple"
+			Return True
 	End Select
 	Return ""
+End Sub
+
+Sub BuildCombinations As List
+	Dim combs As List
+	combs.Initialize
+	combs.Add("paddleocr")
+	combs.Add("detect only (paddleocr)")
+	Return combs
 End Sub
 
 Sub convertLang(lang As String) As String
@@ -92,7 +110,11 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	fd.Dir = File.DirApp
 	fd.FileName = "image.jpg"
 	fd.ContentType = "image/jpg"
-	job.PostMultipart(getUrl,CreateMap("lang":lang,"engine":"paddleocr"), Array(fd))
+	Dim url As String = getUrl
+	If detectOnly Then
+		url = getUrl.Replace("ocr","detect")
+	End If
+	job.PostMultipart(url,CreateMap("lang":lang,"engine":"paddleocr"), Array(fd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
