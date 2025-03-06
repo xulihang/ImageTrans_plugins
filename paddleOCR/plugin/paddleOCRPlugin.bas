@@ -6,7 +6,7 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	private detectOnly as Boolean = False
+	Private detectOnly As Boolean = False
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -98,25 +98,37 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	lang=convertLang(lang)
 	Dim boxes As List
 	boxes.Initialize
-	Dim out As OutputStream
-	out=File.OpenOutput(File.DirApp,"image.jpg",False)
-	img.WriteToStream(out,"100","JPEG")
-	out.Close
-	Dim job As HttpJob
-	job.Initialize("",Me)
-	Dim fd As MultipartFileData
-	fd.Initialize
-	fd.KeyName = "upload"
-	fd.Dir = File.DirApp
-	fd.FileName = "image.jpg"
-	fd.ContentType = "image/jpg"
+	Dim localMode As Boolean = False
 	Dim url As String = getUrl
 	If detectOnly Then
 		url = getUrl.Replace("ocr","detect")
 	End If
-	job.PostMultipart(url,CreateMap("lang":lang,"engine":"paddleocr"), Array(fd))
+	If url.StartsWith("http://127.0.0.1") And detectOnly Then
+		localMode = True
+	End If
+	Dim uniqueName As String = GenerateUniqueName
+	Dim path As String = File.Combine(File.DirApp,uniqueName)
+	Dim out As OutputStream
+	out=File.OpenOutput(path,"",False)
+	img.WriteToStream(out,"100","JPEG")
+	out.Close
+	Dim job As HttpJob
+	job.Initialize("",Me)
+	If localMode Then
+		job.PostMultipart(url,CreateMap("lang":lang,"engine":"paddleocr","path":path), Null)
+	Else
+		Dim fd As MultipartFileData
+		fd.Initialize
+		fd.KeyName = "upload"
+		fd.Dir = File.DirApp
+		fd.FileName = uniqueName
+		fd.ContentType = "image/jpg"
+		job.PostMultipart(url,CreateMap("lang":lang,"engine":"paddleocr"), Array(fd))
+    End If
+	
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
+	File.Delete(path,"")
 	If job.Success Then
 		Try
 			Log(job.GetString)
@@ -134,6 +146,11 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	Return boxes
 End Sub
 
+private Sub GenerateUniqueName As String
+	Dim randomNumber As Int = Rnd(0,1000)
+	Dim timestamp As String = DateTime.Now
+	Return timestamp&"-"&randomNumber&".jpg"
+End Sub
 
 Sub textLinesToBoxes(textLines As List,boxes As List)
 	For Each line As Map In textLines

@@ -31,8 +31,11 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
-    'Dim n As niuTransMTPlugin
-	'n.Initialize
+    Dim n As paddleOCRPlugin
+	n.Initialize
+	wait for (n.Run("SetCombination",CreateMap("combination":"detect only"))) complete (done As Object)
+	wait for (n.GetTextWithLocation(fx.LoadImage(File.DirApp,"image.jpg"),"ch")) complete (result As List)
+	Log(result)
 	'wait for (n.translate("Hello","en","zh")) complete (result As String)
 	'Log(result)
 End Sub

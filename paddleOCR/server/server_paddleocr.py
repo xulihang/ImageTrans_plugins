@@ -52,26 +52,32 @@ def ocr():
 def detect():
     upload = request.files.get('upload')
     lang = request.forms.get('lang')
-    print(lang)
+    path = request.forms.get('path')
+
     global current_lang
     global ocr
     if current_lang!=lang:
         current_lang=lang
         ocr = PaddleOCR(lang=current_lang)
-        
-    name, ext = os.path.splitext(upload.filename)
-    print(ext.lower())
-    if ext.lower() not in ('.png','.jpg','.jpeg'):
-        return "File extension not allowed."
-    timestamp=str(int(time.time()*1000))
-    savedName=timestamp+ext
-    save_path = "./uploaded/"
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-    file_path = "{path}/{file}".format(path=save_path, file=savedName)
-    if os.path.exists(file_path)==True:
-        os.remove(file_path)
-    upload.save(file_path)        
+    file_path = ""
+    if path != None:
+        if os.path.exists(path):
+            print(path)
+            file_path = path
+    if file_path == "":
+        name, ext = os.path.splitext(upload.filename)
+        print(ext.lower())
+        if ext.lower() not in ('.png','.jpg','.jpeg'):
+            return "File extension not allowed."
+        timestamp=str(int(time.time()*1000))
+        savedName=timestamp+ext
+        save_path = "./uploaded/"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        file_path = "{path}/{file}".format(path=save_path, file=savedName)
+        if os.path.exists(file_path)==True:
+            os.remove(file_path)
+        upload.save(file_path)        
     ret = {}
     result = ocr.ocr(file_path,rec=False,cls=True)[0]
     print(result)
