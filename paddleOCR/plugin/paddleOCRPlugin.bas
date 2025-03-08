@@ -38,6 +38,12 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"))) complete (regions As List)
 			detectOnly = False
 			Return regions
+		Case "getSetupParams"
+			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/paddleOCR")
+			Return o
+		Case "getIsInstalledOrRunning"
+			Wait For (CheckIsRunning) complete (running As Boolean)
+			Return running
 		Case "SetCombination"
 			Dim comb As String=Params.Get("combination")
 			detectOnly = comb.Contains("detect only")
@@ -69,6 +75,22 @@ Sub convertLang(lang As String) As String
 	Else
 		Return lang
 	End If
+End Sub
+
+Private Sub CheckIsRunning As ResumableSub
+	Dim result As Boolean = True
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Head(getUrl)
+	job.GetRequest.Timeout = 500
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success = False Then
+		If job.Response.StatusCode <> 404 Then
+			result = False
+		End If
+	End If
+	job.Release
+	Return result
 End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
