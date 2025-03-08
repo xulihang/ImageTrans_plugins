@@ -23,7 +23,7 @@ End Sub
 
 ' must be available
 public Sub Run(Tag As String, Params As Map) As ResumableSub
-	Log("run"&Params)
+	'Log("run"&Params)
 	Select Tag
 		Case "getParams"
 			Dim paramsList As List
@@ -136,6 +136,7 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	out.Close
 	Dim job As HttpJob
 	job.Initialize("",Me)
+	job.Tag = uniqueName
 	If localMode Then
 		job.PostMultipart(url,CreateMap("lang":lang,"engine":"paddleocr","path":path), Null)
 	Else
@@ -147,19 +148,22 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 		fd.ContentType = "image/jpg"
 		job.PostMultipart(url,CreateMap("lang":lang,"engine":"paddleocr"), Array(fd))
     End If
-	
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	File.Delete(path,"")
 	If job.Success Then
 		Try
-			Log(job.GetString)
-			Dim json As JSONParser
-			json.Initialize(job.GetString)
-			Dim result As Map=json.NextObject
-			Dim textLines As List
-			textLines=result.Get("text_lines")
-			textLinesToBoxes(textLines,boxes)
+			If job.Tag <> uniqueName Then
+				Log("inconsistent name")
+			Else
+				'Log(job.GetString)
+				Dim json As JSONParser
+				json.Initialize(job.GetString)
+				Dim result As Map=json.NextObject
+				Dim textLines As List
+				textLines=result.Get("text_lines")
+				textLinesToBoxes(textLines,boxes)
+			End If
 		Catch
 			Log(LastException)
 		End Try
