@@ -20,4 +20,15 @@ Related issue: https://github.com/xulihang/ImageTrans-docs/issues/216
 
 PS: lama will resize images too large so it is recommended to process by text areas. You can enable this in the project settings.
 
+### Model
+
+If the program fails to download the model, you can download the model file manually.
+
+Download link: <https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/big-lama.zip>.
+
+For Windows, you need to unzip it to the following path: `C:\Users\<your username>\.cache\torch\hub\checkpoints\big-lama.pt`.
+
+
+
+
 
