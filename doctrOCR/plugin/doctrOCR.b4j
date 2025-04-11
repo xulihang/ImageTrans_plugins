@@ -15,7 +15,7 @@ Module1=doctrOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=10
 NumberOfModules=1
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
