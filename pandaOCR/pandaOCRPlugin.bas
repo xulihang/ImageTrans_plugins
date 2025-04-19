@@ -38,6 +38,20 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Return ""
 End Sub
 
+private Sub ConvertLang(lang As String) As String
+	If lang.StartsWith("jpn") Then
+		Return "jp"
+	else if lang.StartsWith("chi_sim") Then
+		Return "zh"
+	else if lang.StartsWith("chi_tra") Then
+		Return "zht"
+	else if lang.StartsWith("en") Then
+		Return "en"
+	Else
+		Return "auto"
+	End If
+End Sub
+
 
 Sub GetText(img As B4XBitmap,lang As String) As ResumableSub
 	Dim text As String
@@ -58,10 +72,10 @@ Sub GetText(img As B4XBitmap,lang As String) As ResumableSub
 	job.Initialize("",Me)
 	Dim su As StringUtils
 	Dim base64 As String=su.EncodeBase64(File.ReadBytes(File.DirApp,"image.jpg"))
-	
+	lang = ConvertLang(lang)
 	Dim params As Map
 	params.Initialize
-	params.Put("lang","auto")
+	params.Put("lang",lang)
 	params.Put("type","1")
 	params.Put("pic",base64)
 	Dim jsonG As JSONGenerator
