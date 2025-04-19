@@ -4,7 +4,7 @@
 1. Install Python and DocTROCR.
 2. Install bottle and Paste: `pip install bottle Paste`
 3. Run the following to start the server: `python server.py`
-4. Download the plugin files and put `doctrOCRPlugin.jar` and `doctrOCRPlugin.xml` into the plugins folder of ImageTrans.
+4. [Download the plugin files](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/ImageTrans_plugins.zip) and put `doctrOCRPlugin.jar` and `doctrOCRPlugin.xml` into the plugins folder of ImageTrans.
 
 For convenience, you can directly use the Windows package: [link](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/DocTROCR.zip).
 
