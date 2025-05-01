@@ -29,6 +29,26 @@ Download link: <https://github.com/xulihang/ImageTrans_plugins/releases/download
 For Windows, you need to unzip it to the following path: `C:\Users\<your username>\.cache\torch\hub\checkpoints\big-lama.pt`.
 
 
+### GPU
+
+If you need to use CUDA GPU, you have to install the cuda version of pytorch:
+
+```
+pip uninstall torch torchvision torchaudio
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+Then launch it with this command: `lama-cleaner --device=cuda --port=8087`
+
+If you are using the Windows package, you have to use notepad to edit `Scripts\pip.exe` to replace `e:\python3810\python.exe` with `.\python.exe` and run the following command:
+
+```
+.\Scripts\pip.exe uninstall torch torchvision torchaudio
+.\Scripts\pip.exe install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+```
+
+
+
 
 
 
