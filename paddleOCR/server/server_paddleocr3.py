@@ -5,7 +5,7 @@ import time
 import datetime
 from bottle import route, run, template, request, static_file
 import json
-from paddleocr import PaddleOCR
+from paddleocr import PaddleOCR, TextDetection
     
 @route('/ocr', method='POST')
 def ocr():
@@ -72,25 +72,22 @@ def detect():
             os.remove(file_path)
         upload.save(file_path)
     ret = {}
-    ocr = PaddleOCR(
-        use_doc_orientation_classify=False, 
-        use_doc_unwarping=False, 
-        use_textline_orientation=False)
-    result = ocr.predict(file_path)
-    print(result)
+    model = TextDetection()
+    result = model.predict(file_path)[0]
     text_lines=[]
-    for line in result:
+    polys = result["dt_polys"]
+    for poly in polys:
         text_line={}
-        index=0
-        for coord in line:
-            text_line["x"+str(index)]=int(coord[0])
-            text_line["y"+str(index)]=int(coord[1])
-            index=index+1
+        coord_index = 0
+        for coord in poly:
+            text_line["x"+str(coord_index)]=int(coord[0])
+            text_line["y"+str(coord_index)]=int(coord[1])
+            coord_index=coord_index+1
         text_line["text"]=""
         text_lines.append(text_line)
     os.remove(file_path)
     ret["text_lines"]=text_lines
-    return ret    
+    return ret
 
 
 @route('/<filepath:path>')
@@ -98,5 +95,5 @@ def server_static(filepath):
     return static_file(filepath, root='www')
 
 
-run(server="paste",host='127.0.0.1', port=8080)     
+run(server="paste",host='127.0.0.1', port=8080)
 
