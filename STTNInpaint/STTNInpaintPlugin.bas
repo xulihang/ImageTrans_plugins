@@ -45,7 +45,7 @@ End Sub
 
 
 Private Sub getDefaultSettings As Map
-	Return CreateMap("url":"http://127.0.0.1:8080/")
+	Return CreateMap("url":"http://127.0.0.1:8189/")
 End Sub
 
 
@@ -75,7 +75,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 	maskFd.Dir = File.DirApp
 	maskFd.FileName = "mask.png"
 	maskFd.ContentType = "image/png"
-	Dim url As String = settings.GetDefault("url","http://127.0.0.1:8080/")&"gettxtremoved"
+	Dim url As String = settings.GetDefault("url","http://127.0.0.1:8189/")&"gettxtremoved"
 	job.PostMultipart(url,Null, Array(originFd,maskFd))
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
@@ -106,7 +106,7 @@ Sub inpaintFolder(folder As String,mask As B4XBitmap,settings As Map) As Resumab
 	maskFd.Dir = File.DirApp
 	maskFd.FileName = "mask.png"
 	maskFd.ContentType = "image/png"
-	Dim url As String = settings.GetDefault("url","http://127.0.0.1:8080/")&"gettxtremoved_folder"
+	Dim url As String = settings.GetDefault("url","http://127.0.0.1:8189/")&"gettxtremoved_folder"
 	job.PostMultipart(url,CreateMap("folder":folder), Array(maskFd))
 	job.GetRequest.Timeout=300*1000
 	Wait For (job) JobDone(job As HttpJob)
