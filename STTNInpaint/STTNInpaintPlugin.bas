@@ -1,0 +1,119 @@
+﻿B4J=true
+Group=Default Group
+ModulesStructureVersion=1
+Type=Class
+Version=4.2
+@EndOfDesignText@
+Sub Class_Globals
+	Private fx As JFX
+End Sub
+
+'Initializes the object. You can NOT add parameters to this method!
+Public Sub Initialize() As String
+	Log("Initializing plugin " & GetNiceName)
+	' Here return a key to prevent running unauthorized plugins
+	Return "MyKey"
+End Sub
+
+' must be available
+public Sub GetNiceName() As String
+	Return "STTNInpaint"
+End Sub
+
+' must be available
+public Sub Run(Tag As String, Params As Map) As ResumableSub
+	Log("run"&Params)
+	Select Tag
+		Case "getParams"
+			Dim paramsList As List
+			paramsList.Initialize
+			paramsList.Add("url")
+			Return paramsList
+		Case "inpaint"
+			wait for (inpaint(Params.Get("origin"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
+			Return result
+		Case "inpaintFolder"
+			wait for (inpaintFolder(Params.Get("folder"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (done As Boolean)
+			Return result
+		Case "supportFolder"
+			Return True
+		Case "getDefaultParamValues"
+			Return getDefaultSettings
+	End Select
+	Return ""
+End Sub
+
+
+Private Sub getDefaultSettings As Map
+	Return CreateMap("url":"http://127.0.0.1:8080/")
+End Sub
+
+
+Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
+	Dim out As OutputStream
+	out=File.OpenOutput(File.DirApp,"origin.jpg",False)
+	origin.WriteToStream(out,"100","JPEG")
+	out.Close
+	Dim out As OutputStream
+	out=File.OpenOutput(File.DirApp,"mask.png",False)
+	mask.WriteToStream(out,"100","PNG")
+	out.Close
+	
+	Dim job As HttpJob
+	job.Initialize("",Me)
+	
+	Dim originFd As MultipartFileData
+	originFd.Initialize
+	originFd.KeyName = "origin"
+	originFd.Dir = File.DirApp
+	originFd.FileName = "origin.jpg"
+	originFd.ContentType = "image/jpg"
+	
+	Dim maskFd As MultipartFileData
+	maskFd.Initialize
+	maskFd.KeyName = "mask"
+	maskFd.Dir = File.DirApp
+	maskFd.FileName = "mask.png"
+	maskFd.ContentType = "image/png"
+	Dim url As String = settings.GetDefault("url","http://127.0.0.1:8080/")&"gettxtremoved"
+	job.PostMultipart(url,Null, Array(originFd,maskFd))
+	job.GetRequest.Timeout=240*1000
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Try
+			Dim result As B4XBitmap=job.GetBitmap
+			Return result
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	job.Release
+	Return origin
+End Sub
+
+Sub inpaintFolder(folder As String,mask As B4XBitmap,settings As Map) As ResumableSub
+	Dim out As OutputStream
+	out=File.OpenOutput(File.DirApp,"mask.png",False)
+	mask.WriteToStream(out,"100","PNG")
+	out.Close
+	
+	Dim job As HttpJob
+	job.Initialize("",Me)
+	
+	Dim maskFd As MultipartFileData
+	maskFd.Initialize
+	maskFd.KeyName = "mask"
+	maskFd.Dir = File.DirApp
+	maskFd.FileName = "mask.png"
+	maskFd.ContentType = "image/png"
+	Dim url As String = settings.GetDefault("url","http://127.0.0.1:8080/")&"gettxtremoved_folder"
+	job.PostMultipart(url,CreateMap("folder":folder), Array(maskFd))
+	job.GetRequest.Timeout=300*1000
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Return True
+	End If
+	job.Release
+	Return False
+End Sub 
+
