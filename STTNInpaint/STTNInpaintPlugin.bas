@@ -39,10 +39,54 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return True
 		Case "getDefaultParamValues"
 			Return getDefaultSettings
+		Case "getSetupParams"
+			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/STTNInpaint")
+			Return o
+		Case "getIsInstalledOrRunning"
+			Wait For (CheckIsRunning) complete (running As Boolean)
+			Return running
 	End Select
 	Return ""
 End Sub
 
+private Sub getMap(key As String,parentmap As Map) As Map
+	Return parentmap.Get(key)
+End Sub
+
+private Sub readJsonAsMap(s As String) As Map
+	Dim json As JSONParser
+	json.Initialize(s)
+	Return json.NextObject
+End Sub
+
+private Sub getUrl As String
+	Dim url As String = "http://127.0.0.1:8189/"
+	If File.Exists(File.DirApp,"preferences.conf") Then
+		Try
+			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
+			url=getMap("STTNInpaint",getMap("api",preferencesMap)).GetDefault("url",url)
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	Return url
+End Sub
+
+Private Sub CheckIsRunning As ResumableSub
+	Dim result As Boolean = True
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	job.Head(getUrl)
+	job.GetRequest.Timeout = 500
+	Wait For (job) JobDone(job As HttpJob)
+	If job.Success = False Then
+		If job.Response.StatusCode <> 404 Then
+			result = False
+		End If
+	End If
+	job.Release
+	Return result
+End Sub
 
 Private Sub getDefaultSettings As Map
 	Return CreateMap("url":"http://127.0.0.1:8189/")
