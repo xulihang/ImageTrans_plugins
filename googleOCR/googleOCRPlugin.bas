@@ -212,7 +212,6 @@ Sub ocr(img As B4XBitmap,lang As String,textOnly As Boolean) As ResumableSub
 		Log(LastException)
 		Return ""
 	End Try
-
 	Dim boxes As List
 	boxes.Initialize
 	saveImgToDiskWithSizeCheck(img,100,5000000)
@@ -304,8 +303,8 @@ Sub Paragraph2Box(paragraph As Map) As Map
 	Dim minX,maxX,minY,maxY As Int
 	Dim index As Int=0
 	For Each point As Map In vertices
-		Dim x As Int=point.Get("x")
-		Dim y As Int=point.Get("y")
+		Dim x As Int=point.GetDefault("x",0)
+		Dim y As Int=point.GetDefault("y",0)
 		If index=0 Then
 			minX=x
 			minY=y
