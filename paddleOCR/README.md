@@ -14,7 +14,7 @@ Unzip the file and start `run.bat` to run the server. You need to keep the serve
 
 ### PaddleOCR v3
 
-PaddleOCR v3 has improved the recognition for vertial text.
+PaddleOCR v3 has improved the recognition for vertical text.
 
 You can use PaddleOCR v3 for a better recognition rate. Windows package: <https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/PaddleOCRv3.zip>
 
