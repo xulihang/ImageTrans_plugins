@@ -10,3 +10,11 @@ The plugin is bundled with ImageTrans. You just need to start the PaddleOCR serv
 For convenience, you can directly use the Windows package: [link](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/PaddleOCR.zip).
 
 Unzip the file and start `run.bat` to run the server. You need to keep the server running in the background.
+
+
+### PaddleOCR v3
+
+PaddleOCR v3 has improved the recognition for vertial text.
+
+You can use PaddleOCR v3 for a better recognition rate. Windows package: <https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/PaddleOCRv3.zip>
+
