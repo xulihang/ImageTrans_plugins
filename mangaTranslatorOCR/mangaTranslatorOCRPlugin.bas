@@ -114,6 +114,7 @@ Sub BuildCombinations As List
 	combs.Initialize
 	For Each d_name As String In detectors
 		combs.Add(d_name&detectorAffix&nameAffix)
+		combs.Add(d_name&detectorAffix&"+rotationdetection"&nameAffix)
 		For Each r_name As String In recognizers			
 			combs.Add(d_name&"+"&r_name&nameAffix)
 			combs.Add(d_name&"+"&r_name&"+colordetection"&nameAffix)

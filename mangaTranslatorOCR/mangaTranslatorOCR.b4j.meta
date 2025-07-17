@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=mangaTranslatorOCRPlugin,addBoxes,207,6,mangaTranslatorOCRPlugin,GetTextWithLocation,114,6,mangaTranslatorOCRPlugin,GetNiceName,29,0,mangaTranslatorOCRPlugin,Class_Globals,8,4,mangaTranslatorOCRPlugin,Initialize,21,2,mangaTranslatorOCRPlugin,ocr,167,6,mangaTranslatorOCRPlugin,getUrl,237,0,mangaTranslatorOCRPlugin,Run,48,6,mangaTranslatorOCRPlugin,BuildCombinations,118,3,mangaTranslatorOCRPlugin,GetText,127,6
+NavigationStack=mangaTranslatorOCRPlugin,GetTextWithLocation,114,6,mangaTranslatorOCRPlugin,GetNiceName,29,0,mangaTranslatorOCRPlugin,Class_Globals,8,4,mangaTranslatorOCRPlugin,Initialize,21,2,mangaTranslatorOCRPlugin,getUrl,237,0,mangaTranslatorOCRPlugin,BuildCombinations,115,3,mangaTranslatorOCRPlugin,GetText,129,6,mangaTranslatorOCRPlugin,ocr,235,6,mangaTranslatorOCRPlugin,addBoxes,285,6,mangaTranslatorOCRPlugin,Run,64,6
 SelectedBuild=0
 VisibleModules=1
