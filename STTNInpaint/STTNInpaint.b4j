@@ -1,0 +1,52 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.imagetrans
+Group=Default Group
+Library1=jcore
+Library2=jfx
+Library3=json
+Library4=jxmlsax
+Library5=xmlbuilder
+Library6=jxui
+Library7=javaobject
+Library8=jokhttputils2
+Library9=jstringutils
+Module1=STTNInpaintPlugin
+NumberOfFiles=0
+NumberOfLibraries=9
+NumberOfModules=1
+Version=8.9
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+	Dim settings As Map
+	settings.Initialize
+    Dim n As STTNInpaintPlugin
+	n.Initialize
+	Dim origin As Image=fx.LoadImage(File.DirApp,"frame1.png")
+	Dim mask As Image=fx.LoadImage(File.DirApp,"test.png")
+	'wait for (n.inpaint(origin,mask,settings)) complete (result As B4XBitmap)
+	'Dim out As OutputStream
+	'out=File.OpenOutput(File.DirApp,"removed.jpg",False)
+	'result.WriteToStream(out,100,"JPEG")
+	'out.Close
+	Dim folder As String = File.Combine(File.DirApp,"folder")
+	wait for (n.inpaintFolder(folder,mask,settings)) complete (done As Object)
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
