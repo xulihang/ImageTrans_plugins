@@ -53,7 +53,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	job.Initialize("job",Me)
 	Dim url As String = "http://service.basiccat.org:8080/"
 	Try
-		url=getMap("deepl",getMap("mt",preferencesMap)).GetDefault("url","http://service.basiccat.org:8080/")
+		url=getMap("deeplfree",getMap("mt",preferencesMap)).GetDefault("url","http://service.basiccat.org:8080/")
 	Catch
 		Log(LastException)
 	End Try
