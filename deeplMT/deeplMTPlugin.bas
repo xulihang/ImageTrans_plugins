@@ -30,13 +30,22 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("freemode (yes or no)")
 			Return paramsList
 		Case "translate"
-			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (result As String)
-			Return result
+			Dim sourceList As List
+			sourceList.Initialize
+			sourceList.Add(Params.Get("source"))
+			wait for (translate(sourceList,Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
+			If targetList.Size>0 Then
+				Return targetList.Get(0)
+			Else
+				Return ""
+			End If
 		Case "batchtranslate"
-			wait for (batchTranslate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
+			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
 			Return targetList
 		Case "supportBatchTranslation"
 			Return True
+		Case "getMaximumSegments"
+			Return 50
 		Case "getDefaultParamValues"
 			Return CreateMap("freemode (yes or no)":"yes")
 	End Select
@@ -48,32 +57,16 @@ Sub ConvertLang(lang As String) As String
 	Return lang.ToUpperCase
 End Sub
 
-Sub batchTranslate(sourceList As List,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
-	Dim sb As StringBuilder
-	sb.Initialize
-	For Each source As String In sourceList
-		sb.Append(source.Replace(CRLF,"<br/>"))
-		sb.Append(CRLF)
-	Next
-	wait for (translate(sb.ToString,sourceLang,targetLang,preferencesMap)) Complete (target As String)
-	Dim targetList As List
-	targetList.Initialize
-	For Each result As String In Regex.Split(CRLF,target)
-		result = result.Replace("<br/>",CRLF)
-		targetList.Add(result)
-	Next
-	Return targetList
-End Sub
-
-Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
+Sub translate(sourceList As List,sourceLang As String,targetLang As String,preferencesMap As Map) As ResumableSub
 	sourceLang=ConvertLang(sourceLang)
 	targetLang=ConvertLang(targetLang)
 	
-	Dim target As String
-	Dim su As StringUtils
+	Dim targetList As List
+	targetList.Initialize
+
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	Dim params As String
+
 	Dim freemode As String
 	Dim key As String
 	Try
@@ -94,9 +87,19 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 		url="https://api.deepl.com/v2/translate "
 	End If
 	
-	params="text="&su.EncodeUrl(source,"UTF-8")&"&source_lang="&sourceLang&"&target_lang="&targetLang
-
-	job.PostString(url,params)
+	
+    Dim requestBody As Map
+	requestBody.Initialize
+	requestBody.Put("text",sourceList)
+	requestBody.Put("source_lang",sourceLang)
+	requestBody.Put("target_lang",targetLang)
+	Dim jsonG As JSONGenerator
+	jsonG.Initialize(requestBody)
+	Dim data As String = jsonG.ToString
+	Log(data)
+	
+	job.PostString(url,data)
+	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Authorization"," DeepL-Auth-Key "&key)
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
@@ -105,18 +108,17 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
 			Dim translations As List = json.NextObject.Get("translations")
-			Dim trans As Map = translations.Get(0)
-			target = trans.Get("text")
+			For Each trans As Map In translations
+				targetList.Add(trans.Get("text"))
+			Next
 		Catch
-			target=""
 			Log(LastException)
 		End Try
 	Else
-		target=""
 		Log(job.ErrorMessage)
 	End If
 	job.Release
-	Return target
+	Return targetList
 End Sub
 
 
