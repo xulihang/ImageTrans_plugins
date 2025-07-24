@@ -128,7 +128,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	End If
 	
 	Dim model As String = getMap("ollama",getMap("mt",preferencesMap)).GetDefault("model","qwen2:7b")
-	Dim url As String = host&"/v1/chat/completions"
+	Dim url As String = host&"/api/chat"
 	Dim messages As List
 	messages.Initialize
 	Dim message As Map
@@ -178,13 +178,15 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
+	params.Put("think",False)
+	params.Put("stream",False)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
 	Log(jsonG.ToString)
 	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
-	job.GetRequest.Timeout = 120000
+	job.GetRequest.Timeout = 1200000
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
@@ -192,10 +194,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
 			Dim response As Map = json.NextObject
-			Dim choices As List
-			choices = response.Get("choices")
-			Dim choice As Map = choices.Get(0)
-			Dim message As Map = choice.Get("message")
+			Dim message As Map = response.Get("message")
 			Dim content As String = message.Get("content")
 			Dim jsonP As JSONParser
 			jsonP.Initialize(content)
@@ -249,7 +248,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	End If
 	 
 	Dim host As String = getMap("ollama",getMap("mt",preferencesMap)).GetDefault("host","http://localhost:11434")
-	Dim url As String = host&"/v1/chat/completions"
+	Dim url As String = host&"/api/chat"
 	Dim messages As List
 	messages.Initialize
 	Dim message As Map
@@ -284,9 +283,12 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
+	params.Put("think",False)
+	params.Put("stream",False)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
+	job.GetRequest.Timeout = 1200000
 	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Authorization","Bearer "&key)
 	wait For (job) JobDone(job As HttpJob)
@@ -296,10 +298,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
 			Dim response As Map = json.NextObject
-			Dim choices As List
-			choices = response.Get("choices")
-			Dim choice As Map = choices.Get(0)
-			Dim message As Map = choice.Get("message")
+			Dim message As Map = response.Get("message")
 			target = message.Get("content")
 			target = target.Trim
 		Catch
