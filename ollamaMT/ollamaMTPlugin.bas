@@ -64,7 +64,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 							 "prompt_with_term":defaultPromptWithTerm, _ 
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
 			                 "host":"http://localhost:11434", _
-							 "model":"qwen2:7b")
+							 "model":"qwen3:8b")
 	End Select
 	Return ""
 End Sub
@@ -127,7 +127,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		prompt = getMap("ollama",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
 	End If
 	
-	Dim model As String = getMap("ollama",getMap("mt",preferencesMap)).GetDefault("model","qwen2:7b")
+	Dim model As String = getMap("ollama",getMap("mt",preferencesMap)).GetDefault("model","qwen3:8b")
 	Dim url As String = host&"/api/chat"
 	Dim messages As List
 	messages.Initialize
@@ -278,7 +278,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	End If
 	Log(message)
 	messages.Add(message)
-	Dim model As String = getMap("ollama",getMap("mt",preferencesMap)).GetDefault("model","qwen2:7b")
+	Dim model As String = getMap("ollama",getMap("mt",preferencesMap)).GetDefault("model","qwen3:8b")
 	Dim params As Map
 	params.Initialize
 	params.Put("model",model)
