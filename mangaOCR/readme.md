@@ -3,6 +3,8 @@ See:
 1. <https://github.com/kha-white/manga_ocr>
 2. <https://github.com/xulihang/ImageTrans-docs/issues/140>
 
+Note: If your device is powerful enough, it is recommended to use [manga-image-translator](https://github.com/xulihang/ImageTrans_plugins/tree/master/mangaTranslatorOCR).
+
 Install:
 
 1. Install Python3 if it is not installed.
