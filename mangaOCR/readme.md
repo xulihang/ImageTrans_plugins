@@ -13,13 +13,14 @@ Install:
 4. Run the server: `python3 server_manga_ocr.py`.
 5. Unzip the [plugin files](https://github.com/xulihang/ImageTrans-docs/files/10887754/manga-ocr-plugin.zip) in ImageTrans's `plugins` folder and restart ImageTrans. (optional for v1.9.0+)
 
-**For convenience**, you can also use the Windows package:
+**For convenience**, you can also use the packed versions:
+* Windows
+   1. Download and unzip [manga-ocr](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr.zip).
+   2. Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it to manga-ocr's folder in the previous step. (if you do not download the model file, the program will download the model from the Internet.)
+   3. Run `run.bat` and wait for the server to get ready.
+   If you need to enable GPU, please follow [this guide](GPU.md).
+* macOS: https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/mangaOCR.dmg
 
-1. Download and unzip [manga-ocr](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr.zip).
-2. Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it to manga-ocr's folder in the previous step. (if you do not download the model file, the program will download the model from the Internet.)
-3. Run `run.bat` and wait for the server to get ready.
-
-If you need to enable GPU, please follow [this guide](GPU.md).
 
 ## Usage Note
 
