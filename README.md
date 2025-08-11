@@ -17,6 +17,8 @@ These plugins can work offline.
 * [mangaOCR](mangaOCR)
 * [PororoOCR for Korean](pororoOCR)
 * [ChineseOCR](ChineseOCR)
+* [DocTROCR](doctrOCR). For latin languages.
+* [ChatGPTOCR](chatGPTOCR). Use large language models for OCR, accurate for most languages.
 
 
 ### Machine Translation
