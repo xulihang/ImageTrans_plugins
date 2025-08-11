@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=deeplfreeMTPlugin,Initialize,7,0,deeplfreeMTPlugin,translate,48,6,deeplfreeMTPlugin,ConvertLang,36,0,deeplfreeMTPlugin,Run,32,3,Main,AppStart,19,6
+NavigationStack=deeplfreeMTPlugin,Initialize,7,0,Main,Application_Error,27,0,deeplfreeMTPlugin,ConvertLang,38,0,deeplfreeMTPlugin,Run,23,3,deeplfreeMTPlugin,translate,65,6,Main,AppStart,20,6
 SelectedBuild=0
 VisibleModules=1

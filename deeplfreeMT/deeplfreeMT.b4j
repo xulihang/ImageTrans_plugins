@@ -37,8 +37,10 @@ Sub AppStart (Form1 As Form, Args() As String)
 	n.Initialize
 	Dim map1 As Map
 	map1.Initialize
-	map1.Put("url","http://127.0.0.1:8089/")
-	wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence2.","en","zh",CreateMap("api":CreateMap("deeplfree":map1)))) complete (result As String)
+	'map1.Put("url","http://service.basiccat.org:8080/")
+	map1.Put("url","http://127.0.0.1:8080/")
+	'map1.Put("url","https://dplx.xi-xu.me/")
+	wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence2.","en","zh",CreateMap("mt":CreateMap("deeplfree":map1)))) complete (result As String)
 	'wait for (n.batchTranslate(Array("BasicCAT Documentation."&CRLF&"Sentence2.","Paragraph2"),"en","zh",CreateMap("api":CreateMap("deepl":map1)))) complete (result As Object)
 	Log(result)
 End Sub

@@ -69,6 +69,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	jsonG.Initialize(params)
 	
 	job.PostString(url&"translate",jsonG.ToString)
+	job.GetRequest.SetContentType("application/json")
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
