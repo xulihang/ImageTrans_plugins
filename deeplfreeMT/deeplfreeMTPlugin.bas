@@ -34,7 +34,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "supportBatchTranslation"
 			Return False
 		Case "getDefaultParamValues"
-			Return CreateMap("url":"https://dplx.xi-xu.me/")
+			Return CreateMap("url":"http://service.basiccat.org:8080/")
 	End Select
 	Return ""
 End Sub
@@ -51,9 +51,9 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim target As String
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	Dim url As String = "https://dplx.xi-xu.me/"
+	Dim url As String = "http://service.basiccat.org:8080/"
 	Try
-		url=getMap("deeplfree",getMap("mt",preferencesMap)).GetDefault("url","https://dplx.xi-xu.me/")
+		url=getMap("deeplfree",getMap("mt",preferencesMap)).GetDefault("url","http://service.basiccat.org:8080/")
 	Catch
 		Log(LastException)
 	End Try
