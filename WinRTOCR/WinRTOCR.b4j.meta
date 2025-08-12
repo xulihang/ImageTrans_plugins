@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=WinRTOCRPlugin,GetTextWithLocation,57,6,WinRTOCRPlugin,GetText,94,0,WinRTOCRPlugin,ocr,182,6,WinRTOCRPlugin,LangHasSpace,149,6,WinRTOCRPlugin,LinesToBoxes,116,6,WinRTOCRPlugin,convertLang,83,0,WinRTOCRPlugin,getLangs,64,6,WinRTOCRPlugin,Run,38,4,Main,AppStart,20,6,WinRTOCRPlugin,getEncoding,53,6
+NavigationStack=Main,AppStart,20,6,WinRTOCRPlugin,getEncoding,40,6,WinRTOCRPlugin,GetNiceName,14,0,WinRTOCRPlugin,getLangs,107,6,WinRTOCRPlugin,Run,38,6,WinRTOCRPlugin,convertLang,120,0,WinRTOCRPlugin,GetText,132,0,WinRTOCRPlugin,DetectRotation,128,0
 SelectedBuild=0
 VisibleModules=1

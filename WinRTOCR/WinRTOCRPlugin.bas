@@ -39,6 +39,11 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getLangs"
 			wait for (getLangs) complete (langs As Map)
 			Return langs
+		Case "rotationDetectionSupported"
+			Return True
+		Case "detectRotation"
+			wait for (DetectRotation(Params.Get("img"),Params.Get("lang"))) complete (angle As Double)
+			Return angle
 	End Select
 	Return ""
 End Sub
@@ -123,6 +128,11 @@ Sub convertLang(lang As String) As String
 	Else
 		Return lang
 	End If
+End Sub
+
+Sub DetectRotation(img As B4XBitmap, lang As String) As ResumableSub
+	wait for (ocr(img,lang)) complete (result As Map)
+	Return result.GetDefault("TextAngle","0")
 End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
