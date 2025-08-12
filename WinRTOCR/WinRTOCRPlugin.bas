@@ -155,7 +155,13 @@ End Sub
 
 Sub DetectRotation(img As B4XBitmap, lang As String) As ResumableSub
 	wait for (ocr(img,lang)) complete (result As Map)
-	Return result.GetDefault("TextAngle","0")
+	Try
+		Dim degree As Double = result.GetDefault("TextAngle","0")
+		Return degree
+	Catch
+		Log(LastException)
+	End Try
+	Return 0
 End Sub
 
 Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
