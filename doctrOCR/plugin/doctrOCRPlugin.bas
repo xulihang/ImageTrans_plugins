@@ -6,6 +6,9 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private wordlevel As Boolean = False
+	Private mode As String = "text_lines"
+	Private nameAffix As String = " (doctr)"
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -43,8 +46,36 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getIsInstalledOrRunning"
 			Wait For (CheckIsRunning) complete (running As Boolean)
 			Return running
+		Case "WordLevel"
+			Return wordlevel
+		Case "GetCombinations"
+			Return BuildCombinations
+		Case "SetCombination"
+			Dim comb As String=Params.Get("combination")
+			If comb.Contains("word") Then
+				mode = "words"
+				wordlevel = True
+			else if comb.Contains("block") Then
+				mode = "blocks"
+				wordlevel = False
+			Else
+				mode = "text_lines"
+				wordlevel = False
+			End If
+		Case "Multiple"
+			Return True
 	End Select
 	Return ""
+End Sub
+
+Sub BuildCombinations As List
+	Dim combs As List
+	combs.Initialize
+	combs.Add("doctr")
+	combs.Add("word level"&nameAffix)
+	combs.Add("line level"&nameAffix)
+	combs.Add("block level"&nameAffix)
+	Return combs
 End Sub
 
 Private Sub CheckIsRunning As ResumableSub
@@ -69,7 +100,11 @@ Sub GetText(img As B4XBitmap, lang As String) As ResumableSub
 	sb.Initialize
 	For Each box As Map In boxes
 		sb.Append(box.Get("text"))
-		sb.Append(CRLF)
+		If mode.Contains("word") Then
+			sb.Append(" ")
+		Else
+			sb.Append(CRLF)
+		End If
 	Next
 	Return sb.ToString
 End Sub
@@ -129,7 +164,7 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 				json.Initialize(job.GetString)
 				Dim result As Map=json.NextObject
 				Dim textLines As List
-				textLines=result.Get("text_lines")
+				textLines=result.Get(mode)
 				textLinesToBoxes(textLines,boxes)
 			End If
 		Catch
