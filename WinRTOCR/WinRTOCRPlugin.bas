@@ -6,6 +6,7 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private wordLevel As Boolean = False
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -44,8 +45,30 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "detectRotation"
 			wait for (DetectRotation(Params.Get("img"),Params.Get("lang"))) complete (angle As Double)
 			Return angle
+		Case "WordLevel"
+			Return wordLevel
+		Case "SetCombination"
+			Dim comb As String=Params.Get("combination")
+			If comb.Contains("word level") Then
+				wordLevel = True
+			Else
+				wordLevel = False
+			End If
+		Case "GetCombinations"
+			Return BuildCombinations
+		Case "Multiple"
+			Return True
 	End Select
 	Return ""
+End Sub
+
+Sub BuildCombinations As List
+	Dim combs As List
+	combs.Initialize
+	combs.Add("WinRT")
+	combs.Add("word level (WinRT)")
+	combs.Add("line level (WinRT)")
+	Return combs
 End Sub
 
 Sub getEncoding As ResumableSub
@@ -144,7 +167,11 @@ Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
 	wait for (ocr(img,lang)) complete (result As Map)
 	If result.ContainsKey("Lines") Then
 		Dim Lines As List=result.Get("Lines")
-		Return LinesToBoxes(Lines,lang)
+		If wordLevel Then
+			Return WordsToBoxes(Lines)
+		Else
+			Return LinesToBoxes(Lines)
+		End If
 	Else
 		Dim boxes As List
 		boxes.Initialize
@@ -152,7 +179,27 @@ Sub GetTextWithLocation(img As B4XBitmap, lang As String) As ResumableSub
 	End If
 End Sub
 
-Sub LinesToBoxes(lines As List, lang As String) As List
+Sub WordsToBoxes(lines As List) As List
+	Dim boxes As List
+	boxes.Initialize
+	For Each line As Map In lines
+		Dim words As List=line.Get("Words")
+		For Each word As Map In words
+			Dim box As Map
+			box.Initialize
+			box.Put("text",word.Get("Text"))
+			Dim boundingRect As Map=word.Get("BoundingRect")
+			box.Put("X",boundingRect.Get("X"))
+			box.Put("Y",boundingRect.Get("Y"))
+			box.Put("width",boundingRect.Get("Width"))
+			box.Put("height",boundingRect.Get("Height"))
+			boxes.Add(box)
+		Next
+	Next
+	Return boxes
+End Sub
+
+Sub LinesToBoxes(lines As List) As List
 	Dim boxes As List
 	boxes.Initialize
 	For Each line As Map In lines
