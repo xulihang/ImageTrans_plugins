@@ -30,14 +30,17 @@ def ocr():
     ret = {}
     result = predictor(doc)
     text_lines=[]
+    blocks = []
+    words = []
     for page in result.pages:
         h, w = page.dimensions
         for block in page.blocks:
+            block_text = ""
             for line in block.lines:
-                top_left_x = line.geometry[0][0] * w
-                top_left_y = line.geometry[0][1] * h
-                bottom_right_x = line.geometry[1][0] * w
-                bottom_right_y = line.geometry[1][1] * h
+                top_left_x = int(line.geometry[0][0] * w)
+                top_left_y = int(line.geometry[0][1] * h)
+                bottom_right_x = int(line.geometry[1][0] * w)
+                bottom_right_y = int(line.geometry[1][1] * h)
                 text_line = {}
                 text_line["x0"] = top_left_x
                 text_line["y0"] = top_left_y
@@ -49,8 +52,42 @@ def ocr():
                 text_line["y3"] = bottom_right_y
                 text_line["text"]= " ".join(word.value for word in line.words)
                 text_lines.append(text_line)
+                block_text = block_text + "\n" + text_line["text"]
+                for word in line.words:
+                    word_dict = {}
+                    word_top_left_x = int(word.geometry[0][0] * w)
+                    word_top_left_y = int(word.geometry[0][1] * h)
+                    word_bottom_right_x = int(word.geometry[1][0] * w)
+                    word_bottom_right_y = int(word.geometry[1][1] * h)
+                    word_dict["x0"] = word_top_left_x
+                    word_dict["y0"] = word_top_left_y
+                    word_dict["x1"] = word_bottom_right_x
+                    word_dict["y1"] = word_top_left_y
+                    word_dict["x2"] = word_bottom_right_x
+                    word_dict["y2"] = word_bottom_right_y
+                    word_dict["x3"] = word_top_left_x
+                    word_dict["y3"] = word_bottom_right_y
+                    word_dict["text"] = word.value
+                    words.append(word_dict)
+        block_dict = {}
+        block_top_left_x = int(block.geometry[0][0] * w)
+        block_top_left_y = int(block.geometry[0][1] * h)
+        block_bottom_right_x = int(block.geometry[1][0] * w)
+        block_bottom_right_y = int(block.geometry[1][1] * h)
+        block_dict["x0"] = block_top_left_x
+        block_dict["y0"] = block_top_left_y
+        block_dict["x1"] = block_bottom_right_x
+        block_dict["y1"] = block_top_left_y
+        block_dict["x2"] = block_bottom_right_x
+        block_dict["y2"] = block_bottom_right_y
+        block_dict["x3"] = block_top_left_x
+        block_dict["y3"] = block_bottom_right_y
+        block_dict["text"] = block_text
+        blocks.append(block_dict)
     os.remove(file_path)
     ret["text_lines"]=text_lines
+    ret["blocks"]=blocks
+    ret["words"]=words
     return ret
 
 @route('/<filepath:path>')
