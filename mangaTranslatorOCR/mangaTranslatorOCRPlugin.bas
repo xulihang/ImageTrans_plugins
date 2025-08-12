@@ -13,7 +13,6 @@ Sub Class_Globals
 	Private detectColor As Boolean = False
 	Private useCTC As Boolean = False
 	Private use48px As Boolean = False
-	Private recognizerAffix As String="_recognizer"
 	Private detectorAffix As String="_detector"
 	Private nameAffix As String = " (mangaTranslator)"
 	Private rotationDetection As Boolean = False
@@ -72,26 +71,43 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			If comb.Contains("48px") Then
 				use48px = True
 			End If
-			If comb.Contains("+")=False Then
-				If comb.Contains(detectorAffix) Then
-					skip_recognization="true"
-					Return ""
-				End If
-			Else
-				If comb.Contains("colordetection") Then
-					detectColor = True
-				End If
-				If comb.Contains("rotationdetection") Then
-					rotationDetection = True
-				End If
+			If comb.Contains(detectorAffix) Then
+				skip_recognization="true"
+			End If
+			If comb.Contains("colordetection") Then
+				detectColor = True
+			End If
+			If comb.Contains("rotationdetection") Then
+				rotationDetection = True
 			End If
 		Case "GetCombinations"
 			Return BuildCombinations
 		Case "Multiple"
 			Return True
+		Case "rotationDetectionSupported"
+			Return True
+		Case "detectRotation"
+			wait for (DetectRotation(Params.Get("img"),Params.Get("lang"))) complete (angle As Double)
+			Return angle
 	End Select
 	Return ""
 End Sub
+
+Sub DetectRotation(img As B4XBitmap, lang As String) As ResumableSub
+	rotationDetection = True
+	skip_recognization="true"
+	Dim degree As Double
+	wait for (ocr(img,lang,"",False)) complete (boxes As List)
+	For i = 0 To boxes.Size - 1
+		Dim box As Map = boxes.Get(i)
+		If box.ContainsKey("degree") Then
+			degree = box.Get("degree")
+			Return degree
+		End If
+	Next
+	Return degree
+End Sub
+
 
 Private Sub CheckIsRunning As ResumableSub
 	Dim result As Boolean = True
