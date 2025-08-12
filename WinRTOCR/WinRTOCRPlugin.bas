@@ -157,6 +157,9 @@ Sub DetectRotation(img As B4XBitmap, lang As String) As ResumableSub
 	wait for (ocr(img,lang)) complete (result As Map)
 	Try
 		Dim degree As Double = result.GetDefault("TextAngle","0")
+		If degree < 0 Then
+			degree = degree + 360
+		End If
 		Return degree
 	Catch
 		Log(LastException)
