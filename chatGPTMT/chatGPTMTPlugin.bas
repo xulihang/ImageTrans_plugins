@@ -185,6 +185,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	Log(jsonG.ToString)
 	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
+	job.GetRequest.Timeout = 1200000
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
@@ -289,6 +290,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	job.PostString(url,jsonG.ToString)
 	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Authorization","Bearer "&key)
+	job.GetRequest.Timeout = 1200000
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
