@@ -83,9 +83,7 @@ Sub BuildCombinations As List
 	Dim combs As List
 	combs.Initialize
 	combs.Add("paddleocr")
-	combs.Add("+rotationDetection (paddleocr)")
 	combs.Add("detect only (paddleocr)")
-	combs.Add("detect only+rotationDetection (paddleocr)")
 	Return combs
 End Sub
 
