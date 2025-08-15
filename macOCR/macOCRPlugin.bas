@@ -51,6 +51,9 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getLangs"
 			wait for (getLangs) complete (langs As Map)
 			Return langs
+		Case "SetCombination"
+			Dim comb As String=Params.Get("combination")
+			rotationDetection = comb.Contains("rotationDetection")
 		Case "rotationDetectionSupported"
 			Return True
 		Case "detectRotation"
