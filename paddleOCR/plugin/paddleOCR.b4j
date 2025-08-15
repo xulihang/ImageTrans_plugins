@@ -33,7 +33,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As paddleOCRPlugin
 	n.Initialize
-	wait for (n.Run("SetCombination",CreateMap("combination":"detect only"))) complete (done As Object)
+	wait for (n.Run("SetCombination",CreateMap("combination":"+rotationDetection (paddleocr)"))) complete (done As Object)
 	wait for (n.GetTextWithLocation(fx.LoadImage(File.DirApp,"image.jpg"),"ch")) complete (result As List)
 	Log(result)
 	'wait for (n.translate("Hello","en","zh")) complete (result As String)
