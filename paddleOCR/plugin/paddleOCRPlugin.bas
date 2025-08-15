@@ -55,8 +55,28 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return BuildCombinations
 		Case "Multiple"
 			Return True
+		Case "rotationDetectionSupported"
+			Return True
+		Case "detectRotation"
+			wait for (DetectRotation(Params.Get("img"),Params.Get("lang"))) complete (angle As Double)
+			Return angle
 	End Select
 	Return ""
+End Sub
+
+Sub DetectRotation(img As B4XBitmap, lang As String) As ResumableSub
+	rotationDetection = True
+	detectOnly = True
+	Dim degree As Double
+	wait for (ocr(img,lang)) complete (boxes As List)
+	For i = 0 To boxes.Size - 1
+		Dim box As Map = boxes.Get(i)
+		If box.ContainsKey("degree") Then
+			degree = box.Get("degree")
+			Return degree
+		End If
+	Next
+	Return degree
 End Sub
 
 Sub BuildCombinations As List
