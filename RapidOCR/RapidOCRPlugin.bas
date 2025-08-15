@@ -30,9 +30,11 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return paramsList
 		Case "getText"
 			wait for (GetText(Params.Get("img"),Params.Get("lang"),Params.GetDefault("imgName",""))) complete (result As String)
+			rotationDetection = False
 			Return result
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"),Params.GetDefault("imgName",""))) complete (regions As List)
+			rotationDetection = False
 			Return regions
 		Case "getLangs"
 			wait for (getLangs(Params.Get("loc"))) complete (langs As Map)
@@ -70,6 +72,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return True
 		Case "detectRotation"
 			wait for (DetectRotation(Params.Get("img"),Params.Get("lang"))) complete (angle As Double)
+			rotationDetection = False
 			Return angle
 	End Select
 	Return ""

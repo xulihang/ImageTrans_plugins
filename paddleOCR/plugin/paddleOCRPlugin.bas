@@ -59,6 +59,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return True
 		Case "detectRotation"
 			wait for (DetectRotation(Params.Get("img"),Params.Get("lang"))) complete (angle As Double)
+			rotationDetection = False
 			Return angle
 	End Select
 	Return ""
