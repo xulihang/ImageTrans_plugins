@@ -26,6 +26,9 @@ End Sub
 public Sub Run(Tag As String, Params As Map) As ResumableSub
 	'Log("run"&Params)
 	Select Tag
+		Case "getLangs"
+			wait for (getLangs(Params.Get("loc"))) complete (langs As Map)
+			Return langs
 		Case "getParams"
 			Dim paramsList As List
 			paramsList.Initialize
@@ -88,18 +91,93 @@ Sub BuildCombinations As List
 	Return combs
 End Sub
 
-Sub convertLang(lang As String) As String
-	If lang.StartsWith("en") Then
-		Return "en"
-	else if lang.StartsWith("ch") Then
-		Return "ch"
-	else if lang.StartsWith("jpn") Then
-		Return "japan"
-	else if lang.StartsWith("kor") Then
-		Return "korean"
-	Else
-		Return lang
-	End If
+Sub getLangs(loc As Localizator) As ResumableSub
+	Dim result As Map
+	result.Initialize
+	Dim names,codes As List
+	names.Initialize
+	codes.Initialize
+	names.Add(loc.Localize("中文"))
+	codes.Add("ch")
+	names.Add(loc.Localize("英语"))
+	codes.Add("en")
+	names.Add(loc.Localize("繁体中文"))
+	codes.Add("chinese_cht")
+	names.Add(loc.Localize("日语"))
+	codes.Add("japan")
+	names.Add(loc.Localize("韩语"))
+	codes.Add("korean")
+	names.Add(loc.Localize("南非荷兰语"))
+	codes.Add("af")
+	names.Add(loc.Localize("意大利语"))
+	codes.Add("it")
+	names.Add(loc.Localize("西班牙语"))
+	codes.Add("es")
+	names.Add(loc.Localize("波斯尼亚语"))
+	codes.Add("bs")
+	names.Add(loc.Localize("葡萄牙语"))
+	codes.Add("pt")
+	names.Add(loc.Localize("捷克语"))
+	codes.Add("cs")
+	names.Add(loc.Localize("威尔士语"))
+	codes.Add("cy")
+	names.Add(loc.Localize("丹麦语"))
+	codes.Add("da")
+	names.Add(loc.Localize("爱沙尼亚语"))
+	codes.Add("et")
+	names.Add(loc.Localize("爱尔兰语"))
+	codes.Add("ga")
+	names.Add(loc.Localize("克罗地亚语"))
+	codes.Add("hr")
+	names.Add(loc.Localize("乌兹别克语"))
+	codes.Add("uz")
+	names.Add(loc.Localize("俄罗斯语"))
+	codes.Add("ru")
+	names.Add(loc.Localize("乌克兰语"))
+	codes.Add("uk")
+	names.Add(loc.Localize("匈牙利语"))
+	codes.Add("hu")
+	names.Add(loc.Localize("塞尔维亚语"))
+	codes.Add("rs_latin")
+	names.Add(loc.Localize("印度尼西亚语"))
+	codes.Add("id")
+	names.Add(loc.Localize("欧西坦语"))
+	codes.Add("oc")
+	names.Add(loc.Localize("冰岛语"))
+	codes.Add("is")
+	names.Add(loc.Localize("立陶宛语"))
+	codes.Add("lt")
+	names.Add(loc.Localize("毛利语"))
+	codes.Add("mi")
+	names.Add(loc.Localize("马来语"))
+	codes.Add("ms")
+	names.Add(loc.Localize("荷兰语"))
+	codes.Add("nl")
+	names.Add(loc.Localize("挪威语"))
+	codes.Add("no")
+	names.Add(loc.Localize("波兰语"))
+	codes.Add("pl")
+	names.Add(loc.Localize("斯洛伐克语"))
+	codes.Add("sk")
+	names.Add(loc.Localize("斯洛语尼亚语"))
+	codes.Add("sl")
+	names.Add(loc.Localize("阿尔巴尼亚语"))
+	codes.Add("sq")
+	names.Add(loc.Localize("瑞典语"))
+	codes.Add("sv")
+	names.Add(loc.Localize("西瓦希里语"))
+	codes.Add("sw")
+	names.Add(loc.Localize("塔加洛语"))
+	codes.Add("tl")
+	names.Add(loc.Localize("土耳其语"))
+	codes.Add("tr")
+	names.Add(loc.Localize("拉丁语"))
+	codes.Add("la")
+	names.Add(loc.Localize("白俄罗斯语"))
+	codes.Add("be")
+	result.Put("names",names)
+	result.Put("codes",codes)
+	Return result
 End Sub
 
 Private Sub CheckIsRunning As ResumableSub
@@ -155,7 +233,6 @@ Private Sub addExtra(region As Map,box As Map)
 End Sub
 
 Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
-	lang=convertLang(lang)
 	Dim boxes As List
 	boxes.Initialize
 	Dim localMode As Boolean = False
