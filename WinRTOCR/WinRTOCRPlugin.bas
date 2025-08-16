@@ -33,9 +33,11 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return paramsList
 		Case "getText"
 			wait for (GetText(Params.Get("img"),Params.Get("lang"))) complete (result As String)
+			wordLevel = False
 			Return result
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"))) complete (regions As List)
+			wordLevel = False
 			Return regions
 		Case "getLangs"
 			wait for (getLangs) complete (langs As Map)
