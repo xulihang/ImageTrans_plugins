@@ -24,12 +24,25 @@ def ocr():
     file_path = "{path}/{file}".format(path=save_path, file=savedName)
     if os.path.exists(file_path)==True:
         os.remove(file_path)
-    upload.save(file_path)        
+    upload.save(file_path)    
+    rec_model="PP-OCRv5_mobile_rec"
+    det_model="PP-OCRv5_mobile_det"
     ret = {}
-    ocr = PaddleOCR(
-        use_doc_orientation_classify=False, 
-        use_doc_unwarping=False, 
-        use_textline_orientation=False)
+    ocr = None
+    if lang not in ["ch","japan","korean","en"]:
+        ocr = PaddleOCR(
+            lang=lang,
+            use_doc_orientation_classify=False, 
+            use_doc_unwarping=False, 
+            use_textline_orientation=False)
+    else:
+        ocr = PaddleOCR(
+            lang=lang,
+            text_detection_model_name=det_model,
+            text_recognition_model_name=rec_model,
+            use_doc_orientation_classify=False, 
+            use_doc_unwarping=False, 
+            use_textline_orientation=False)
     result = ocr.predict(file_path)[0]
     print(result)
     text_lines=[]
@@ -88,7 +101,6 @@ def detect():
     os.remove(file_path)
     ret["text_lines"]=text_lines
     return ret
-
 
 @route('/<filepath:path>')
 def server_static(filepath):
