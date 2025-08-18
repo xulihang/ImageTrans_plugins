@@ -4,6 +4,6 @@ ModuleBreakpoints0=
 ModuleBreakpoints1=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
-NavigationStack=easyOCRPlugin,getLangs,38,6,easyOCRPlugin,Run,23,0,easyOCRPlugin,GetTextWithLocation,223,0,easyOCRPlugin,ocr,262,0,easyOCRPlugin,textLinesToBoxes,284,0,easyOCRPlugin,GetNiceName,13,0,easyOCRPlugin,readJsonAsMap,307,0,easyOCRPlugin,getUrl,294,0
+NavigationStack=easyOCRPlugin,GetNiceName,13,0,easyOCRPlugin,readJsonAsMap,307,0,easyOCRPlugin,getUrl,294,0,easyOCRPlugin,addBoxes,300,0,easyOCRPlugin,Class_Globals,2,3,easyOCRPlugin,ocr,257,1,easyOCRPlugin,GetText,208,0,easyOCRPlugin,DetectRotation,58,0,easyOCRPlugin,Run,47,1,easyOCRPlugin,addExtra,255,0,easyOCRPlugin,GetTextWithLocation,250,0
 SelectedBuild=0
 VisibleModules=1
