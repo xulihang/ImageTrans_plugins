@@ -107,6 +107,8 @@ Sub getLangs(loc As Localizator) As ResumableSub
 	codes.Add("japan")
 	names.Add(loc.Localize("韩语"))
 	codes.Add("korean")
+	names.Add(loc.Localize("德语"))
+	codes.Add("de")
 	names.Add(loc.Localize("南非荷兰语"))
 	codes.Add("af")
 	names.Add(loc.Localize("意大利语"))
