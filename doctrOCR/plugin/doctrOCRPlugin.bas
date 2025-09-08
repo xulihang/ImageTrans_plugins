@@ -48,6 +48,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return running
 		Case "WordLevel"
 			Return wordlevel
+		Case "getLangs"
+			Return getLangs(Params.Get("loc"))
 		Case "GetCombinations"
 			Return BuildCombinations
 		Case "SetCombination"
@@ -68,6 +70,22 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Return ""
 End Sub
 
+Sub getLangs(loc As Localizator) As Map
+	Dim result As Map
+	result.Initialize
+	Dim names,codes As List
+	names.Initialize
+	codes.Initialize
+	codes.Add("en")
+	names.Add(loc.Localize("英语"))
+	codes.Add("fr")
+	names.Add(loc.Localize("法语"))
+	codes.Add("auto")
+	names.Add(loc.Localize("多语言"))
+	result.Put("names",names)
+	result.Put("codes",codes)
+	Return result
+End Sub
 Sub BuildCombinations As List
 	Dim combs As List
 	combs.Initialize

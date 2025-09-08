@@ -6,12 +6,14 @@ import datetime
 from bottle import route, run, template, request, static_file
 import json
 from onnxtr.io import DocumentFile
-from onnxtr.models import db_mobilenet_v3_large, crnn_vgg16_bn, ocr_predictor, EngineConfig
+from onnxtr.models import parseq, db_mobilenet_v3_large, crnn_vgg16_bn, ocr_predictor, EngineConfig
     
 @route('/ocr', method='POST')
 def ocr():
     upload = request.files.get('upload')
     name, ext = os.path.splitext(upload.filename)
+    lang = request.forms.get('lang')
+    print(lang)
     if ext.lower() not in ('.png','.jpg','.jpeg'):
         return "File extension not allowed."
     timestamp=str(int(time.time()*1000))
@@ -28,6 +30,15 @@ def ocr():
     f.close()
     doc = DocumentFile.from_images([image])
     ret = {}
+    global predictor
+    
+    if lang == "en" or lang == "fr":
+        if using_multilingual_model == True:
+            predictor = ocr_predictor(det_arch=det_model, reco_arch=reco_model)
+    else:
+        if using_multilingual_model == False:
+            predictor = ocr_predictor(det_arch=det_model, reco_arch=multilingual_reco_model)
+    
     result = predictor(doc)
     text_lines=[]
     blocks = []
@@ -96,7 +107,9 @@ def ocr():
 def server_static(filepath):
     return static_file(filepath, root='www')
 
+using_multilingual_model = False
 reco_model = crnn_vgg16_bn("crnn_vgg16_bn-743599aa.onnx")
+multilingual_reco_model = parseq("parseq-multilingual-v1.onnx",vocab="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!\"#$%&'()*+,-./:;<=>?@[\\]^_`{|}~°£€¥¢฿àâéèêëîïôùûüçÀÂÉÈÊËÎÏÔÙÛÜÇáãíóõúÁÃÍÓÕÚñÑ¡¿äößÄÖẞčďěňřšťůýžČĎĚŇŘŠŤŮÝŽąćęłńśźżĄĆĘŁŃŚŹŻìòÌÒæøåÆØÅ§")
 det_model = db_mobilenet_v3_large("db_mobilenet_v3_large-4987e7bd.onnx")
 predictor = ocr_predictor(det_arch=det_model, reco_arch=reco_model)
 run(server="paste",host='127.0.0.1', port=8189)     
