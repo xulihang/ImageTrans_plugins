@@ -29,7 +29,7 @@ def ocr():
     det_model="PP-OCRv5_mobile_det"
     ret = {}
     ocr = None
-    if lang not in ["ch","japan","korean","en"]:
+    if lang not in ["ch","japan","en"]:
         ocr = PaddleOCR(
             lang=lang,
             use_doc_orientation_classify=False, 
