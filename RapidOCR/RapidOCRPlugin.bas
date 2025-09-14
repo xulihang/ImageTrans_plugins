@@ -65,7 +65,9 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getIsInstalledOrRunning"
 			Dim root As String = Params.Get("root")
 			If File.Exists(root,"rapidocr") Then
-				Return True
+				If File.Exists(File.Combine(root,"rapidocr"),"RapidOcrOnnxJvm.jar") Then
+					Return True
+				End If
 			End If
 			Return False
 		Case "rotationDetectionSupported"
