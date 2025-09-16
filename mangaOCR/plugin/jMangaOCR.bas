@@ -33,15 +33,37 @@ Public Sub loadModel
 	engine.InitializeNewInstance("com.xulihang.MangaOCR",Array(mModelPath,mVocabPath))
 End Sub
 
+Sub DoProcessingAsync(map1 As Map) As ResumableSub
+	Dim b() As Boolean = Array As Boolean(False)
+	TimeOutImpl(10000, b)
+	th.Start(Me,"recognizeUsingMap",Array As Map(map1))
+	wait for th_Ended(endedOK As Boolean, error As String)
+	If b(0) = False Then
+		b(0) = True
+		CallSubDelayed2(Me, "Recognized", True)
+	End If
+	Return endedOK
+End Sub
+
+Sub TimeOutImpl(Duration As Int, b() As Boolean)
+	Sleep(Duration)
+	If b(0) = False Then
+		b(0) = True
+		Log("time out")
+		CallSubDelayed2(Me, "Recognized", False)
+	End If
+End Sub
+
 Public Sub recognizeAsync(image As cvMat) As ResumableSub
+	Dim text As String
 	Dim map1 As Map
 	map1.Initialize
 	map1.Put("image",image)
-	th.Start(Me,"recognizeUsingMap",Array As Map(map1))
-	wait for th_Ended(endedOK As Boolean, error As String)
-	Log(endedOK)
-	Log(error)
-	Dim text As String = map1.Get("text")
+	DoProcessingAsync(map1)
+	wait for Recognized(Success As Boolean)
+	If Success=True Then
+		text = map1.Get("text")
+	End If
 	Return text
 End Sub
 
