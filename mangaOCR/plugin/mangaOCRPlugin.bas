@@ -7,6 +7,7 @@ Version=4.2
 Sub Class_Globals
 	Private fx As JFX
 	Private longTextMode As Boolean = False
+	Private engine As jMangaOCR
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -86,32 +87,61 @@ Sub getLangs(loc As Localizator) As Map
 	Return result
 End Sub
 
-Sub GetText(img As B4XBitmap) As ResumableSub
-	Dim out As OutputStream
-	out=File.OpenOutput(File.DirApp,"image.jpg",False)
-	img.WriteToStream(out,"100","JPEG")
-	out.Close
-	Dim job As HttpJob
-	job.Initialize("",Me)
-	Dim fd As MultipartFileData
-	fd.Initialize
-	fd.KeyName = "upload"
-	fd.Dir = File.DirApp
-	fd.FileName = "image.jpg"
-	fd.ContentType = "image/jpg"
-	job.PostMultipart(getUrl,Null, Array(fd))
-	job.GetRequest.Timeout=240*1000
-	Wait For (job) JobDone(job As HttpJob)
-	If job.Success Then
-		Try
-			Log(job.GetString)
-			Return job.GetString
-		Catch
-			Log(LastException)
-		End Try
+Private Sub LoadMangaOCRIfNeeded As ResumableSub
+	If engine.IsInitialized = False Then
+		Dim mangaOCRDir As String = File.Combine(File.DirApp,"mangaocr")
+		Dim modelPath As String = File.Combine(mangaOCRDir,"model.onnx")
+		Dim vocabPath As String = File.Combine(mangaOCRDir,"vocab.txt")
+		engine.Initialize(modelPath,vocabPath)
+		wait for (engine.loadModelAsync) complete (done As Object)
 	End If
-	job.Release
-	Return ""
+	Return True
+End Sub
+
+Sub Image2cvMat2(img As B4XBitmap) As cvMat
+	Return cv2.bytesToMat(ImageToBytes(img))
+End Sub
+
+Public Sub ImageToBytes(Image As B4XBitmap) As Byte()
+	Dim out As OutputStream
+	out.InitializeToBytesArray(0)
+	Image.WriteToStream(out, 100, "JPEG")
+	out.Close
+	Return out.ToBytesArray
+End Sub
+
+Sub GetText(img As B4XBitmap) As ResumableSub
+	If ONNXExists Then
+		Wait For (LoadMangaOCRIfNeeded) complete (done As Object)
+		wait for (engine.recognizeAsync(Image2cvMat2(img))) complete (result As String)
+		Return result
+	Else
+		Dim out As OutputStream
+		out=File.OpenOutput(File.DirApp,"image.jpg",False)
+		img.WriteToStream(out,"100","JPEG")
+		out.Close
+		Dim job As HttpJob
+		job.Initialize("",Me)
+		Dim fd As MultipartFileData
+		fd.Initialize
+		fd.KeyName = "upload"
+		fd.Dir = File.DirApp
+		fd.FileName = "image.jpg"
+		fd.ContentType = "image/jpg"
+		job.PostMultipart(getUrl,Null, Array(fd))
+		job.GetRequest.Timeout=240*1000
+		Wait For (job) JobDone(job As HttpJob)
+		If job.Success Then
+			Try
+				Log(job.GetString)
+				Return job.GetString
+			Catch
+				Log(LastException)
+			End Try
+		End If
+		job.Release
+		Return ""
+	End If
 End Sub
 
 Sub GetTextLongTextMode(img As B4XBitmap) As ResumableSub
@@ -156,7 +186,18 @@ Sub getUrl As String
 	Return url
 End Sub
 
+Private Sub ONNXExists As Boolean
+	Dim mangaOCRDir As String = File.Combine(File.DirApp,"mangaocr")
+	If File.Exists(mangaOCRDir,"model.onnx") And File.Exists(mangaOCRDir,"vocab.txt") Then
+		Return True
+	End If
+	Return False
+End Sub
+
 Private Sub CheckIsRunning As ResumableSub
+	If ONNXExists Then
+		Return True
+	End If
 	Dim result As Boolean = True
 	Dim job As HttpJob
 	job.Initialize("job",Me)
