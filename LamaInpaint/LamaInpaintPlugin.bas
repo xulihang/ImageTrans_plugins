@@ -86,7 +86,29 @@ Public Sub ImageToPNGBytes(Image As B4XBitmap) As Byte()
 	Return out.ToBytesArray
 End Sub
 
+Public Sub updateMask(mask As B4XBitmap) As B4XBitmap
+	Dim xui As XUI
+	Dim r As B4XRect
+	r.Initialize(0,0,mask.Width,mask.Height)
+	Dim bc As BitmapCreator
+	bc.Initialize(mask.Width,mask.Height)
+	bc.DrawBitmap(mask,r,False)
+	For x = 0 To mask.Width - 1
+		For y = 0 To mask.Height - 1
+			Dim color As ARGBColor
+			bc.GetARGB(x,y,color)
+			If color.a = 0 Or (color.b = 255 And color.r = 255 And color.g = 255) Then 'transparent or white
+				bc.SetColor(x,y,xui.Color_Black)
+			Else
+				bc.SetColor(x,y,xui.Color_White)
+			End If
+		Next
+	Next
+	Return bc.Bitmap
+End Sub
+
 Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
+	mask = updateMask(mask)
 	If ONNXExists Then
 		Wait For (LoadLamaIfNeeded) complete (done As Object)
 		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
@@ -101,29 +123,9 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 	origin.WriteToStream(out,"100","JPEG")
 	out.Close
 	
-	Dim r As B4XRect
-	r.Initialize(0,0,mask.Width,mask.Height)
-
-    Dim xui As XUI	
-	Dim bc As BitmapCreator
-	bc.Initialize(mask.Width,mask.Height)
-	bc.DrawBitmap(mask,r,False)
-	For x = 0 To mask.Width - 1
-	    For y = 0 To mask.Height - 1
-			Dim color As ARGBColor
-			bc.GetARGB(x,y,color)
-		    If color.a = 0 Or (color.b = 255 And color.r = 255 And color.g = 255) Then 'transparent or white
-				bc.SetColor(x,y,xui.Color_Black)
-			Else
-				bc.SetColor(x,y,xui.Color_White)
-		    End If
-		Next
-	Next
-	
-	
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"mask.png",False)
-	bc.Bitmap.WriteToStream(out,"100","PNG")
+	mask.WriteToStream(out,"100","PNG")
 	out.Close
 	
 	Dim job As HttpJob
