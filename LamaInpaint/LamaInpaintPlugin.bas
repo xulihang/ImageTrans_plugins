@@ -6,6 +6,7 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private engine As jLama
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -48,7 +49,53 @@ Private Sub getDefaultSettings As Map
 	Return CreateMap("url":"http://localhost:8087/inpaint")
 End Sub
 
+Private Sub LoadLamaIfNeeded As ResumableSub
+	If engine.IsInitialized = False Then
+		engine.Initialize(File.Combine(File.DirApp,"big-lama.onnx"))
+		wait for (engine.loadModelAsync) complete (done As Object)
+	End If
+	Return True
+End Sub
+
+Public Sub BytesToImage(bytes() As Byte) As Image
+	Dim In As InputStream
+	In.InitializeFromBytesArray(bytes, 0, bytes.Length)
+	Dim bmp As Image
+	bmp.Initialize2(In)
+	In.Close
+	Return bmp
+End Sub
+
+Sub Image2cvMat2(img As B4XBitmap) As cvMat
+	Return cv2.bytesToMat(ImageToBytes(img))
+End Sub
+
+Public Sub ImageToBytes(Image As B4XBitmap) As Byte()
+	Dim out As OutputStream
+	out.InitializeToBytesArray(0)
+	Image.WriteToStream(out, 100, "JPEG")
+	out.Close
+	Return out.ToBytesArray
+End Sub
+
+Public Sub ImageToPNGBytes(Image As B4XBitmap) As Byte()
+	Dim out As OutputStream
+	out.InitializeToBytesArray(0)
+	Image.WriteToStream(out, 100, "PNG")
+	out.Close
+	Return out.ToBytesArray
+End Sub
+
 Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
+	If ONNXExists Then
+		Wait For (LoadLamaIfNeeded) complete (done As Object)
+		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
+		wait for (engine.inpaintAsync(Image2cvMat2(origin),maskMat)) complete (resultMat As cvMat)
+		Dim result As B4XBitmap
+		result = BytesToImage(resultMat.mat2bytes)
+		result = result.Resize(origin.Width,origin.Height,False)
+		Return result
+	End If
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"origin.jpg",False)
 	origin.WriteToStream(out,"100","JPEG")
@@ -176,7 +223,17 @@ Sub getUrl As String
 	Return url
 End Sub
 
+Private Sub ONNXExists As Boolean
+	If File.Exists(File.DirApp,"big-lama.onnx") Then
+		Return True
+	End If
+	Return False
+End Sub
+
 private Sub CheckIsRunning As ResumableSub
+	If ONNXExists Then
+		Return True
+	End If
 	Dim result As Boolean = True
 	Dim job As HttpJob
 	job.Initialize("job",Me)
