@@ -7,14 +7,16 @@ Version=10
 Sub Class_Globals
 	Private engine As JavaObject
 	Private th As Thread
-	Private mModelPath As String
+	Private mEncoderModelPath As String
+	Private mDecoderModelPath As String
 	Private mVocabPath As String
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(modelPath As String,vocabPath As String)
+Public Sub Initialize(encoderModelPath As String,decoderModelPath As String,vocabPath As String)
 	th.Initialise("th")
-	mModelPath = modelPath
+	mEncoderModelPath = encoderModelPath
+	mDecoderModelPath = decoderModelPath
 	mVocabPath = vocabPath
 End Sub
 
@@ -30,7 +32,7 @@ Public Sub loadModelAsync As ResumableSub
 End Sub
 
 Public Sub loadModel
-	engine.InitializeNewInstance("com.xulihang.MangaOCR",Array(mModelPath,mVocabPath))
+	engine.InitializeNewInstance("com.xulihang.MangaOCR",Array(mEncoderModelPath,mDecoderModelPath,mVocabPath))
 End Sub
 
 Sub DoProcessingAsync(map1 As Map) As ResumableSub
@@ -79,6 +81,6 @@ End Sub
 
 Private Sub loadModelUsingMap(map1 As Map)
 	Dim jo As JavaObject
-	jo.InitializeNewInstance("com.xulihang.MangaOCR",Array(mModelPath,mVocabPath))
+	jo.InitializeNewInstance("com.xulihang.MangaOCR",Array(mEncoderModelPath,mDecoderModelPath,mVocabPath))
 	map1.Put("engine",jo)
 End Sub

@@ -90,9 +90,10 @@ End Sub
 Private Sub LoadMangaOCRIfNeeded As ResumableSub
 	If engine.IsInitialized = False Then
 		Dim mangaOCRDir As String = File.Combine(File.DirApp,"mangaocr")
-		Dim modelPath As String = File.Combine(mangaOCRDir,"model.onnx")
+		Dim encoderModelPath As String = File.Combine(mangaOCRDir,"encoder.onnx")
+		Dim decoderModelPath As String = File.Combine(mangaOCRDir,"decoder.onnx")
 		Dim vocabPath As String = File.Combine(mangaOCRDir,"vocab.txt")
-		engine.Initialize(modelPath,vocabPath)
+		engine.Initialize(encoderModelPath,decoderModelPath,vocabPath)
 		wait for (engine.loadModelAsync) complete (done As Object)
 	End If
 	Return True
@@ -188,7 +189,7 @@ End Sub
 
 Private Sub ONNXExists As Boolean
 	Dim mangaOCRDir As String = File.Combine(File.DirApp,"mangaocr")
-	If File.Exists(mangaOCRDir,"model.onnx") And File.Exists(mangaOCRDir,"vocab.txt") Then
+	If File.Exists(mangaOCRDir,"decoder.onnx") And File.Exists(mangaOCRDir,"encoder.onnx") And File.Exists(mangaOCRDir,"vocab.txt") Then
 		Return True
 	End If
 	Return False
