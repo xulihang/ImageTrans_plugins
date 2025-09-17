@@ -18,6 +18,10 @@ Public Sub copyTo(roi As cvMat,mask As cvMat)
 	matJO.RunMethod("copyTo",Array(roi.JO,mask.JO))
 End Sub
 
+Public Sub release
+	matJO.RunMethod("release",Null)
+End Sub
+
 Public Sub getJO As JavaObject
 	Return matJO
 End Sub

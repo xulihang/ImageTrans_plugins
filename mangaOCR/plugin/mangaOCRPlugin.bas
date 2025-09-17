@@ -114,7 +114,9 @@ End Sub
 Sub GetText(img As B4XBitmap) As ResumableSub
 	If ONNXExists Then
 		Wait For (LoadMangaOCRIfNeeded) complete (done As Object)
-		wait for (engine.recognizeAsync(Image2cvMat2(img))) complete (result As String)
+		Dim srcMat As cvMat = Image2cvMat2(img)
+		wait for (engine.recognizeAsync(srcMat)) complete (result As String)
+		srcMat.release
 		Return result
 	Else
 		Dim out As OutputStream
