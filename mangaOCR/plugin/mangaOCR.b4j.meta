@@ -16,6 +16,6 @@ ModuleClosedNodes2=
 ModuleClosedNodes3=
 ModuleClosedNodes4=
 ModuleClosedNodes5=
-NavigationStack=mangaOCRPlugin,getUrl,170,0,mangaOCRPlugin,getLangs,70,0,jMangaOCR,Initialize,10,1,jMangaOCR,loadModel,28,2,jMangaOCR,loadModelAsync,25,0,jMangaOCR,Class_Globals,0,0,jMangaOCR,recognizeUsingMap,74,0,jMangaOCR,loadModelUsingMap,80,2,mangaOCRPlugin,LoadMangaOCRIfNeeded,85,0,mangaOCRPlugin,ONNXExists,184,1
+NavigationStack=jMangaOCR,loadModelUsingMap,76,2,jMangaOCR,Class_Globals,8,0,jMangaOCR,DoProcessingAsync,39,0,mangaOCRPlugin,Initialize,10,0,mangaOCRPlugin,Run,59,0,mangaOCRPlugin,BuildCombinations,68,0,mangaOCRPlugin,getLangs,73,0,mangaOCRPlugin,LoadMangaOCRIfNeeded,83,0,mangaOCRPlugin,GetText,108,0,mangaOCRPlugin,ONNXExists,187,0,Main,AppStart,21,0
 SelectedBuild=0
 VisibleModules=5,4,1,2,3

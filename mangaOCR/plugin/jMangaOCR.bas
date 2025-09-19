@@ -32,7 +32,8 @@ Public Sub loadModelAsync As ResumableSub
 End Sub
 
 Public Sub loadModel
-	engine.InitializeNewInstance("com.xulihang.MangaOCR",Array(mEncoderModelPath,mDecoderModelPath,mVocabPath))
+	Dim lines As List = File.ReadList(mVocabPath,"")
+	engine.InitializeNewInstance("com.xulihang.MangaOCR",Array(mEncoderModelPath,mDecoderModelPath,lines))
 End Sub
 
 Sub DoProcessingAsync(map1 As Map) As ResumableSub
@@ -80,7 +81,8 @@ Private Sub recognizeUsingMap(map1 As Map)
 End Sub
 
 Private Sub loadModelUsingMap(map1 As Map)
+	Dim lines As List = File.ReadList(mVocabPath,"")
 	Dim jo As JavaObject
-	jo.InitializeNewInstance("com.xulihang.MangaOCR",Array(mEncoderModelPath,mDecoderModelPath,mVocabPath))
+	jo.InitializeNewInstance("com.xulihang.MangaOCR",Array(mEncoderModelPath,mDecoderModelPath,lines))
 	map1.Put("engine",jo)
 End Sub
