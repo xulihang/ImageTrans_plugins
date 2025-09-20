@@ -30,14 +30,21 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim paramsList As List
 			paramsList.Initialize
 			paramsList.Add("url")
+			paramsList.Add("long text ratio")
 			Return paramsList
 		Case "getText"
 			If longTextMode Then
 				wait for (GetTextLongTextMode(Params.Get("img"))) complete (result As String)
 				Return result
 			Else
-				wait for (GetText(Params.Get("img"))) complete (result As String)
-				Return result
+				Dim ratio As Int = getLongTextRatio
+				Dim img As B4XBitmap = Params.Get("img")
+				If img.Height / img.Width > ratio Then
+					Return ""
+				Else
+					wait for (GetText(Params.Get("img"))) complete (result As String)
+					Return result
+				End If
 			End If
 
 		Case "getTextWithLocation"
@@ -45,7 +52,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			list1.Initialize
 			Return list1
 		Case "getDefaultParamValues"
-			Return CreateMap("url":"http://127.0.0.1:8080/ocr")
+			Return CreateMap("url":"http://127.0.0.1:8080/ocr","long text ratio":"8")
 		Case "getLangs"
 			Return getLangs(Params.Get("loc"))
 		Case "getSetupParams"
@@ -147,11 +154,14 @@ Sub GetText(img As B4XBitmap) As ResumableSub
 	End If
 End Sub
 
+
+
 Sub GetTextLongTextMode(img As B4XBitmap) As ResumableSub
+	Dim longTextRatio As Int = getLongTextRatio
 	Dim imgs As List
 	imgs.Initialize
-	If img.Height / img.Width > 8 Then
-		Dim segHeight As Int = img.Width * 8
+	If img.Height / img.Width > longTextRatio Then
+		Dim segHeight As Int = img.Width * longTextRatio
 		Dim top As Int = 0
 		Dim heightLeft As Int = img.Height
 		Dim segsNumber As Int = Ceil(img.Height / segHeight)
@@ -174,6 +184,19 @@ End Sub
 
 Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)
+End Sub
+
+Private Sub getLongTextRatio As Int
+	Dim ratio As Int = 8
+	If File.Exists(File.DirApp,"preferences.conf") Then
+		Try
+			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
+			ratio=getMap("manga-ocr",getMap("api",preferencesMap)).GetDefault("long text ratio",ratio)
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	Return ratio
 End Sub
 
 Sub getUrl As String
