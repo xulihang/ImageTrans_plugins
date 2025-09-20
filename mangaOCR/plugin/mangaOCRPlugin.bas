@@ -35,18 +35,18 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getText"
 			If longTextMode Then
 				wait for (GetTextLongTextMode(Params.Get("img"))) complete (result As String)
+				longTextMode = False
 				Return result
 			Else
 				Dim ratio As Int = getLongTextRatio
 				Dim img As B4XBitmap = Params.Get("img")
-				If img.Height / img.Width > ratio Then
+				If img.Height / img.Width > ratio Or img.Width / img.Height > ratio Then
 					Return ""
 				Else
 					wait for (GetText(Params.Get("img"))) complete (result As String)
 					Return result
 				End If
 			End If
-
 		Case "getTextWithLocation"
 			Dim list1 As List
 			list1.Initialize
@@ -169,6 +169,16 @@ Sub GetTextLongTextMode(img As B4XBitmap) As ResumableSub
 			imgs.Add(img.Crop(0,top,img.Width,Min(segHeight,heightLeft)))
 			heightLeft = heightLeft - segHeight
 			top = top + segHeight
+		Next
+	Else If img.Width / img.Height > longTextRatio Then
+		Dim segWidth As Int = img.Height * longTextRatio
+		Dim left As Int = 0
+		Dim widthLeft As Int = img.Width
+		Dim segsNumber As Int = Ceil(img.Width / segWidth)
+		For i = 1 To segsNumber
+			imgs.Add(img.Crop(left,0,Min(segWidth,widthLeft),img.Height))
+			widthLeft = widthLeft - segWidth
+			left = left + segWidth
 		Next
 	Else
 		imgs.Add(img)
