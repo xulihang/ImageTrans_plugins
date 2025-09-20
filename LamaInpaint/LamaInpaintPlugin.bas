@@ -111,8 +111,11 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 	mask = updateMask(mask)
 	If ONNXExists Then
 		Wait For (LoadLamaIfNeeded) complete (done As Object)
+		Dim originMat As cvMat = Image2cvMat2(origin)
 		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
-		wait for (engine.inpaintAsync(Image2cvMat2(origin),maskMat)) complete (resultMat As cvMat)
+		wait for (engine.inpaintAsync(originMat,maskMat)) complete (resultMat As cvMat)
+		originMat.release
+		maskMat.release
 		Dim result As B4XBitmap
 		result = BytesToImage(resultMat.mat2bytes)
 		result = result.Resize(origin.Width,origin.Height,False)
