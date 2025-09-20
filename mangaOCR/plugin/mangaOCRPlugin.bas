@@ -90,11 +90,11 @@ End Sub
 Private Sub LoadMangaOCRIfNeeded As ResumableSub
 	If engine.IsInitialized = False Then
 		Dim mangaOCRDir As String = File.Combine(File.DirApp,"mangaocr")
-		Dim encoderModelPath As String = File.Combine(mangaOCRDir,"encoder.onnx")
-		Dim decoderModelPath As String = File.Combine(mangaOCRDir,"decoder.onnx")
-		Dim vocabPath As String = File.Combine(mangaOCRDir,"vocab.txt")
-		engine.Initialize(encoderModelPath,decoderModelPath,vocabPath)
-		wait for (engine.loadModelAsync) complete (done As Object)
+		Dim encoderModel As String = File.Combine(mangaOCRDir,"encoder.onnx")
+		Dim decoderModel As String = File.Combine(mangaOCRDir,"decoder.onnx")
+		Dim vocabs As List = File.ReadList(mangaOCRDir,"vocab.txt")
+		engine.Initialize
+		wait for (engine.loadModelWithPathAsync(encoderModel,decoderModel,vocabs)) complete (done As Object)
 	End If
 	Return True
 End Sub

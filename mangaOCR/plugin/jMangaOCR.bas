@@ -7,22 +7,33 @@ Version=10
 Sub Class_Globals
 	Private engine As JavaObject
 	Private th As Thread
-	Private mEncoderModelPath As String
-	Private mDecoderModelPath As String
-	Private mVocabPath As String
 End Sub
 
 'Initializes the object. You can add parameters to this method if needed.
-Public Sub Initialize(encoderModelPath As String,decoderModelPath As String,vocabPath As String)
+Public Sub Initialize
 	th.Initialise("th")
-	mEncoderModelPath = encoderModelPath
-	mDecoderModelPath = decoderModelPath
-	mVocabPath = vocabPath
 End Sub
 
-Public Sub loadModelAsync As ResumableSub
+Public Sub loadModelWithPathAsync(encoder As String,decoder As String,vocabs As List) As ResumableSub
 	Dim map1 As Map
 	map1.Initialize
+	map1.Put("encoder",encoder)
+	map1.Put("decoder",decoder)
+	map1.Put("vocabs",vocabs)
+	th.Start(Me,"loadModelWithPathUsingMap",Array As Map(map1))
+	wait for th_Ended(endedOK As Boolean, error As String)
+	Log(endedOK)
+	Log(error)
+	engine = map1.Get("engine")
+	Return engine
+End Sub
+
+Public Sub loadModelAsync(encoder() As Byte,decoder() As Byte,vocabs As List) As ResumableSub
+	Dim map1 As Map
+	map1.Initialize
+	map1.Put("encoder",encoder)
+	map1.Put("decoder",decoder)
+	map1.Put("vocabs",vocabs)
 	th.Start(Me,"loadModelUsingMap",Array As Map(map1))
 	wait for th_Ended(endedOK As Boolean, error As String)
 	Log(endedOK)
@@ -31,8 +42,31 @@ Public Sub loadModelAsync As ResumableSub
 	Return engine
 End Sub
 
-Public Sub loadModel
-	engine.InitializeNewInstance("com.xulihang.MangaOCR",Array(mEncoderModelPath,mDecoderModelPath,mVocabPath))
+Private Sub loadModelUsingMap(map1 As Map)
+	Dim encoder() As Byte = map1.Get("encoder")
+	Dim decoder() As Byte = map1.Get("decoder")
+	Dim vocabs As List = map1.Get("vocabs")
+	Dim jo As JavaObject
+	jo.InitializeNewInstance("com.xulihang.MangaOCR",Array(encoder,decoder,vocabs))
+	map1.Put("engine",jo)
+End Sub
+
+Private Sub loadModelWithPathUsingMap(map1 As Map)
+	Dim encoder As String = map1.Get("encoder")
+	Dim decoder As String = map1.Get("decoder")
+	Dim vocabs As List = map1.Get("vocabs")
+	Dim jo As JavaObject
+	jo.InitializeNewInstance("com.xulihang.MangaOCR",Array(encoder,decoder,vocabs))
+	map1.Put("engine",jo)
+End Sub
+
+
+Public Sub loadModel(encoder() As Byte,decoder() As Byte,vocabs As List)
+	engine.InitializeNewInstance("com.xulihang.MangaOCR",Array(encoder,decoder,vocabs))
+End Sub
+
+Public Sub loadModelWithPath(encoder As String,decoder As String,vocabs As List)
+	engine.InitializeNewInstance("com.xulihang.MangaOCR",Array(encoder,decoder,vocabs))
 End Sub
 
 Sub DoProcessingAsync(map1 As Map) As ResumableSub
@@ -79,8 +113,3 @@ Private Sub recognizeUsingMap(map1 As Map)
 	map1.Put("text",text)
 End Sub
 
-Private Sub loadModelUsingMap(map1 As Map)
-	Dim jo As JavaObject
-	jo.InitializeNewInstance("com.xulihang.MangaOCR",Array(mEncoderModelPath,mDecoderModelPath,mVocabPath))
-	map1.Put("engine",jo)
-End Sub

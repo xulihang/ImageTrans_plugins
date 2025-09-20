@@ -20,7 +20,7 @@ Module5=mangaOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=5
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
