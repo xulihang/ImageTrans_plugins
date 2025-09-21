@@ -38,14 +38,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 				longTextMode = False
 				Return result
 			Else
-				Dim ratio As Int = getLongTextRatio
-				Dim img As B4XBitmap = Params.Get("img")
-				If img.Height / img.Width > ratio Or img.Width / img.Height > ratio Then
-					Return ""
-				Else
-					wait for (GetText(Params.Get("img"))) complete (result As String)
-					Return result
-				End If
+				wait for (GetText(Params.Get("img"))) complete (result As String)
+				Return result
 			End If
 		Case "getTextWithLocation"
 			Dim list1 As List
