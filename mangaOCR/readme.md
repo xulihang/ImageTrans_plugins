@@ -5,13 +5,18 @@ See:
 
 Note: If your device is powerful enough, it is recommended to use [manga-image-translator](https://github.com/xulihang/ImageTrans_plugins/tree/master/mangaTranslatorOCR).
 
-Install:
+## Installation
 
-1. Install Python3 if it is not installed.
-2. Install required packages: `pip3 install bottle==0.12.19 manga_ocr==0.1.4 Paste`. (Use terminal to run the commands.)
-3. Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it into a folder.
-4. Run the server: `python3 server_manga_ocr.py`.
-5. Unzip the [plugin files](https://github.com/xulihang/ImageTrans-docs/files/10887754/manga-ocr-plugin.zip) in ImageTrans's `plugins` folder and restart ImageTrans. (optional for v1.9.0+)
+The ONNX version of mangaOCR is included since ImageTrans v4.2.0, so you don't need to do any installation. You can find the mangaocr folder under ImageTrans's root. If there is not such a folder, you can create one and put [decoder.onnx](https://github.com/xulihang/mangaocr-onnx/releases/download/models/decoder.onnx), [encoder.onnx](https://github.com/xulihang/mangaocr-onnx/releases/download/models/encoder.onnx) and [vocab.txt](https://github.com/xulihang/mangaocr-onnx/releases/download/models/vocab.txt) in it.
+
+If you need to use Python to have a better performance, you can read the following:
+
+1. Remove the mangaocr folder under ImageTrans's root.
+2. Install Python3 if it is not installed.
+3. Install required packages: `pip3 install bottle==0.12.19 manga_ocr==0.1.4 Paste`. (Use terminal to run the commands.)
+4. Download the [model](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/manga-ocr-model.zip) and unzip it into a folder.
+5. Run the server: `python3 server_manga_ocr.py`.
+6. Unzip the [plugin files](https://github.com/xulihang/ImageTrans-docs/files/10887754/manga-ocr-plugin.zip) in ImageTrans's `plugins` folder and restart ImageTrans. (optional for v1.9.0+)
 
 **For convenience**, you can also use the packed versions:
 * Windows
