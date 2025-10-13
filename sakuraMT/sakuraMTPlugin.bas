@@ -133,7 +133,6 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 
 	Dim url As String = host&"/chat/completions"
 	
-	Log(url)
 	Dim messages As List
 	messages.Initialize
 	Dim message As Map
@@ -204,6 +203,9 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 				line = line.Replace("\n",CRLF)
 				targetList.Add(line)
 			Next
+			Do While targetList.Size < sourceList.Size
+				targetList.Add("")
+			Loop
 		Catch
 			Log(LastException)
 		End Try
