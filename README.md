@@ -26,6 +26,8 @@ These plugins can work offline.
 * [opusMT](opusMT)
 * [sugoiMT](sugoiMT)
 * [ChatGPT](chatGPTMT)
+* [ollama](ollamaMT)
+* [sakura](sakuraMT)
 
 ### Mask Generation
 
