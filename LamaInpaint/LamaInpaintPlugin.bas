@@ -97,7 +97,7 @@ Public Sub updateMask(mask As B4XBitmap) As B4XBitmap
 		For y = 0 To mask.Height - 1
 			Dim color As ARGBColor
 			bc.GetARGB(x,y,color)
-			If color.a = 0 Or (color.b = 255 And color.r = 255 And color.g = 255) Then 'transparent or white
+			If color.a = 0 Or (color.b = 0 And color.r = 0 And color.g = 0) Then 'black or transparent
 				bc.SetColor(x,y,xui.Color_Black)
 			Else
 				bc.SetColor(x,y,xui.Color_White)

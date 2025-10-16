@@ -40,15 +40,15 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
-	cv2.Initialize
-	loadOpenCV
-	loadOnnxruntime
+	'cv2.Initialize
+	'loadOpenCV
+	'loadOnnxruntime
 	Dim settings As Map
 	settings.Initialize
     Dim n As LamaInpaintPlugin
 	n.Initialize
 	Dim origin As Image=fx.LoadImage(File.DirApp,"image.jpg")
-	Dim mask As Image=fx.LoadImage(File.DirApp,"mask.png")
+	Dim mask As Image=fx.LoadImage(File.DirApp,"mask1.png")
 	wait for (n.inpaint(origin,mask,settings)) complete (result As B4XBitmap)
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"removed.jpg",False)
