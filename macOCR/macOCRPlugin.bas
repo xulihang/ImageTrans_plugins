@@ -7,6 +7,7 @@ Version=4.2
 Sub Class_Globals
 	Private fx As JFX
 	Private rotationDetection As Boolean = False
+	Private wordLevel As Boolean = False
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -32,10 +33,12 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getText"
 			wait for (GetText(Params.Get("img"),Params.Get("lang"),Params.GetDefault("imgName",""))) complete (result As String)
 			rotationDetection = False
+			wordLevel = False
 			Return result
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"),Params.GetDefault("imgName",""))) complete (regions As List)
 			rotationDetection = False
+			wordLevel = False
 			Return regions
 		Case "isUsingShell"
 			Return True
@@ -51,9 +54,14 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getLangs"
 			wait for (getLangs) complete (langs As Map)
 			Return langs
+		Case "Multiple"
+			Return True
+		Case "GetCombinations"
+			Return BuildCombinations
 		Case "SetCombination"
 			Dim comb As String=Params.Get("combination")
 			rotationDetection = comb.Contains("rotationDetection")
+			wordLevel = comb.Contains("word level")
 		Case "rotationDetectionSupported"
 			Return True
 		Case "detectRotation"
@@ -62,6 +70,14 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return angle
 	End Select
 	Return ""
+End Sub
+
+Sub BuildCombinations As List
+	Dim combs As List
+	combs.Initialize
+	combs.Add("mac")
+	combs.Add("word level (mac)")
+	Return combs
 End Sub
 
 Sub DetectRotation(img As B4XBitmap, lang As String) As ResumableSub
@@ -355,7 +371,13 @@ Sub ocr(img As B4XBitmap, Lang As String,imgName As String) As ResumableSub
 	Dim executable As String
 	executable="./OCR"
 	Dim sh As Shell
-	sh.Initialize("sh",executable,Array(Lang,"false","true",imgName,imgName&"-out.json"))
+	
+	If wordLevel Then
+		sh.Initialize("sh",executable,Array(Lang,"false","true","true",imgName,imgName&"-out.json"))
+	Else
+		sh.Initialize("sh",executable,Array(Lang,"false","true",imgName,imgName&"-out.json"))
+	End If
+	
 	sh.WorkingDirectory=File.DirApp
 	sh.Run(10000)
 	wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
