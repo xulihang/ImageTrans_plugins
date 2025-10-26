@@ -6,7 +6,6 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Private escapedNewLine As String = "-CRLF-"
 	Private defaultPrompt As String = $"Translate the following into {langcode}: {source}"$
 	Private defaultPromptWithTerm As String = $"With the help of the terms defined in JSON: {term}, translate the following into {langcode}: {source}"$
 	Private defaultBatchPrompt As String = $"Translate the following into {langcode}: {source}"$
@@ -139,36 +138,13 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 
 	Dim sb As StringBuilder
 	sb.Initialize
-	
 	Dim index As Int = 0
-	
-	
-	Dim indexMap As Map
-	indexMap.Initialize
-	
-	Dim lineIndex As Int
-
 	For Each source As String In sourceList
-		For Each line As String In Regex.Split(CRLF,source)
-			Dim linesOfSource As List
-			If indexMap.ContainsKey(index) Then
-				linesOfSource = indexMap.Get(index)
-			Else
-				linesOfSource.Initialize
-			End If
-			linesOfSource.Add(lineIndex)
-			indexMap.Put(index,linesOfSource)
-			
-			sb.Append(line)
-			sb.Append(CRLF)
-			
-			lineIndex = lineIndex + 1
-		Next
+		source = source.Replace(CRLF,"\n")
+		sb.Append(source)
+		sb.Append(CRLF)
 		index = index + 1
 	Next
-	
-	Log(indexMap)
-	
 	Dim target As String = sb.ToString
 	
 	If prompt.Contains("{langcode}") Then
@@ -221,62 +197,24 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Dim message As Map = choice.Get("message")
 			Dim content As String = message.Get("content")
 			content = Regex.Replace("\n+",content,CRLF)
-			
-			Dim lines As List = Regex.Split(CRLF,content)
-			Log(lines)
-			For i = 0 To lines.Size - 1
-				Log(i&": "&lines.get(i))
+			For Each line As String In Regex.Split(CRLF,content)
+			    line = line.Replace("\n",CRLF)
+			    targetList.Add(line)
 			Next
-			For i = 0 To sourceList.Size - 1 
-				If indexMap.ContainsKey(i) Then
-					Dim linesOfSource As List = indexMap.Get(i)
-					Dim sb As StringBuilder
-					sb.Initialize
-					Dim lineIndex As Int = 0
-					For Each index As Int In linesOfSource
-						If index >= 0 And index < lines.Size Then
-							sb.Append(lines.Get(index))
-							If lineIndex <> linesOfSource.Size - 1 Then
-								sb.Append(CRLF)
-							End If
-						Else
-							Exit
-						End If
-						lineIndex = lineIndex + 1
-					Next
-					targetList.Add(sb.ToString)
-				Else
-					targetList.Add("")
-				End If
-			Next
+				Do While targetList.Size < sourceList.Size
+				targetList.Add("")
+			Loop
 		Catch
 			Log(LastException)
 			Try
 				content = content.SubString2(content.IndexOf("```"),content.Length)
-				
-				Dim lines As List = Regex.Split(CRLF,content)
-				For i = 0 To sourceList.Size - 1
-					If indexMap.ContainsKey(i) Then
-						Dim linesOfSource As List = indexMap.Get(i)
-						Dim sb As StringBuilder
-						sb.Initialize
-						Dim lineIndex As Int = 0
-						For Each index As Int In linesOfSource
-							If index >= 0 And index < lines.Size Then
-								sb.Append(lines.Get(index))
-								If lineIndex <> linesOfSource.Size - 1 Then
-									sb.Append(CRLF)
-								End If
-							Else
-								Exit
-							End If
-							lineIndex = lineIndex + 1
-						Next
-						targetList.Add(sb.ToString)
-					Else
-						targetList.Add("")
-					End If
+				For Each line As String In Regex.Split(CRLF,content)
+					line = line.Replace("\n",CRLF)
+					targetList.Add(line)
 				Next
+				Do While targetList.Size < sourceList.Size
+					targetList.Add("")
+				Loop
 			Catch
 				Log(LastException)
 			End Try
