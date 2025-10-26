@@ -199,6 +199,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Dim choice As Map = choices.Get(0)
 			Dim message As Map = choice.Get("message")
 			Dim content As String = message.Get("content")
+			content = Regex.Replace("\n+",content,CRLF)
 			For Each line As String In Regex.Split(CRLF,content)
 				line = line.Replace("\n",CRLF)
 				targetList.Add(line)
