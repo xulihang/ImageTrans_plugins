@@ -1,0 +1,98 @@
+﻿AppType=JavaFX
+Build1=Default,org.xulihang.imagetrans
+Group=Default Group
+Library1=javaobject
+Library10=xmlbuilder
+Library11=threading
+Library2=jbitmapcreator
+Library3=jcore
+Library4=jfx
+Library5=jokhttputils2
+Library6=json
+Library7=jstringutils
+Library8=jxmlsax
+Library9=jxui
+Module1=AOTInpaintPlugin
+Module2=cv2
+Module3=cvMat
+Module4=jAOTInpaint
+NumberOfFiles=0
+NumberOfLibraries=11
+NumberOfModules=4
+Version=8.9
+@EndOfDesignText@
+#Region Project Attributes 
+	#MainFormWidth: 600
+	#MainFormHeight: 600 
+#End Region
+
+#AdditionalJar: mit
+#AdditionalJar: opencv-490
+#AdditionalJar: onnxruntime-1.20.0-nodll
+
+Sub Process_Globals
+	Private fx As JFX
+	Public MainForm As Form
+
+End Sub
+
+Sub AppStart (Form1 As Form, Args() As String)
+	MainForm = Form1
+	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
+	MainForm.Show
+	cv2.Initialize
+	loadOpenCV
+	loadOnnxruntime
+	Dim settings As Map
+	settings.Initialize
+    Dim n As AOTInpaintPlugin
+	n.Initialize
+	Dim origin As Image=fx.LoadImage(File.DirApp,"image.jpg")
+	Dim mask As Image=fx.LoadImage(File.DirApp,"mask.png")
+	wait for (n.inpaint(origin,mask)) complete (result As B4XBitmap)
+	Dim out As OutputStream
+	out=File.OpenOutput(File.DirApp,"removed.jpg",False)
+	result.WriteToStream(out,100,"JPEG")
+	out.Close
+End Sub
+
+'Return true to allow the default exceptions handler to handle the uncaught exception.
+Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
+	Return True
+End Sub
+
+
+Sub loadOpenCV
+	Dim System As JavaObject
+	System.InitializeStatic("java.lang.System")
+	System.RunMethod("loadLibrary",Array(cv2.NATIVE_LIBRARY_NAME))
+End Sub
+
+'windows, mac or linux
+Sub DetectOS As String
+	Dim os As String = GetSystemProperty("os.name", "").ToLowerCase
+	If os.Contains("win") Then
+		Return "windows"
+	Else If os.Contains("mac") Then
+		Return "mac"
+	Else
+		Return "linux"
+	End If
+End Sub
+
+Sub loadOnnxruntime
+	Dim System As JavaObject
+	System.InitializeStatic("java.lang.System")
+	Dim os As String = DetectOS
+	If os = "windows" Then
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"onnxruntime.dll")))
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"onnxruntime4j_jni.dll")))
+	else if os = "mac" Then
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"libonnxruntime.dylib")))
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"libonnxruntime4j_jni.dylib")))
+	Else
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"libonnxruntime.so")))
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"libonnxruntime4j_jni.so")))
+	End If
+End Sub
+
