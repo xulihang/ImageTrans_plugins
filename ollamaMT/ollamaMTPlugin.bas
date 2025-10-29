@@ -216,6 +216,15 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 				Next
 			Catch
 				Log(LastException)
+				Try
+					Dim keyvalues As Map = ExtractTextFromInvalidJSON(content)
+					For i = 0 To sourceList.Size - 1
+						Dim key As String = i
+						targetList.Add(keyvalues.GetDefault(key,""))
+					Next
+				Catch
+					Log(LastException)
+				End Try
 			End Try
 		End Try
 	End If
@@ -312,6 +321,23 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Return target
 End Sub
 
+Sub ExtractTextFromInvalidJSON(jsonString As String) As Map
+	Dim result As Map
+	result.Initialize
+    
+	' 正则表达式匹配 "数字":"文本" 的格式
+	Dim pattern As String = """(\d+)"":""([^""]*)"""
+	Dim matcher As Matcher
+	matcher = Regex.Matcher(pattern, jsonString)
+    
+	Do While matcher.Find
+		Dim index As String = matcher.Group(1)
+		Dim text As String = matcher.Group(2)
+		result.Put(index, text)
+	Loop
+    
+	Return result
+End Sub
 
 Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)

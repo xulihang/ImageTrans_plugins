@@ -33,8 +33,11 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
-    Dim n As ollamaMTPlugin
+	Dim n As ollamaMTPlugin
 	n.Initialize
+	Log(n.ExtractTextFromInvalidJSON($"{"0":"呃呃","1":":原来如此。","2":"与同为护卫出身的恋人举行婚礼，并","3":"想要在外城建宅子居住。":}"$))
+	Return
+    
 	Dim map1 As Map
 	map1.Initialize
 	'map1.Put("key","your key")
