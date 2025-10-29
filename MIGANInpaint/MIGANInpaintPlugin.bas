@@ -92,7 +92,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 		thresh.Initialize(Null)
 		cv2.threshold(gray,thresh,200,255,cv2.procEnum("THRESH_BINARY_INV")+cv2.procEnum("THRESH_OTSU"))
 		cv2.erode(thresh,thresh,cv2.getStructuringElement("MORPH_RECT",3,3))
-		File.WriteBytes(File.DirApp,"m.jpg",thresh.mat2bytes)
+		
 		wait for (engine.inpaintAsync(originMat,thresh)) complete (resultMat As cvMat)
 		gray.release
 		thresh.release
