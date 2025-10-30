@@ -179,7 +179,9 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
-	params.Put("enable_thinking",False)
+	If url.Contains("siliconflow") Then
+		params.Put("enable_thinking",False)
+	End If
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
@@ -286,7 +288,9 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
-	params.Put("enable_thinking",false)
+	If url.Contains("siliconflow") Then
+		params.Put("enable_thinking",False)
+	End If
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
