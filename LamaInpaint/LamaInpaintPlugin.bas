@@ -7,6 +7,7 @@ Version=4.2
 Sub Class_Globals
 	Private fx As JFX
 	Private engine As jLama
+	Private engine512 As jLama512
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -30,6 +31,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Initialize
 			paramsList.Add("url")
 			paramsList.Add("max_size")
+			paramsList.Add("use_512")
 			Return paramsList
 		Case "inpaint"
 			wait for (inpaint(Params.Get("origin"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
@@ -47,14 +49,22 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 End Sub
 
 Private Sub getDefaultSettings As Map
-	Return CreateMap("url":"http://localhost:8087/inpaint","max_size":960)
+	Return CreateMap("url":"http://localhost:8087/inpaint","max_size":"960","use_512":"yes")
 End Sub
 
-Private Sub LoadLamaIfNeeded As ResumableSub
-	If engine.IsInitialized = False Then
-		engine.Initialize(File.Combine(File.DirApp,"big-lama.onnx"))
-		wait for (engine.loadModelAsync) complete (done As Object)
+Private Sub LoadLamaIfNeeded(use512 As Boolean) As ResumableSub
+	If use512 Then
+		If engine512.IsInitialized = False Then
+			engine512.Initialize(File.Combine(File.DirApp,"big-lama.onnx"))
+			wait for (engine512.loadModelAsync) complete (done As Object)
+		End If
+	Else
+		If engine.IsInitialized = False Then
+			engine.Initialize(File.Combine(File.DirApp,"big-lama.onnx"))
+			wait for (engine.loadModelAsync) complete (done As Object)
+		End If
 	End If
+	
 	Return True
 End Sub
 
@@ -112,29 +122,47 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 
 	If ONNXExists Then
 		Dim maxSize As Int = settings.GetDefault("max_size",960)
-		
+		Dim use512Param As String = settings.GetDefault("use_512","yes")
+		Dim use512 As Boolean 
+		If use512Param = "yes" Then
+			use512 = True
+		Else
+			use512 = False
+		End If
 		If maxSize Mod 64 <> 0 Then
 			maxSize = Ceil(maxSize/64) * 64
 		End If
 		
-		Wait For (LoadLamaIfNeeded) complete (done As Object)
-		Dim originMat As cvMat = Image2cvMat2(origin)
-		originMat.convertToWithAlpha(originMat,"CV_32FC3",1.0/255.0)
-		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
-		Dim gray As cvMat
-		gray.Initialize(Null)
-		cv2.cvtColor(maskMat,gray,"COLOR_BGR2GRAY")
-		Dim thresh As cvMat
-		thresh.Initialize(Null)
-		cv2.threshold(gray,thresh,200,255,cv2.procEnum("THRESH_BINARY")+cv2.procEnum("THRESH_OTSU"))
-		thresh.convertToWithAlpha(thresh,"CV_32FC1",1.0/255.0)
-		wait for (engine.inpaintAsync(originMat,thresh,maxSize)) complete (resultMat As cvMat)
+		Wait For (LoadLamaIfNeeded(use512)) complete (done As Object)
+		
+		If use512 Then
+			mask = updateMask(mask)
+			Dim originMat As cvMat = Image2cvMat2(origin)
+			Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
+			wait for (engine512.inpaintAsync(originMat,maskMat)) complete (resultMat As cvMat)
+		Else
+			Dim originMat As cvMat = Image2cvMat2(origin)
+			originMat.convertToWithAlpha(originMat,"CV_32FC3",1.0/255.0)
+			Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
+			Dim gray As cvMat
+			gray.Initialize(Null)
+			cv2.cvtColor(maskMat,gray,"COLOR_BGR2GRAY")
+			Dim thresh As cvMat
+			thresh.Initialize(Null)
+			cv2.threshold(gray,thresh,200,255,cv2.procEnum("THRESH_BINARY")+cv2.procEnum("THRESH_OTSU"))
+			thresh.convertToWithAlpha(thresh,"CV_32FC1",1.0/255.0)
+			wait for (engine.inpaintAsync(originMat,thresh,maxSize)) complete (resultMat As cvMat)
+			gray.release
+			thresh.release
+		End If
+		
 		'Dim resultMat As cvMat = engine.inpaint(originMat,thresh,maxSize)
 		originMat.release
 		maskMat.release
 		Dim result As B4XBitmap
 		result = BytesToImage(resultMat.mat2bytes)
 		result = result.Resize(origin.Width,origin.Height,False)
+		resultMat.release
 		Return result
 	End If
 	
