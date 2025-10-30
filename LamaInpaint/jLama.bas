@@ -14,30 +14,30 @@ End Sub
 Public Sub Initialize(modelPath As String)
 	th.Initialise("th")
 	mModelPath = modelPath
-	engine.InitializeStatic("com.xulihang.LamaInpaintDynamicSingleton")
 End Sub
 
 Public Sub loadModelAsync As ResumableSub
 	Log("loading lama model")
-	th.Start(Me,"loadModel",Null)
+	Dim map1 As Map
+	map1.Initialize
+	th.Start(Me,"loadModelUsingMap",Array As Map(map1))
 	wait for th_Ended(endedOK As Boolean, error As String)
 	Log(endedOK)
 	Log(error)
 	Log("model loaded")
+	engine = map1.Get("engine")
+	Return engine
 End Sub
 
 Public Sub loadModel
-	Dim jo As JavaObject
-	jo.InitializeStatic("com.xulihang.LamaInpaintDynamicSingleton.ModelCache")
-	jo.RunMethod("init",Array(mModelPath))
+	engine.InitializeNewInstance("com.xulihang.LamaInference",Array(mModelPath))
 End Sub
 
-Public Sub inpaintAsync(image As cvMat,mask As cvMat,size As Int) As ResumableSub
+Public Sub inpaintAsync(image As cvMat,mask As cvMat) As ResumableSub
 	Dim map1 As Map
 	map1.Initialize
 	map1.Put("image",image)
 	map1.Put("mask",mask)
-	map1.Put("size",size)
 	Log(map1)
 	th.Start(Me,"inpaintUsingMap",Array As Map(map1))
 	wait for th_Ended(endedOK As Boolean, error As String)
@@ -47,15 +47,20 @@ Public Sub inpaintAsync(image As cvMat,mask As cvMat,size As Int) As ResumableSu
 	Return out
 End Sub
 
-Public Sub inpaint(image As cvMat,mask As cvMat,size As Int) As cvMat
-	Dim jo As JavaObject = engine.RunMethod("inpaintONNX",Array(image.JO,mask.JO,size))
+Public Sub inpaint(image As cvMat,mask As cvMat) As cvMat
+	Dim jo As JavaObject = engine.RunMethod("inpaint",Array(image.JO,mask.JO))
 	Return cv2.matJO2mat(jo)
 End Sub
 
 Private Sub inpaintUsingMap(map1 As Map)
 	Dim image As cvMat = map1.Get("image")
 	Dim mask As cvMat = map1.Get("mask")
-	Dim size As Int = map1.Get("size")
-	Dim jo As JavaObject = engine.RunMethod("inpaintONNX",Array(image.JO,mask.JO,size))
+	Dim jo As JavaObject = engine.RunMethod("inpaint",Array(image.JO,mask.JO))
 	map1.Put("out",cv2.matJO2mat(jo))
+End Sub
+
+Private Sub loadModelUsingMap(map1 As Map)
+	Dim jo As JavaObject
+	jo.InitializeNewInstance("com.xulihang.LamaInference",Array(mModelPath))
+	map1.Put("engine",jo)
 End Sub

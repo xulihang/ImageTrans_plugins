@@ -15,11 +15,10 @@ Library9=jxui
 Module1=cv2
 Module2=cvMat
 Module3=jLama
-Module4=jLama512
-Module5=LamaInpaintPlugin
+Module4=LamaInpaintPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
-NumberOfModules=5
+NumberOfModules=4
 Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
@@ -47,7 +46,6 @@ Sub AppStart (Form1 As Form, Args() As String)
 	Dim settings As Map
 	settings.Initialize
 	settings.Put("max_size","960")
-	settings.Put("use_512","no")
     Dim n As LamaInpaintPlugin
 	n.Initialize
 	Dim origin As Image=fx.LoadImage(File.DirApp,"(8).png")
