@@ -49,6 +49,14 @@ Sub matJO2mat(jo As JavaObject) As cvMat
 	Return mat
 End Sub
 
+Sub convertTo(target As cvMat,dataType As String)
+	matJO.RunMethod("convertTo",Array(target.JO,cv2.cvType(dataType)))
+End Sub
+
+Sub convertToWithAlpha(target As cvMat,dataType As String,alpha As Double)
+	matJO.RunMethod("convertTo",Array(target.JO,cv2.cvType(dataType),alpha))
+End Sub
+
 Sub mat2bytes As Byte()
 	Dim matOfByte As JavaObject
 	matOfByte.InitializeNewInstance("org.opencv.core.MatOfByte",Null)

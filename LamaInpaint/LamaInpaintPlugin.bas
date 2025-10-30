@@ -29,6 +29,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim paramsList As List
 			paramsList.Initialize
 			paramsList.Add("url")
+			paramsList.Add("max_size")
 			Return paramsList
 		Case "inpaint"
 			wait for (inpaint(Params.Get("origin"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
@@ -46,7 +47,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 End Sub
 
 Private Sub getDefaultSettings As Map
-	Return CreateMap("url":"http://localhost:8087/inpaint")
+	Return CreateMap("url":"http://localhost:8087/inpaint","max_size":960)
 End Sub
 
 Private Sub LoadLamaIfNeeded As ResumableSub
@@ -108,12 +109,30 @@ Public Sub updateMask(mask As B4XBitmap) As B4XBitmap
 End Sub
 
 Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
-	mask = updateMask(mask)
+
 	If ONNXExists Then
+		Dim maxSize As Int = settings.GetDefault("max_size",960)
+		
+		If maxSize Mod 64 <> 0 Then
+			maxSize = Ceil(maxSize/64) * 64
+		End If
+		
 		Wait For (LoadLamaIfNeeded) complete (done As Object)
 		Dim originMat As cvMat = Image2cvMat2(origin)
+		originMat.convertToWithAlpha(originMat,"CV_32FC3",1.0/255.0)
 		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
-		wait for (engine.inpaintAsync(originMat,maskMat)) complete (resultMat As cvMat)
+		Dim gray As cvMat
+		gray.Initialize(Null)
+		cv2.cvtColor(maskMat,gray,"COLOR_BGR2GRAY")
+		Dim thresh As cvMat
+		thresh.Initialize(Null)
+		cv2.threshold(gray,thresh,200,255,cv2.procEnum("THRESH_BINARY")+cv2.procEnum("THRESH_OTSU"))
+		cv2.dilate(thresh,thresh,cv2.getStructuringElement("MORPH_RECT",10,10))
+		cv2.dilate(thresh,thresh,cv2.getStructuringElement("MORPH_RECT",3,3))
+		File.WriteBytes(File.DirApp,"thresh.jpg",thresh.mat2bytes)
+		thresh.convertToWithAlpha(thresh,"CV_32FC1",1.0/255.0)
+		wait for (engine.inpaintAsync(originMat,thresh,maxSize)) complete (resultMat As cvMat)
+		'Dim resultMat As cvMat = engine.inpaint(originMat,thresh,maxSize)
 		originMat.release
 		maskMat.release
 		Dim result As B4XBitmap
@@ -121,6 +140,8 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 		result = result.Resize(origin.Width,origin.Height,False)
 		Return result
 	End If
+	
+	mask = updateMask(mask)
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"origin.jpg",False)
 	origin.WriteToStream(out,"100","JPEG")
