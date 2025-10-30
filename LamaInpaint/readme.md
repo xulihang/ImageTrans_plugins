@@ -1,12 +1,17 @@
 ## Lama inpainting plugin for ImageTrans
 
-You can download the plugin files here: [lamainpaint_plugins.zip](https://github.com/xulihang/ImageTrans-docs/files/13327436/lamainpaint_plugins.zip)
-
-You need to run [lama-cleaner](https://github.com/Sanster/lama-cleaner) as the backend of the plugin.
-
 ### How to use
 
-#### Option 1 (using Python)
+#### Option 1 (use ONNX)
+
+Starting from ImageTrans v4.2.0, you can directly run Lama Inpaint in ImageTrans.
+
+You need to put `big-lama.onnx` under ImageTrans's folder. You need to extract it from [big-lama-dynamic.zip](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/big-lama-dynamic.zip). 
+
+
+#### Option 2 (using Python)
+
+Use [lama-cleaner](https://github.com/Sanster/lama-cleaner) as the backend of the plugin.
 
 1. Install Python
 2. Put the plugin files in ImageTrans's `plugins` folder
@@ -14,9 +19,7 @@ You need to run [lama-cleaner](https://github.com/Sanster/lama-cleaner) as the b
 4. Start the server at port 8087: `lama-cleaner --device=cpu --port=8087`
 5. In ImageTrans, set the default inpainter to lama or use it in TextRemover.
 
-
 For convenience, you can also use the Windows package of lama-cleaner. Download and unzip it and then start `run.bat` to keep the server running. [Download link](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/LamaInpaint.zip).
-
 
 Related issue: https://github.com/xulihang/ImageTrans-docs/issues/216
 
@@ -47,18 +50,7 @@ If you are using the Windows package, you have to use notepad to edit `Scripts\p
 .\Scripts\pip.exe install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
-#### Option 2 (use ONNX)
-
-
-Start from ImageTrans v4.2.0, you can directly run Lama Inpaint in ImageTrans.
-
-
-You need to put [big-lama.onnx](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/big-lama.onnx) under ImageTrans's folder.
-
-
-
 PS: lama will resize images too large so it is recommended to process by text areas. You can enable this in the project settings.
-
 
 
 
