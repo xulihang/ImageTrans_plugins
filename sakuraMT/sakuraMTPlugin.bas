@@ -143,10 +143,12 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	sb.Initialize
 	Dim index As Int = 0
 	For Each source As String In sourceList
+		index = index + 1
 		source = source.Replace(CRLF,"\n")
+		sb.Append(index)
+		sb.Append(". ")
 		sb.Append(source)
 		sb.Append(CRLF)
-		index = index + 1
 	Next
 	
 	Dim target As String = sb.ToString
@@ -201,6 +203,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Dim content As String = message.Get("content")
 			content = Regex.Replace("\n+",content,CRLF)
 			For Each line As String In Regex.Split(CRLF,content)
+				line = ReplaceStartingNumberedStrings(line)
 				line = line.Replace("\n",CRLF)
 				targetList.Add(line)
 			Next
@@ -218,6 +221,11 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		Next
 	End If
 	Return targetList
+End Sub
+
+Sub ReplaceStartingNumberedStrings(Text As String) As String
+	Dim Pattern As String = "^\d+[\.、]\s*"  '\s*匹配0个或多个空白字符（包括空格）
+    Return Regex.Replace(Pattern, Text, "")
 End Sub
 
 Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map,terms As Map) As ResumableSub
