@@ -127,9 +127,6 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 		Dim thresh As cvMat
 		thresh.Initialize(Null)
 		cv2.threshold(gray,thresh,200,255,cv2.procEnum("THRESH_BINARY")+cv2.procEnum("THRESH_OTSU"))
-		cv2.dilate(thresh,thresh,cv2.getStructuringElement("MORPH_RECT",10,10))
-		cv2.dilate(thresh,thresh,cv2.getStructuringElement("MORPH_RECT",3,3))
-		File.WriteBytes(File.DirApp,"thresh.jpg",thresh.mat2bytes)
 		thresh.convertToWithAlpha(thresh,"CV_32FC1",1.0/255.0)
 		wait for (engine.inpaintAsync(originMat,thresh,maxSize)) complete (resultMat As cvMat)
 		'Dim resultMat As cvMat = engine.inpaint(originMat,thresh,maxSize)
