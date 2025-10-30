@@ -80,10 +80,10 @@ End Sub
 
 Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 	If ONNXExists Then
-		Dim resizedSrc As B4XBitmap = origin.Resize(512,512,False)
-		mask = mask.Resize(512,512,False)
+		'Dim resizedSrc As B4XBitmap = origin.Resize(512,512,False)
+		'mask = mask.Resize(512,512,False)
 		Wait For (LoadMIGANIfNeeded) complete (done As Object)
-		Dim originMat As cvMat = Image2cvMat2(resizedSrc)
+		Dim originMat As cvMat = Image2cvMat2(origin)
 		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
 		Dim gray As cvMat
 		gray.Initialize(Null)
@@ -100,7 +100,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 		maskMat.release
 		Dim result As B4XBitmap
 		result = BytesToImage(resultMat.mat2bytes)
-		result = result.Resize(origin.Width,origin.Height,False)
+		'result = result.Resize(origin.Width,origin.Height,False)
 		Return result
 	End If
 	Return origin
