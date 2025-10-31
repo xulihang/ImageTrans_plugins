@@ -19,7 +19,7 @@ Module4=LamaInpaintPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=4
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -48,8 +48,8 @@ Sub AppStart (Form1 As Form, Args() As String)
 	settings.Put("max_size","960")
     Dim n As LamaInpaintPlugin
 	n.Initialize
-	Dim origin As Image=fx.LoadImage(File.DirApp,"(8).png")
-	Dim mask As Image=fx.LoadImage(File.DirApp,"(8).png-mask.png")
+	Dim origin As Image=fx.LoadImage(File.DirApp,"image.jpg")
+	Dim mask As Image=fx.LoadImage(File.DirApp,"mask.png")
 	wait for (n.inpaint(origin,mask,settings)) complete (result As B4XBitmap)
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"removed.jpg",False)

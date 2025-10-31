@@ -108,6 +108,15 @@ Public Sub updateMask(mask As B4XBitmap) As B4XBitmap
 	Return bc.Bitmap
 End Sub
 
+Sub paddedImage(origin As B4XBitmap,targetSize As Int) As B4XBitmap
+	Dim bc As BitmapCreator
+	bc.Initialize(targetSize,targetSize)
+	Dim r As B4XRect
+	r.Initialize(0,0,origin.Width,origin.Height)
+	bc.DrawBitmap(origin,r,True)
+	Return bc.Bitmap
+End Sub
+
 Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
 
 	If ONNXExists Then
@@ -117,23 +126,31 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 			maxSize = Ceil(maxSize/64) * 64
 		End If
 		
+		If origin.Width < maxSize And origin.Height < maxSize Then
+			If origin.Width < origin.Height Then
+				maxSize = Ceil(origin.Height / 64) * 64
+			Else
+				maxSize = Ceil(origin.Width / 64) * 64
+			End If
+		End If
+
 		mask = updateMask(mask)
 		
-		Dim resized As B4XBitmap = origin.Resize(maxSize,maxSize,False)
+		Dim paddedSrc As B4XBitmap = paddedImage(origin,maxSize)
 		
-		mask = mask.Resize(maxSize,maxSize,False)
+		mask = paddedImage(mask,maxSize)
 		
 		Wait For (LoadLamaIfNeeded) complete (done As Object)
 		
-		Dim originMat As cvMat = Image2cvMat2(resized)
+		Dim originMat As cvMat = Image2cvMat2(paddedSrc)
 		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
 		wait for (engine.inpaintAsync(originMat,maskMat)) complete (resultMat As cvMat)
-
+		'Dim resultMat As cvMat = engine.inpaint(originMat,maskMat)
 		originMat.release
 		maskMat.release
 		Dim result As B4XBitmap
 		result = BytesToImage(resultMat.mat2bytes)
-		result = result.Resize(origin.Width,origin.Height,False)
+		result = result.Crop(0,0,origin.Width,origin.Height)
 		resultMat.release
 		Return result
 	End If
