@@ -48,8 +48,8 @@ Sub AppStart (Form1 As Form, Args() As String)
     Dim n As MIGANInpaintPlugin
 	n.Initialize
 	Dim origin As Image=fx.LoadImage(File.DirApp,"image.jpg")
-	Dim mask As Image=fx.LoadImage(File.DirApp,"mask1.png")
-	wait for (n.inpaint(origin,mask)) complete (result As B4XBitmap)
+	Dim mask As Image=fx.LoadImage(File.DirApp,"mask.png")
+	wait for (n.inpaint(origin,mask,settings)) complete (result As B4XBitmap)
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"removed2.jpg",False)
 	result.WriteToStream(out,100,"JPEG")

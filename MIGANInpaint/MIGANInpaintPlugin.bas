@@ -28,9 +28,10 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getParams"
 			Dim paramsList As List
 			paramsList.Initialize
+			paramsList.Add("max_size")
 			Return paramsList
 		Case "inpaint"
-			wait for (inpaint(Params.Get("origin"),Params.Get("mask"))) complete (result As B4XBitmap)
+			wait for (inpaint(Params.Get("origin"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
 			Return result
 		Case "getSetupParams"
 			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/MIGANInpaint")
@@ -38,8 +39,14 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getIsInstalledOrRunning"
 			Wait For (CheckIsRunning) complete (running As Boolean)
 			Return running
+		Case "getDefaultParamValues"
+			Return getDefaultSettings
 	End Select
 	Return ""
+End Sub
+
+Private Sub getDefaultSettings As Map
+	Return CreateMap("max_size":"1536")
 End Sub
 
 Private Sub LoadMIGANIfNeeded As ResumableSub
@@ -78,13 +85,45 @@ Public Sub ImageToPNGBytes(Image As B4XBitmap) As Byte()
 	Return out.ToBytesArray
 End Sub
 
-Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
+Sub paddedImage(origin As B4XBitmap,targetSize As Int) As B4XBitmap
+	Dim bc As BitmapCreator
+	bc.Initialize(targetSize,targetSize)
+	Dim r As B4XRect
+	r.Initialize(0,0,origin.Width,origin.Height)
+	bc.DrawBitmap(origin,r,True)
+	Return bc.Bitmap
+End Sub
+
+Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
 	If ONNXExists Then
 		'Dim resizedSrc As B4XBitmap = origin.Resize(512,512,False)
 		'mask = mask.Resize(512,512,False)
+		
+		Dim maxSize As Int = settings.GetDefault("max_size",1536)
+		
+		If maxSize Mod 64 <> 0 Then
+			maxSize = Ceil(maxSize/64) * 64
+		End If
+		
+		If origin.Width < maxSize And origin.Height < maxSize Then
+			If origin.Width < origin.Height Then
+				maxSize = Ceil(origin.Height / 64) * 64
+			Else
+				maxSize = Ceil(origin.Width / 64) * 64
+			End If
+		End If
+		
 		Wait For (LoadMIGANIfNeeded) complete (done As Object)
-		Dim originMat As cvMat = Image2cvMat2(origin)
+		
+		Dim paddedSrc As B4XBitmap = paddedImage(origin,maxSize)
+		mask = paddedImage(mask,maxSize)
+		
+		Dim originMat As cvMat = Image2cvMat2(paddedSrc)
+		
+		File.WriteBytes(File.DirApp,"padded.jpg",originMat.mat2bytes)
+		
 		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
+		
 		Dim gray As cvMat
 		gray.Initialize(Null)
 		cv2.cvtColor(maskMat,gray,"COLOR_BGR2GRAY")
@@ -98,9 +137,10 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap) As ResumableSub
 		thresh.release
 		originMat.release
 		maskMat.release
+		
 		Dim result As B4XBitmap
 		result = BytesToImage(resultMat.mat2bytes)
-		'result = result.Resize(origin.Width,origin.Height,False)
+		result = result.Crop(0,0,origin.Width,origin.Height)
 		Return result
 	End If
 	Return origin
