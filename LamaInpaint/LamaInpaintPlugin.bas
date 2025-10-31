@@ -126,17 +126,21 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 			maxSize = Ceil(maxSize/64) * 64
 		End If
 		
+		mask = updateMask(mask)
+		
+		Dim resized As B4XBitmap = origin
 		If origin.Width < maxSize And origin.Height < maxSize Then
 			If origin.Width < origin.Height Then
 				maxSize = Ceil(origin.Height / 64) * 64
 			Else
 				maxSize = Ceil(origin.Width / 64) * 64
 			End If
+		Else
+			resized = origin.Resize(maxSize,maxSize,True)
+			mask = mask.Resize(maxSize,maxSize,True)
 		End If
-
-		mask = updateMask(mask)
 		
-		Dim paddedSrc As B4XBitmap = paddedImage(origin,maxSize)
+		Dim paddedSrc As B4XBitmap = paddedImage(resized,maxSize)
 		
 		mask = paddedImage(mask,maxSize)
 		
@@ -150,7 +154,8 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 		maskMat.release
 		Dim result As B4XBitmap
 		result = BytesToImage(resultMat.mat2bytes)
-		result = result.Crop(0,0,origin.Width,origin.Height)
+		result = result.Crop(0,0,resized.Width,resized.Height)
+		result = result.Resize(origin.Width,origin.Height,True)
 		resultMat.release
 		Return result
 	End If
