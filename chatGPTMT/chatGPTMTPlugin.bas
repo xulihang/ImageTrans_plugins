@@ -8,8 +8,8 @@ Sub Class_Globals
 	Private fx As JFX
 	Private defaultPrompt As String = $"Translate the following into {langcode}: {source}"$
 	Private defaultPromptWithTerm As String = $"With the help of the terms defined in JSON: {term}, translate the following into {langcode}: {source}"$
-	Private defaultBatchPrompt As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
-	Private defaultBatchPromptWithTerm As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should use the terms defined in JSON: {term}. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
+	Private defaultBatchPrompt As String = $"Translate the following into {langcode}: {source}"$
+	Private defaultBatchPromptWithTerm As String = $"Translate the following into {langcode}: {source} You should use the terms defined in JSON: {term}."$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -136,33 +136,34 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	message.Initialize
 	message.Put("role","user")
 
-    Dim keyvalues As Map
-	keyvalues.Initialize	
+    
+	Dim sb As StringBuilder
+	sb.Initialize
 	Dim index As Int = 0
 	For Each source As String In sourceList
-		Dim key As String = index
-		keyvalues.Put(key,source)
 		index = index + 1
+		source = source.Replace(CRLF,"\n")
+		sb.Append(index)
+		sb.Append(". ")
+		sb.Append(source)
+		sb.Append(CRLF)
 	Next
 	
-	Dim jsonG As JSONGenerator
-	jsonG.Initialize(keyvalues)
-
-	Dim jsonString As String = jsonG.ToString
+	Dim target As String = sb.ToString
 	
 	If prompt.Contains("{langcode}") Then
 		If converted Then
-			message.Put("content",prompt.Replace("{langcode}",targetLang).Replace("{source}",jsonString))
+			message.Put("content",prompt.Replace("{langcode}",targetLang).Replace("{source}",target))
 			'$"Translate the following into ${targetLang}: ${source}"$
 		Else
 			If terms.Size>0 Then
-				message.Put("content",defaultBatchPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
+				message.Put("content",defaultBatchPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",target))
 			Else
-				message.Put("content",defaultBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",jsonString))
+				message.Put("content",defaultBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",target))
 			End If
 		End If
 	Else
-		message.Put("content",prompt.Replace("{source}",jsonString))
+		message.Put("content",prompt.Replace("{source}",target))
 	End If
 	
 	If terms.Size>0 Then
@@ -201,27 +202,17 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Dim choice As Map = choices.Get(0)
 			Dim message As Map = choice.Get("message")
 			Dim content As String = message.Get("content")
-			Dim jsonP As JSONParser
-			jsonP.Initialize(content)
-			Dim keyvalues As Map = jsonP.NextObject
-			For i = 0 To sourceList.Size - 1
-				Dim key As String = i
-				targetList.Add(keyvalues.GetDefault(key,""))
+			content = Regex.Replace("\n+",content,CRLF)
+			For Each line As String In Regex.Split(CRLF,content)
+				line = ReplaceStartingNumberedStrings(line)
+				line = line.Replace("\n",CRLF)
+				targetList.Add(line)
 			Next
+			Do While targetList.Size < sourceList.Size
+				targetList.Add("")
+			Loop
 		Catch
 			Log(LastException)
-			Try
-				content = content.SubString2(content.IndexOf("{"),content.Length)
-				Dim jsonP As JSONParser
-				jsonP.Initialize(content)
-				Dim keyvalues As Map = jsonP.NextObject
-				For i = 0 To sourceList.Size - 1
-					Dim key As String = i
-					targetList.Add(keyvalues.GetDefault(key,""))
-				Next
-			Catch
-				Log(LastException)
-			End Try
 		End Try
 	End If
 	job.Release
@@ -231,6 +222,11 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		Next
 	End If
 	Return targetList
+End Sub
+
+Sub ReplaceStartingNumberedStrings(Text As String) As String
+	Dim Pattern As String = "^\d+[\.、]\s*"  '\s*匹配0个或多个空白字符（包括空格）
+	Return Regex.Replace(Pattern, Text, "")
 End Sub
 
 Sub translate(source As String,sourceLang As String,targetLang As String,preferencesMap As Map,terms As Map) As ResumableSub
