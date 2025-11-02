@@ -52,6 +52,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("batch_prompt_with_term")
 			paramsList.Add("host")
 			paramsList.Add("model")
+			paramsList.Add("force_no_think (yes or no)")
 			Return paramsList
 		Case "batchtranslate"
 			Dim terms As Map
@@ -78,6 +79,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			                 "batch_prompt":defaultBatchPrompt, _ 
 							 "prompt_with_term":defaultBatchPromptWithTerm, _ 
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
+							 "force_no_think (yes or no)":"no", _ 
 			                 "host":"https://api.openai.com/v1", _
 							 "model":"gpt-4o")
 	End Select
@@ -142,6 +144,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
 	End If
 	
+	Dim noThink As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("force_no_think (yes or no)","no")
 	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-4o")
 
 	Dim url As String = host&"/chat/completions"
@@ -187,9 +190,13 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		Dim msg As String = message.Get("content")
 		message.Put("content",msg.Replace("{term}",termsJsonG.ToString))
 	End If
-
-    Log(message)
-
+	
+	If noThink = "yes" Then
+		Dim msg As String = message.Get("content")
+		msg = msg & "/no_think"
+		message.Put("content",msg)
+	End If
+	
 	messages.Add(message)
 	Dim params As Map
 	params.Initialize
@@ -198,6 +205,10 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	If url.Contains("siliconflow") Then
 		params.Put("enable_thinking",False)
 	End If
+	If noThink = "yes" Then
+		params.Put("enable_thinking",False)
+	End If
+	Log(params)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
@@ -217,7 +228,9 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 			Dim choice As Map = choices.Get(0)
 			Dim message As Map = choice.Get("message")
 			Dim content As String = message.Get("content")
+			content = RemoveThinkTags(content)
 			content = Regex.Replace("\n+",content,CRLF)
+			content = content.Trim
 			For Each line As String In Regex.Split(CRLF,content)
 				line = ReplaceStartingNumberedStrings(line)
 				line = line.Replace("\n",CRLF)
@@ -262,7 +275,8 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Else
 		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt",defaultBatchPrompt)
 	End If
-	 
+	
+	Dim noThink As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("force_no_think (yes or no)","no")
 	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
 	Dim url As String = host&"/chat/completions"
 	Dim messages As List
@@ -292,7 +306,13 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 		Dim msg As String = message.Get("content")
 		message.Put("content",msg.Replace("{term}",termsJsonG.ToString))
 	End If
-	Log(message)
+	
+	If noThink = "yes" Then
+		Dim msg As String = message.Get("content")
+		msg = msg & "/no_think"
+		message.Put("content",msg)
+	End If
+	
 	messages.Add(message)
 	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-4o")
 	Dim params As Map
@@ -302,6 +322,10 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	If url.Contains("siliconflow") Then
 		params.Put("enable_thinking",False)
 	End If
+	If noThink = "yes" Then
+		params.Put("enable_thinking",False)
+	End If
+	Log(params)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
@@ -320,6 +344,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 			Dim choice As Map = choices.Get(0)
 			Dim message As Map = choice.Get("message")
 			target = message.Get("content")
+			target = RemoveThinkTags(target)
 			target = target.Trim
 		Catch
 			target=""
@@ -330,6 +355,10 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	End If
 	job.Release
 	Return target
+End Sub
+
+Sub RemoveThinkTags(Text As String) As String
+	Return Regex.Replace2("<think>.*?</think>",32,Text, "")
 End Sub
 
 
