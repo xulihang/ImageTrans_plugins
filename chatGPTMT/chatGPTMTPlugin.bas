@@ -6,10 +6,10 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Private defaultPrompt As String = $"Translate the following into {langcode}: {source}"$
-	Private defaultPromptWithTerm As String = $"With the help of the terms defined in JSON: {term}, translate the following into {langcode}: {source}"$
-	Private defaultBatchPrompt As String = $"Translate the following into {langcode}: {source}"$
-	Private defaultBatchPromptWithTerm As String = $"Translate the following into {langcode}: {source} You should use the terms defined in JSON: {term}."$
+	Private defaultPrompt As String = $"You are an AI translator. You follow the command and output the translation without any explaination. Translate the following into {langcode}: {source}"$
+	Private defaultPromptWithTerm As String = $"You are an AI translator. You follow the command and output the translation without any explaination. With the help of the terms defined in JSON: {term}, translate the following into {langcode}: {source}"$
+	Private defaultBatchPrompt As String = $"You are an AI translator. You follow the command and output the translation without any explaination. Translate the following into {langcode}: {source}"$
+	Private defaultBatchPromptWithTerm As String = $"You are an AI translator. You follow the command and output the translation without any explaination. Translate the following into {langcode}: {source} You should use the terms defined in JSON: {term}."$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
