@@ -6,10 +6,25 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
-	Private defaultPrompt As String = $"You are an AI translator. You follow the command and output the translation without any explaination. Translate the following into {langcode}: {source}"$
-	Private defaultPromptWithTerm As String = $"You are an AI translator. You follow the command and output the translation without any explaination. With the help of the terms defined in JSON: {term}, translate the following into {langcode}: {source}"$
-	Private defaultBatchPrompt As String = $"You are an AI translator. You follow the command and output the translation without any explaination. Translate the following into {langcode}: {source}"$
-	Private defaultBatchPromptWithTerm As String = $"You are an AI translator. You follow the command and output the translation without any explaination. Translate the following into {langcode}: {source} You should use the terms defined in JSON: {term}."$
+	Private defaultBatchPrompt As String = $"You are a professional AI translator. Translate the following text into {langcode}.
+
+**Source Text:**
+{source}
+
+**Requirements:**
+Output ONLY the final translation. Do not include any explanations, notes, or the original text.
+"$
+	Private defaultBatchPromptWithTerm As String = $"You are a professional AI translator. Translate the following text into {langcode}.
+
+**Source Text:**
+{source}
+
+**Requirements:**
+1. Strictly adhere to the provided glossary for term translation.
+2. Output ONLY the final translation. Do not include any explanations, notes, or the original text.
+
+**Glossary (JSON):**
+{term}"$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -59,12 +74,12 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "supportBatchTranslation"
 			Return True
 		Case "getDefaultParamValues"
-			Return CreateMap("prompt":defaultPrompt, _ 
+			Return CreateMap("prompt":defaultBatchPrompt, _
 			                 "batch_prompt":defaultBatchPrompt, _ 
-							 "prompt_with_term":defaultPromptWithTerm, _ 
+							 "prompt_with_term":defaultBatchPromptWithTerm, _ 
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
 			                 "host":"https://api.openai.com/v1", _
-							 "model":"gpt-3.5-turbo")
+							 "model":"gpt-4o")
 	End Select
 	Return ""
 End Sub
@@ -127,7 +142,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
 	End If
 	
-	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-3.5-turbo")
+	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-4o")
 
 	Dim url As String = host&"/chat/completions"
 	Dim messages As List
@@ -243,9 +258,9 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim key As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
 	Dim prompt As String
 	If terms.Size>0 Then
-		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt_with_term",defaultPromptWithTerm)
+		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt_with_term",defaultBatchPromptWithTerm)
 	Else
-		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt",defaultPrompt)
+		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("prompt",defaultBatchPrompt)
 	End If
 	 
 	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
@@ -261,7 +276,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 			'$"Translate the following into ${targetLang}: ${source}"$
 		Else
 			If terms.Size>0 Then
-				message.Put("content",defaultPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",source))
+				message.Put("content",defaultBatchPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",source))
 			Else
 				message.Put("content",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
 			End If
@@ -279,7 +294,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	End If
 	Log(message)
 	messages.Add(message)
-	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-3.5-turbo")
+	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-4o")
 	Dim params As Map
 	params.Initialize
 	params.Put("model",model)
