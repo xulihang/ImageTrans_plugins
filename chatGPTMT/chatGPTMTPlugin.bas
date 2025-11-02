@@ -12,7 +12,7 @@ Sub Class_Globals
 {source}
 
 **Requirements:**
-Output ONLY the final translation. Do not include any explanations, notes, or the original text.
+Output ONLY the final translation. Do not include any explanations, notes, or the original text. Do not mix sentences and keep the original number of sentences.
 "$
 	Private defaultBatchPromptWithTerm As String = $"You are a professional AI translator. Translate the following text into {langcode}.
 
@@ -21,7 +21,7 @@ Output ONLY the final translation. Do not include any explanations, notes, or th
 
 **Requirements:**
 1. Strictly adhere to the provided glossary for term translation.
-2. Output ONLY the final translation. Do not include any explanations, notes, or the original text.
+2. Output ONLY the final translation. Do not include any explanations, notes, or the original text. Do not mix sentences and keep the original number of sentences.
 
 **Glossary (JSON):**
 {term}"$
