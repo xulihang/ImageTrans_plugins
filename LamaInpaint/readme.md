@@ -49,7 +49,7 @@ Starting from ImageTrans v4.2.0, you can directly run Lama Inpaint in ImageTrans
 
 You need to put `big-lama.onnx` under ImageTrans's folder. You need to extract it from [big-lama-dynamic.zip](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/big-lama-dynamic.zip). 
 
-This way is slow. So it is recommended to use the Python version.
+This way is easy to use but is slow. So it is recommended to use the Python version.
 
 
 PS: lama will resize images too large, so it is recommended to process by text areas for large images. You can enable this in the project settings.
