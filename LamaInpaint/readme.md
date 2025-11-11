@@ -2,14 +2,7 @@
 
 ### How to use
 
-#### Option 1 (use ONNX)
-
-Starting from ImageTrans v4.2.0, you can directly run Lama Inpaint in ImageTrans.
-
-You need to put `big-lama.onnx` under ImageTrans's folder. You need to extract it from [big-lama-dynamic.zip](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/big-lama-dynamic.zip). 
-
-
-#### Option 2 (using Python)
+#### Option 1 (using Python)
 
 Use [lama-cleaner](https://github.com/Sanster/lama-cleaner) as the backend of the plugin.
 
@@ -50,7 +43,17 @@ If you are using the Windows package, you have to use notepad to edit `Scripts\p
 .\Scripts\pip.exe install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
-PS: lama will resize images too large so it is recommended to process by text areas. You can enable this in the project settings.
+#### Option 2 (use ONNX)
+
+Starting from ImageTrans v4.2.0, you can directly run Lama Inpaint in ImageTrans.
+
+You need to put `big-lama.onnx` under ImageTrans's folder. You need to extract it from [big-lama-dynamic.zip](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/big-lama-dynamic.zip). 
+
+This way is slow. So it is recommended to use the Python version.
+
+
+PS: lama will resize images too large, so it is recommended to process by text areas for large images. You can enable this in the project settings.
+
 
 
 
