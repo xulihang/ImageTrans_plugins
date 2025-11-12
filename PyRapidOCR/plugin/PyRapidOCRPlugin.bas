@@ -122,10 +122,13 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 	fd.Dir = File.DirApp
 	fd.FileName = uniqueName
 	fd.ContentType = "image/jpg"
+	Dim startTime As Long = DateTime.Now
 	job.PostMultipart(url,CreateMap("lang":lang,"return_word_box":"true"), Array(fd))
 
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
+	Dim endTime As Long = DateTime.Now
+	Log(endTime - startTime)
 	File.Delete(path,"")
 	If job.Success Then
 		Try
@@ -141,8 +144,12 @@ Sub ocr(img As B4XBitmap, lang As String) As ResumableSub
 				Dim totalBoxes As List
 				totalBoxes.Initialize
 				For Each textLine As Map In textLines
-					Dim boxesInLine As List = textLine.Get("boxes")
-					totalBoxes.AddAll(boxesInLine)
+					If textLine.ContainsKey("boxes") Then
+						Dim boxesInLine As List = textLine.Get("boxes")
+						totalBoxes.AddAll(boxesInLine)
+					Else
+						totalBoxes.Add(textLine)
+					End If
 				Next
 				textLinesToBoxes(totalBoxes,boxes)
 			End If

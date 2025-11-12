@@ -2,25 +2,33 @@
 Build1=Default,org.xulihang.imagetrans
 Group=Default Group
 Library1=javaobject
-Library10=jbitmapcreator
-Library2=jcore
-Library3=jfx
-Library4=jokhttputils2
-Library5=json
-Library6=jstringutils
-Library7=jxmlsax
-Library8=jxui
-Library9=xmlbuilder
-Module1=SegmentAnythingMaskGenPlugin
+Library10=xmlbuilder
+Library11=threading
+Library2=jbitmapcreator
+Library3=jcore
+Library4=jfx
+Library5=jokhttputils2
+Library6=json
+Library7=jstringutils
+Library8=jxmlsax
+Library9=jxui
+Module1=cv2
+Module2=cvMat
+Module3=jSegmentAnything
+Module4=SegmentAnythingMaskGenPlugin
 NumberOfFiles=0
-NumberOfLibraries=10
-NumberOfModules=1
+NumberOfLibraries=11
+NumberOfModules=4
 Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
 	#MainFormHeight: 600 
 #End Region
+
+#AdditionalJar: segmentanything4j
+#AdditionalJar: opencv-490
+#AdditionalJar: onnxruntime-1.20.0-nodll
 
 Sub Process_Globals
 	Private fx As JFX
@@ -31,6 +39,9 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm = Form1
 	'MainForm.RootPane.LoadLayout("Layout1") 'Load the layout file.
 	MainForm.Show
+	cv2.Initialize
+	loadOpenCV
+	loadOnnxruntime
 	Dim n As SegmentAnythingMaskGenPlugin
 	n.Initialize
 	Dim boxes As List
@@ -54,7 +65,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	geometry2.Put("height",190)
 	box2.Put("geometry",geometry2)
 	boxes.Add(box)
-	boxes.Add(box2)
+	'boxes.Add(box2)
 	Dim img As Image=fx.LoadImage(File.DirApp,"1.jpg")
 	wait for (n.genMask(img,boxes)) complete (result As B4XBitmap)
 	Dim out As OutputStream
@@ -67,3 +78,39 @@ End Sub
 Sub Application_Error (Error As Exception, StackTrace As String) As Boolean
 	Return True
 End Sub
+
+
+Sub loadOpenCV
+	Dim System As JavaObject
+	System.InitializeStatic("java.lang.System")
+	System.RunMethod("loadLibrary",Array(cv2.NATIVE_LIBRARY_NAME))
+End Sub
+
+'windows, mac or linux
+Sub DetectOS As String
+	Dim os As String = GetSystemProperty("os.name", "").ToLowerCase
+	If os.Contains("win") Then
+		Return "windows"
+	Else If os.Contains("mac") Then
+		Return "mac"
+	Else
+		Return "linux"
+	End If
+End Sub
+
+Sub loadOnnxruntime
+	Dim System As JavaObject
+	System.InitializeStatic("java.lang.System")
+	Dim os As String = DetectOS
+	If os = "windows" Then
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"onnxruntime.dll")))
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"onnxruntime4j_jni.dll")))
+	else if os = "mac" Then
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"libonnxruntime.dylib")))
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"libonnxruntime4j_jni.dylib")))
+	Else
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"libonnxruntime.so")))
+		System.RunMethod("load",Array(File.Combine(File.DirApp,"libonnxruntime4j_jni.so")))
+	End If
+End Sub
+

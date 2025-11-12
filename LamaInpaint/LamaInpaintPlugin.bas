@@ -42,6 +42,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return running
 		Case "getDefaultParamValues"
 			Return getDefaultSettings
+		Case "betterEntireImage"
+			Return True
 	End Select
 	Return ""
 End Sub
