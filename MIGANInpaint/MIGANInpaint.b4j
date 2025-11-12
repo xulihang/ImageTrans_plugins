@@ -19,7 +19,7 @@ Module4=MIGANInpaintPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=4
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -45,11 +45,16 @@ Sub AppStart (Form1 As Form, Args() As String)
 	loadOnnxruntime
 	Dim settings As Map
 	settings.Initialize
+	settings.Put("max_size",960)
     Dim n As MIGANInpaintPlugin
 	n.Initialize
-	Dim origin As Image=fx.LoadImage(File.DirApp,"image.jpg")
-	Dim mask As Image=fx.LoadImage(File.DirApp,"mask.png")
+	Dim origin As Image=fx.LoadImage(File.DirApp,"capture001.jpg")
+	Dim mask As Image=fx.LoadImage(File.DirApp,"capture001.jpg-mask.png")
 	wait for (n.inpaint(origin,mask,settings)) complete (result As B4XBitmap)
+	Log(origin.Width)
+	Log(origin.Height)
+	Log(result.Width)
+	Log(result.Height)
 	Dim out As OutputStream
 	out=File.OpenOutput(File.DirApp,"removed2.jpg",False)
 	result.WriteToStream(out,100,"JPEG")

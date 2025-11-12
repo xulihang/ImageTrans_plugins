@@ -145,7 +145,8 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 		Dim result As B4XBitmap
 		result = BytesToImage(resultMat.mat2bytes)
 		result = result.Crop(0,0,resized.Width,resized.Height)
-		result = result.Resize(origin.Width,origin.Height,True)
+		result = result.Resize(origin.Width,origin.Height,False)
+		resultMat.release
 		Return result
 	End If
 	Return origin
