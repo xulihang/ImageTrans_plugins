@@ -16,7 +16,7 @@ Module2=paddleOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=10
 NumberOfModules=2
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
