@@ -12,6 +12,7 @@ These plugins can work offline.
 
 ### OCR
 
+* [macOCR](macOCR). macOS's built-in OCR.
 * [PaddleOCR](paddleOCR)
 * [RapidOCR](RapidOCR). It is based on PaddleOCR's models. It works for Chinese, Korean, English and Japanese. (Replaced by ImageTrans's built-in version)
 * [mangaOCR](mangaOCR)
@@ -20,6 +21,7 @@ These plugins can work offline.
 
 ### Machine Translation
 
+* [macMT](macMT). macOS's built-in translation framework.
 * [opusMT](opusMT)
 * [sugoiMT](sugoiMT)
 * [ChatGPT](chatGPTMT)
