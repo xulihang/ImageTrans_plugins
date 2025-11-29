@@ -120,7 +120,30 @@ Sub paddedImage(origin As B4XBitmap,targetSize As Int) As B4XBitmap
 End Sub
 
 Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableSub
-
+	If CoreMLExists Then
+		Dim maxSize As Int = 800
+		Dim resized As B4XBitmap = origin
+		resized = origin.Resize(maxSize,maxSize,True)
+		mask = mask.Resize(maxSize,maxSize,True)
+		Dim paddedSrc As B4XBitmap = paddedImage(resized,maxSize)
+		mask = paddedImage(mask,maxSize)
+		File.WriteBytes(File.DirApp,"src.png",ImageToPNGBytes(paddedSrc))
+		File.WriteBytes(File.DirApp,"mask.png",ImageToPNGBytes(mask))
+		Dim exe As String = File.Combine(File.DirApp,"CoreMLaMaSample")
+		Dim sh As Shell
+		sh.Initialize("sh",exe,Array("src.png","mask.png","inpainted.png"))
+		sh.WorkingDirectory=File.DirApp
+		sh.Run(-1)
+		wait for sh_ProcessCompleted (Success As Boolean, ExitCode As Int, StdOut As String, StdErr As String)
+		If Success Then
+			Dim result As B4XBitmap = fx.LoadImage(File.DirApp,"inpainted.png")
+			result = result.Crop(0,0,resized.Width,resized.Height)
+			result = result.Resize(origin.Width,origin.Height,False)
+			Return result
+		Else
+			Return origin
+		End If
+	End If
 	If ONNXExists Then
 		Dim maxSize As Int = settings.GetDefault("max_size",960)
 		
@@ -270,6 +293,13 @@ Sub getUrl As String
 	Return url
 End Sub
 
+Private Sub CoreMLExists As Boolean
+	If File.Exists(File.DirApp,"LaMa.mlmodelc") Then
+		Return True
+	End If
+	Return False
+End Sub
+
 Private Sub ONNXExists As Boolean
 	If File.Exists(File.DirApp,"big-lama.onnx") Then
 		Return True
@@ -278,6 +308,9 @@ Private Sub ONNXExists As Boolean
 End Sub
 
 private Sub CheckIsRunning As ResumableSub
+	If CoreMLExists Then
+		Return True
+	End If
 	If ONNXExists Then
 		Return True
 	End If

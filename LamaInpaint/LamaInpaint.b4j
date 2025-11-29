@@ -2,8 +2,9 @@
 Build1=Default,org.xulihang.imagetrans
 Group=Default Group
 Library1=javaobject
-Library10=xmlbuilder
-Library11=threading
+Library10=threading
+Library11=xmlbuilder
+Library12=jshell
 Library2=jbitmapcreator
 Library3=jcore
 Library4=jfx
@@ -17,9 +18,9 @@ Module2=cvMat
 Module3=jLama
 Module4=LamaInpaintPlugin
 NumberOfFiles=0
-NumberOfLibraries=11
+NumberOfLibraries=12
 NumberOfModules=4
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
