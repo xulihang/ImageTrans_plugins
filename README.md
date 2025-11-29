@@ -44,6 +44,13 @@ These plugins can work offline.
 
 [mangaTranslator](mangaTranslatorOCR)
 
+## How to Locate ImageTrans's Folder
+
+You can open the folder through the menu.
+
+<img width="769" height="287" alt="image" src="https://github.com/user-attachments/assets/1a4326b9-4e5f-41f1-9258-c016e931cb8f" />
+
+
 ## Notes Using Local Servers
 
 The default port of local severs is usually 8080. If you are using multiple local servers like mangaOCR and mangaTranslator, they may have a port conflict.
