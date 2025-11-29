@@ -2,7 +2,13 @@
 
 ### How to use
 
-#### Option 1 (using Python)
+#### For macOS
+
+Use the CoreML version for macOS to utilize the GPU. You need to download and unzip the model to ImageTrans's folder. Download link: <https://github.com/xulihang/CoreMLaMa/releases/download/build/LaMa.mlmodelc.zip>
+
+#### For Other Systems (Windows, Linux)
+
+##### Option 1 (using Python)
 
 Use [lama-cleaner](https://github.com/Sanster/lama-cleaner) as the backend of the plugin.
 
@@ -16,7 +22,7 @@ For convenience, you can also use the Windows package of lama-cleaner. Download 
 
 Related issue: https://github.com/xulihang/ImageTrans-docs/issues/216
 
-##### Model
+###### Model
 
 If the program fails to download the model, you can download the model file manually.
 
@@ -25,7 +31,7 @@ Download link: <https://github.com/xulihang/ImageTrans_plugins/releases/download
 For Windows, you need to unzip it to the following path: `C:\Users\<your username>\.cache\torch\hub\checkpoints\big-lama.pt`.
 
 
-##### GPU
+###### GPU
 
 If you need to use CUDA GPU, you have to install the cuda version of pytorch:
 
@@ -43,7 +49,7 @@ If you are using the Windows package, you have to use notepad to edit `Scripts\p
 .\Scripts\pip.exe install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 ```
 
-#### Option 2 (use ONNX)
+##### Option 2 (use ONNX)
 
 Starting from ImageTrans v4.2.0, you can directly run Lama Inpaint in ImageTrans.
 
@@ -53,6 +59,7 @@ This way is easy to use but is slow. So it is recommended to use the Python vers
 
 
 PS: lama will resize images too large, so it is recommended to process by text areas for large images. You can enable this in the project settings.
+
 
 
 
