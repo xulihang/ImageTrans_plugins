@@ -15,7 +15,7 @@ Module1=OpenAIInpaintPlugin
 NumberOfFiles=0
 NumberOfLibraries=10
 NumberOfModules=1
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -34,7 +34,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
 	Dim settings As Map
 	settings.Initialize
-	settings.Put("key","sk-84743cf076ab72fa2b7bd24a5f2c3950487a0f156c94d776aed4c9af9f0656de")
+	settings.Put("key","")
 	settings.Put("url","https://api.qnaigc.com/v1/images/edits")
 	settings.Put("model","gemini-3.0-pro-image-preview")
     Dim n As OpenAIInpaintPlugin
