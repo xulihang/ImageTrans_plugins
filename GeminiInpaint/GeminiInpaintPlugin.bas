@@ -147,14 +147,14 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
   ]
 }
 "$
-    Log(json)
+    'Log(json)
 	job.PostString(url&"?key="&key, json)
 	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
-	Log(job.GetString)
 	If job.Success Then
 		Try
+			Log(job.GetString)
 			Dim parser As JSONParser
 			parser.Initialize(job.GetString)
 			Dim root As Map = parser.NextObject

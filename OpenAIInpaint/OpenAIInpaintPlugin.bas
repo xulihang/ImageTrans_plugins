@@ -131,7 +131,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
     "prompt": "Remove the text from the image with the mask."
 }
 "$
-    Log(json)
+    'Log(json)
 	job.PostString(url, json)
 	job.GetRequest.SetHeader("Authorization",$"Bearer ${key}"$)
 	job.GetRequest.SetContentType("application/json")
