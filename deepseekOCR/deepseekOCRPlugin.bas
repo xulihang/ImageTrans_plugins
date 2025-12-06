@@ -117,6 +117,7 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 	Log(jsonG.ToString)
 	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
+	job.GetRequest.Timeout = 120*1000
 	wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
 		Try
@@ -236,8 +237,8 @@ private Sub ProcessLayout(rawData As String,imgWidth As Int,imgHeight As Int) As
 		line = line.Trim
 		If line.Length = 0 Then Continue
         
-		' 检查是否包含文字部分
-		If line.Contains("<|ref|>text<|/ref|>") Then
+		' 检查是否不是图片
+		If line.Contains("<|ref|>image<|/ref|>") = False Then
 			' 提取坐标数据
 			Dim startIndex As Int = line.IndexOf("[[") + 2
 			Dim endIndex As Int = line.IndexOf("]]")
