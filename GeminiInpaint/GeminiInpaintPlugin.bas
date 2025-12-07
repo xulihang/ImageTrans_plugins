@@ -28,6 +28,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim paramsList As List
 			paramsList.Initialize
 			paramsList.Add("key")
+			paramsList.Add("prompt")
 			paramsList.Add("url")
 			paramsList.Add("output_size")
 			Return paramsList
@@ -42,7 +43,7 @@ End Sub
 
 
 Private Sub getDefaultSettings As Map
-	Return CreateMap("url":"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent","output_size":"1024x1024")
+	Return CreateMap("url":"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent","output_size":"1024x1024","prompt":"Remove the text from the image using the second image as the mask. Keep the rest untouched. Produce a clean natural image.")
 End Sub
 
 Public Sub ImageToBytes(Image As B4XBitmap) As Byte()
@@ -96,7 +97,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 	Else
 		Return result
 	End If
-	
+	Dim prompt As String = settings.GetDefault("prompt","Remove the text from the image using the second image as the mask. Keep the rest untouched. Produce a clean natural image.")
 	Try
 		targetSize = Regex.Split("x",settings.GetDefault("output_size","1024x1024"))(0)
 	Catch
@@ -128,7 +129,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
       "role": "user",
       "parts": [
         {
-          "text": "Remove the text from the image using the second image as the mask. Keep the rest untouched. Produce a clean natural image."
+          "text": "${prompt}"
         },
         {
           "inline_data": {

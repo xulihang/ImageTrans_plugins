@@ -30,6 +30,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("key")
 			paramsList.Add("url")
 			paramsList.Add("model")
+			paramsList.Add("prompt")
+			paramsList.Add("prompt_mask")
 			paramsList.Add("output_size")
 			paramsList.Add("use_multipart/form-data (yes or no)")
 			Return paramsList
@@ -44,7 +46,7 @@ End Sub
 
 
 Private Sub getDefaultSettings As Map
-	Return CreateMap("url":"https://api.openai.com/v1/images/edits","model":"gpt-image-1","output_size":"1024x1024","use_multipart/form-data (yes or no)":"yes")
+	Return CreateMap("url":"https://api.openai.com/v1/images/edits","model":"gpt-image-1","output_size":"1024x1024","use_multipart/form-data (yes or no)":"yes","prompt":"Remove the text from the image with the second image as the mask.","prompt_mask":"Remove the text from the image with the mask.")
 End Sub
 
 Public Sub ImageToBytes(Image As B4XBitmap) As Byte()
@@ -99,6 +101,9 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 	Else
 		Return result
 	End If
+	Dim prompt As String = settings.GetDefault("prompt","Remove the text from the image with the second image as the mask.")
+	Dim promptMask As String = settings.GetDefault("prompt_json","Remove the text from the image with the mask.")
+	
 	Dim useMultiformString As String = settings.GetDefault("use_multipart/form-data (yes or no)","yes")
 	Dim useMultiform As Boolean = useMultiformString.Contains("yes")
 	
@@ -152,7 +157,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 		maskFd.Dir = File.DirApp
 		maskFd.FileName = "mask.png"
 	
-		job.PostMultipart(url,CreateMap("response_format":"b64_json","model":model,"prompt":"Remove the text from the image with the second image as the mask."),Array(srcFd,maskFd))
+		job.PostMultipart(url,CreateMap("response_format":"b64_json","model":model,"prompt":prompt),Array(srcFd,maskFd))
 		'job.GetRequest.SetContentType("multipart/form-data")
 	Else
 		' 构造请求 JSON
@@ -163,7 +168,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
     "model": "${model}",
     "image": "data:image/png;base64,${srcBase64}",
     "mask": "data:image/png;base64,${maskBase64}",
-    "prompt": "Remove the text from the image with the mask."
+    "prompt": "${promptMask}"
 }
 "$
 		Else
@@ -176,7 +181,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
             "content": [
                 {
                     "type": "text",
-                    "text": "Remove the text from the image with the second image as the mask."
+                    "text": "${prompt}"
                 },
                 {
                     "type": "image_url",
