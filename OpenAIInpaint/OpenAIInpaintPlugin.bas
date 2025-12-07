@@ -31,6 +31,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("url")
 			paramsList.Add("model")
 			paramsList.Add("output_size")
+			paramsList.Add("use_multipart/form-data (yes or no)")
 			Return paramsList
 		Case "inpaint"
 			wait for (inpaint(Params.Get("origin"),Params.Get("mask"),Params.GetDefault("settings",getDefaultSettings))) complete (result As B4XBitmap)
@@ -43,7 +44,7 @@ End Sub
 
 
 Private Sub getDefaultSettings As Map
-	Return CreateMap("url":"https://api.openai.com/v1/images/edits","model":"gpt-image-1","output_size":"1024x1024")
+	Return CreateMap("url":"https://api.openai.com/v1/images/edits","model":"gpt-image-1","output_size":"1024x1024","use_multipart/form-data (yes or no)":"yes")
 End Sub
 
 Public Sub ImageToBytes(Image As B4XBitmap) As Byte()
@@ -98,13 +99,18 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 	Else
 		Return result
 	End If
+	Dim useMultiformString As String = settings.GetDefault("use_multipart/form-data (yes or no)","yes")
+	Dim useMultiform As Boolean = useMultiformString.Contains("yes")
+	
+	If url.Contains("edit") = False Then
+		useMultiform = False
+	End If
 	
 	Try
 		targetSize = Regex.Split("x",settings.GetDefault("output_size","1024x1024"))(0)
 	Catch
 		Log(LastException)
 	End Try
-	
 	
 	mask = updateMask(mask)
 	
@@ -115,15 +121,44 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 	mask = paddedImage(mask,targetSize)
 	
 	Dim su As StringUtils
-
-	Dim srcBase64 As String = su.EncodeBase64(ImageToBytes(paddedSrc))
-	Dim maskBase64 As String = su.EncodeBase64(ImageToBytes(mask))
-
+	Dim srcBase64 As String 
+	Dim maskBase64 As String
+	
+	If useMultiform Then
+		File.WriteBytes(File.DirApp,"src.png",ImageToBytes(paddedSrc))
+		File.WriteBytes(File.DirApp,"mask.png",ImageToBytes(mask))
+	Else
+		srcBase64 = su.EncodeBase64(ImageToBytes(paddedSrc))
+		maskBase64 = su.EncodeBase64(ImageToBytes(mask))
+	End If
+	
 	Dim job As HttpJob
 	job.Initialize("",Me)
 	
-	' 构造请求 JSON
-	Dim json As String = $"
+    'Log(json)
+	'job.PostString(url, json)
+	If useMultiform Then
+		Dim srcFd As MultipartFileData
+		srcFd.Initialize
+		srcFd.ContentType = "image/png"
+		srcFd.KeyName = "image"
+		srcFd.Dir = File.DirApp
+		srcFd.FileName = "src.png"
+	
+		Dim maskFd As MultipartFileData
+		maskFd.Initialize
+		maskFd.ContentType = "image/png"
+		maskFd.KeyName = "image"
+		maskFd.Dir = File.DirApp
+		maskFd.FileName = "mask.png"
+	
+		job.PostMultipart(url,CreateMap("response_format":"b64_json","model":model,"prompt":"Remove the text from the image with the second image as the mask."),Array(srcFd,maskFd))
+		'job.GetRequest.SetContentType("multipart/form-data")
+	Else
+		' 构造请求 JSON
+		Dim json As String
+		If url.Contains("edit") Then
+			json = $"
 {
     "model": "${model}",
     "image": "data:image/png;base64,${srcBase64}",
@@ -131,10 +166,39 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
     "prompt": "Remove the text from the image with the mask."
 }
 "$
-    'Log(json)
-	job.PostString(url, json)
+		Else
+			json = $"{
+    "model": "${model}",
+    "stream": false,
+    "messages": [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Remove the text from the image with the second image as the mask."
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": "data:image/png;base64,${srcBase64}"
+                    }
+                },
+				{
+                    "type": "image_url",
+                    "image_url": {
+                        "url": "data:image/png;base64,${maskBase64}"
+                    }
+                }
+            ]
+        }
+    ]
+}"$
+		End If
+		job.PostString(url,json)
+		job.GetRequest.SetContentType("application/json")
+	End If
 	job.GetRequest.SetHeader("Authorization",$"Bearer ${key}"$)
-	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.Timeout=240*1000
 	Wait For (job) JobDone(job As HttpJob)
 	If job.Success Then
@@ -143,9 +207,23 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 			parser.Initialize(job.GetString)
 			Log(job.GetString)
 			Dim response As Map = parser.NextObject
-			Dim dataList As List = response.Get("data")
-			Dim imgData As Map = dataList.Get(0)
-		    Dim b64 As String = imgData.Get("b64_json")
+			Dim b64 As String
+			If url.Contains("edit") Then
+				Dim dataList As List = response.Get("data")
+				Dim imgData As Map = dataList.Get(0)
+				b64 = imgData.Get("b64_json")
+			Else
+				Dim choices As List
+				choices = response.Get("choices")
+				Dim choice As Map = choices.Get(0)
+				Dim message As Map = choice.Get("message")
+				Dim content As String = message.Get("content")
+				Dim pattern As String = "(?<=;base64,)[^)]+"
+				Dim matcher As Matcher = Regex.Matcher(pattern, content)
+				If matcher.Find Then
+					b64 = matcher.Group(0)
+				End If
+			End If
 			Dim su As StringUtils
 			Dim out() As Byte = su.DecodeBase64(b64)
 			'File.WriteBytes(File.DirApp, "result.png", out)
