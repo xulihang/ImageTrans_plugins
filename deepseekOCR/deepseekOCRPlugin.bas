@@ -26,7 +26,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getParams"
 			Dim paramsList As List
 			paramsList.Initialize
-			paramsList.Add("key")		
+			paramsList.Add("key")
+			paramsList.Add("model")
 			paramsList.Add("host")
 			Return paramsList
 		Case "getText"
@@ -41,7 +42,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "supportLayoutDetection"
 			Return True
 		Case "getDefaultParamValues"
-			Return CreateMap("host":"https://api.siliconflow.cn/v1")
+			Return CreateMap("host":"https://api.siliconflow.cn/v1","model":"deepseek-ai/DeepSeek-OCR")
 	End Select
 	Return ""
 End Sub
@@ -75,12 +76,13 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 		Dim map1 As Map
 		map1.Initialize
 		map1.Put("key","")
-		map1.Put("host","https://api.siliconflow.cn/v1")
+		map1.Put("host","http://127.0.0.1:8000/v1")
+		map1.Put("model","paddleocr-vl")
 		preferencesMap = CreateMap("api":CreateMap("deepseekOCR":map1))
 	End If
 	Dim apikey As String = getMap("deepseekOCR",getMap("api",preferencesMap)).Get("key")
 	Dim host As String = getMap("deepseekOCR",getMap("api",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
-	
+	Dim model As String = getMap("deepseekOCR",getMap("api",preferencesMap)).GetDefault("model","deepseek-ai/DeepSeek-OCR")
 	Dim url As String = host&"/chat/completions"
 	
 	Dim contentList As List
@@ -109,7 +111,7 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 	messages.Add(message)
 	Dim params As Map
 	params.Initialize
-	params.Put("model","deepseek-ai/DeepSeek-OCR")
+	params.Put("model",model)
 	params.Put("messages",messages)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
@@ -119,6 +121,7 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
 	job.GetRequest.Timeout = 120*1000
 	wait For (job) JobDone(job As HttpJob)
+
 	If job.Success Then
 		Try
 			Log(job.GetString)
@@ -139,6 +142,8 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 		Catch
 			Log(LastException)
 		End Try
+	Else
+		Log(job.ErrorMessage)
 	End If
 	job.Release
 	If prompt.Contains("Free OCR") Then

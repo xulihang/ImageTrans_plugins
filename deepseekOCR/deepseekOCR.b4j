@@ -1,22 +1,23 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.imagetrans,HU2_ACCEPTALL
 Group=Default Group
-Library1=jcore
-Library10=byteconverter
-Library11=encryption
-Library2=jfx
-Library3=json
-Library4=jxmlsax
-Library5=xmlbuilder
-Library6=jxui
-Library7=javaobject
-Library8=jokhttputils2
-Library9=jstringutils
+Library1=byteconverter
+Library10=jxui
+Library11=xmlbuilder
+Library12=jshell
+Library2=encryption
+Library3=javaobject
+Library4=jcore
+Library5=jfx
+Library6=jokhttputils2
+Library7=json
+Library8=jstringutils
+Library9=jxmlsax
 Module1=deepseekOCRPlugin
 NumberOfFiles=0
-NumberOfLibraries=11
+NumberOfLibraries=12
 NumberOfModules=1
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -34,8 +35,8 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As deepseekOCRPlugin
 	n.Initialize
-	Dim img As B4XBitmap = fx.LoadImage(File.DirApp,"test.jpg")
-	wait for (n.GetTextWithLocation(img)) complete (result As Object)
+	Dim img As B4XBitmap = fx.LoadImage(File.DirApp,"capture001.jpg")
+	wait for (n.ocr(img,"OCR")) complete (result As Object)
 	'wait for (n.batchTranslate(Array("BasicCAT Documentation.","Sentence2."),"en","zh",CreateMap("mt":CreateMap("gemini":map1)))) complete (result As List)
 	Log(result)
 End Sub
