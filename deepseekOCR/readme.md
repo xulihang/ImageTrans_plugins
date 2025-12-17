@@ -5,7 +5,7 @@ A VLM model plugin for OCR and layout detection.
 
 By default, it uses Siliconflow's API to use Deepseek-OCR.
 
-You can host your own model using tools like vLM, Ollama and deepseek-ocr.rs.
+You can host your own model using tools like vLLM, Ollama and deepseek-ocr.rs.
 
 
 ## Using deepseek-ocr.rs
