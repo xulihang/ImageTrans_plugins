@@ -35,8 +35,8 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As deepseekOCRPlugin
 	n.Initialize
-	Dim img As B4XBitmap = fx.LoadImage(File.DirApp,"capture001.jpg")
-	wait for (n.ocr(img,"OCR")) complete (result As Object)
+	Dim img As B4XBitmap = fx.LoadImage(File.DirApp,"two-columns.jpg")
+	wait for (n.DetectLayout(img)) complete (result As Object)
 	'wait for (n.batchTranslate(Array("BasicCAT Documentation.","Sentence2."),"en","zh",CreateMap("mt":CreateMap("gemini":map1)))) complete (result As List)
 	Log(result)
 End Sub

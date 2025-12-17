@@ -6,6 +6,9 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private defaultOCRPrompt As String = "<image>\nFree OCR."
+	Private defaultOCRWithLocationPrompt As String = "<image>\n<|grounding|>OCR this image."
+	Private defaultLayoutDetectionPrompt As String = "<image>\n<|grounding|>Given the layout of the image."
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -29,6 +32,9 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("key")
 			paramsList.Add("model")
 			paramsList.Add("host")
+			paramsList.Add("prompt_ocr")
+			paramsList.Add("prompt_ocr_with_location")
+			paramsList.Add("prompt_layout_detection")
 			Return paramsList
 		Case "getText"
 			wait for (GetText(Params.Get("img"))) complete (result As String)
@@ -42,27 +48,31 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "supportLayoutDetection"
 			Return True
 		Case "getDefaultParamValues"
-			Return CreateMap("host":"https://api.siliconflow.cn/v1","model":"deepseek-ai/DeepSeek-OCR")
+			Return CreateMap("host":"https://api.siliconflow.cn/v1", _ 
+			                 "prompt_ocr":defaultOCRPrompt, _ 
+			                 "prompt_ocr_with_location":defaultOCRWithLocationPrompt, _ 
+                  			 "prompt_layout_detection":defaultLayoutDetectionPrompt, _ 
+			                 "model":"deepseek-ai/DeepSeek-OCR")
 	End Select
 	Return ""
 End Sub
 
 Sub DetectLayout(img As B4XBitmap) As ResumableSub
-	wait for (ocr(img,"<image>\n<|grounding|>Given the layout of the image.")) complete (regions As List)
+	wait for (ocr(img,"layout_detection")) complete (regions As List)
 	Return regions
 End Sub
 
 Sub GetText(img As B4XBitmap) As ResumableSub
-	wait for (ocr(img,"<image>\nFree OCR.")) complete (text As String)
+	wait for (ocr(img,"ocr")) complete (text As String)
 	Return text
 End Sub
 
 Sub GetTextWithLocation(img As B4XBitmap) As ResumableSub
-	wait for (ocr(img,"<image>\n<|grounding|>OCR this image.")) complete (regions As List)
+	wait for (ocr(img,"ocr_with_location")) complete (regions As List)
 	Return regions
 End Sub
 
-Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
+Sub ocr(img As B4XBitmap,actionType As String) As ResumableSub
 	saveImgToDiskWithSizeCheck(img,100,5000000)
 	Dim regions As List
 	regions.Initialize
@@ -77,13 +87,25 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 		map1.Initialize
 		map1.Put("key","")
 		map1.Put("host","http://127.0.0.1:8000/v1")
-		map1.Put("model","paddleocr-vl")
+		map1.Put("model","deepseek-ocr")
+		map1.Put("prompt_ocr","OCR")
+		map1.Put("prompt_layout_detection","<|grounding|>Given the layout of the image.")
 		preferencesMap = CreateMap("api":CreateMap("deepseekOCR":map1))
 	End If
 	Dim apikey As String = getMap("deepseekOCR",getMap("api",preferencesMap)).Get("key")
 	Dim host As String = getMap("deepseekOCR",getMap("api",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
 	Dim model As String = getMap("deepseekOCR",getMap("api",preferencesMap)).GetDefault("model","deepseek-ai/DeepSeek-OCR")
 	Dim url As String = host&"/chat/completions"
+	
+	Dim prompt As String
+	
+	If actionType = "ocr" Then
+		prompt = getMap("deepseekOCR",getMap("api",preferencesMap)).GetDefault("prompt_ocr",defaultOCRPrompt)
+	else if actionType = "ocr_with_location" Then
+		prompt = getMap("deepseekOCR",getMap("api",preferencesMap)).GetDefault("prompt_ocr_with_location",defaultOCRWithLocationPrompt)
+	Else
+		prompt = getMap("deepseekOCR",getMap("api",preferencesMap)).GetDefault("prompt_layout_detection",defaultLayoutDetectionPrompt)
+	End If
 	
 	Dim contentList As List
 	contentList.Initialize
@@ -119,7 +141,7 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 	Log(jsonG.ToString)
 	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
-	job.GetRequest.Timeout = 120*1000
+	job.GetRequest.Timeout = 1200000*1000
 	wait For (job) JobDone(job As HttpJob)
 
 	If job.Success Then
@@ -133,10 +155,9 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 			Dim choice As Map = choices.Get(0)
 			Dim message As Map = choice.Get("message")
 			Dim result As String = message.Get("content")
-			Log(result)
-			If prompt.Contains("layout") Then
+			If actionType="layout_detection" Then
 				regions = ProcessLayout(result,img.Width,img.Height)
-			else if prompt.Contains("grounding") Then
+			else if actionType="ocr_with_location" Then
 				regions = ProcessTextWithLocation(result,img.Width,img.Height)
 			End If
 		Catch
@@ -146,7 +167,7 @@ Sub ocr(img As B4XBitmap,prompt As String) As ResumableSub
 		Log(job.ErrorMessage)
 	End If
 	job.Release
-	If prompt.Contains("Free OCR") Then
+	If actionType = "ocr" Then
 		Return result
 	Else
 		Return regions
