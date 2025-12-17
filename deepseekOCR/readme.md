@@ -86,6 +86,6 @@ Download links:
 * Link 1: <https://huggingface.co/jzhang533/PaddleOCR-VL-For-Manga/tree/main/>
 * Link 2: <https://hf-mirror.com/jzhang533/PaddleOCR-VL-For-Manga/tree/main/>
 
-In addition, you need to modify the default prompt for OCR to "OCR" in the preferences. Please note that PaddleOCR-VL can only extract the text from an image, without any extra data using deepseek-ocr.rs.
+In addition, you need to modify the default prompt for OCR to "OCR" and model name to "paddleocr-vl" in the preferences. Please note that PaddleOCR-VL can only extract the text from an image, without any extra data using deepseek-ocr.rs.
 
 
