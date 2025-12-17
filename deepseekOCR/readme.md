@@ -3,7 +3,7 @@
 
 A VLM model plugin for OCR and layout detection.
 
-By default, it uses Silconflow's API to use Deepseek-OCR.
+By default, it uses Siliconflow's API to use Deepseek-OCR.
 
 You can host your own model using tools like vLM, Ollama and deepseek-ocr.rs.
 
@@ -20,7 +20,7 @@ Here are the steps to use it:
 1. Download its binary files: <https://github.com/TimmyOVO/deepseek-ocr.rs/releases>
 2. Create a config.toml file with the following content:
 
-    ```json
+    ```
 
     [models]
     active = "paddle_ocr_vl"
