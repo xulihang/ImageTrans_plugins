@@ -86,10 +86,7 @@ Sub ocr(img As B4XBitmap,actionType As String) As ResumableSub
 		Dim map1 As Map
 		map1.Initialize
 		map1.Put("key","")
-		map1.Put("host","http://127.0.0.1:8000/v1")
-		map1.Put("model","deepseek-ocr")
-		map1.Put("prompt_ocr","OCR")
-		map1.Put("prompt_layout_detection","<|grounding|>Given the layout of the image.")
+		map1.Put("host","https://api.siliconflow.cn/v1")
 		preferencesMap = CreateMap("api":CreateMap("deepseekOCR":map1))
 	End If
 	Dim apikey As String = getMap("deepseekOCR",getMap("api",preferencesMap)).Get("key")
@@ -263,45 +260,48 @@ private Sub ProcessLayout(rawData As String,imgWidth As Int,imgHeight As Int) As
 		line = line.Trim
 		If line.Length = 0 Then Continue
         
-		' 检查是否不是图片
-		If line.Contains("<|ref|>image<|/ref|>") = False Then
-			' 提取坐标数据
-			Dim startIndex As Int = line.IndexOf("[[") + 2
-			Dim endIndex As Int = line.IndexOf("]]")
-            
-			If startIndex > 1 And endIndex > startIndex Then
-				Dim coordStr As String = line.SubString2(startIndex, endIndex)
-				Dim coords() As String = Regex.Split(", ", coordStr)
-                
-				If coords.Length = 4 Then
-					' 解析原始坐标
-					Dim x1 As Float = coords(0)
-					Dim y1 As Float = coords(1)
-					Dim x2 As Float = coords(2)
-					Dim y2 As Float = coords(3)
-                    
-					' 归一化处理
-					x1 = x1 / 999 * imgWidth
-					y1 = y1 / 999 * imgHeight
-					x2 = x2 / 999 * imgWidth
-					y2 = y2 / 999 * imgHeight
-                    
-					' 计算宽度和高度
-					Dim width As Float = x2 - x1
-					Dim height As Float = y2 - y1
-                    
-					' 创建 box 映射
-					Dim box As Map
-					box.Initialize
-					box.Put("X", x1)
-					box.Put("Y", y1)
-					box.Put("width", width)
-					box.Put("height", height)
-                    box.Put("text","")
-					' 添加到列表
-					boxes.Add(box)
-				End If
+		' 提取坐标数据
+		Dim startIndex As Int = line.IndexOf("[[") + 2
+		Dim endIndex As Int = line.IndexOf("]]")
+        
+		If startIndex > 1 And endIndex > startIndex Then
+			Dim classMatcher As Matcher = Regex.Matcher("<\|ref\|>(.*?)<\|/ref\|>",line)
+			Dim class As String
+			If classMatcher.Find Then
+				class = classMatcher.Group(1)
 			End If
+			Dim coordStr As String = line.SubString2(startIndex, endIndex)
+			Dim coords() As String = Regex.Split(", ", coordStr)
+            
+			If coords.Length = 4 Then
+				' 解析原始坐标
+				Dim x1 As Float = coords(0)
+				Dim y1 As Float = coords(1)
+				Dim x2 As Float = coords(2)
+				Dim y2 As Float = coords(3)
+                
+				' 归一化处理
+				x1 = x1 / 999 * imgWidth
+				y1 = y1 / 999 * imgHeight
+				x2 = x2 / 999 * imgWidth
+				y2 = y2 / 999 * imgHeight
+                
+				' 计算宽度和高度
+				Dim width As Float = x2 - x1
+				Dim height As Float = y2 - y1
+                
+				' 创建 box 映射
+				Dim box As Map
+				box.Initialize
+				box.Put("X", x1)
+				box.Put("Y", y1)
+				box.Put("width", width)
+				box.Put("height", height)
+                box.Put("text","")
+				box.Put("class",class)
+				' 添加到列表
+				boxes.Add(box)
+				End If
 		End If
 	Next
     
