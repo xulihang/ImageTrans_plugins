@@ -74,8 +74,9 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 		Dim map1 As Map
 		map1.Initialize
 		map1.Put("key","")
-		map1.Put("host","https://generativelanguage.googleapis.com/v1beta/openai")
-		map1.Put("model","gemini-1.5-flash")
+		map1.Put("host","http://localhost:11434/v1")
+		map1.Put("model","qwen3-vl:4b")
+		map1.Put("prompt","/set nothink Extract the text in the image (please only return the text)")
 		preferencesMap = CreateMap("api":CreateMap("chatGPTOCR":map1))
 	End If
 	Dim apikey As String = getMap("chatGPTOCR",getMap("api",preferencesMap)).Get("key")
@@ -121,6 +122,7 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
 	Log(jsonG.ToString)
+	job.GetRequest.Timeout = 1200000
 	job.GetRequest.SetContentType("application/json")
 	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
 	wait For (job) JobDone(job As HttpJob)
