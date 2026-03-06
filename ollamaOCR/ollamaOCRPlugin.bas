@@ -43,7 +43,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getDefaultParamValues"
 			Return CreateMap("prompt": defaultPrompt, _
 			                 "prompt_location": defaultLocalizationPrompt, _
-							 "host":"http://localhost:11434/v1", _
+							 "host":"http://localhost:11434", _
 							 "model":"qwen2.5vl:3b")
 	End Select
 	Return ""
@@ -73,10 +73,11 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 	Else
 		Dim map1 As Map
 		map1.Initialize
+		'map1.Put("model","glm-ocr")
 		preferencesMap = CreateMap("api":CreateMap("ollamaOCR":map1))
 	End If
 	Dim apikey As String = getMap("ollamaOCR",getMap("api",preferencesMap)).Get("key")
-	Dim host As String = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("host","http://localhost:11434/v1")
+	Dim host As String = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("host","http://localhost:11434")
 	Dim model As String = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("model","qwen2.5vl:3b")
 	Dim prompt As String
 	If textOnly Then
@@ -84,36 +85,29 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 	Else
 		prompt = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("prompt_location",defaultLocalizationPrompt)
 	End If
-	Dim url As String = host&"/chat/completions"
+	Dim url As String = host&"/api/chat"
 	
-	Dim contentList As List
-	contentList.Initialize
+	Dim imagesList As List
+	imagesList.Initialize
 	Dim messages As List
 	messages.Initialize
 	Dim message As Map
 	message.Initialize
 	message.Put("role","user")
-	Dim text As Map
-	text.Initialize
-	text.Put("type","text")
-	text.Put("text",prompt)
+
 	Dim su As StringUtils
 	Dim base64 As String=su.EncodeBase64(File.ReadBytes(File.DirApp,"image.jpg"))
-	Dim urlMap As Map
-	urlMap.Initialize
-	urlMap.Put("url","data:image/jpeg;base64,"&base64)
-	Dim image As Map
-	image.Initialize
-	image.Put("type","image_url")
-	image.Put("image_url",urlMap)
-	contentList.Add(text)
-	contentList.Add(image)
-	message.Put("content",contentList)
+
+	imagesList.Add(base64)
+	message.Put("content",prompt)
+	message.Put("images",imagesList)
 	messages.Add(message)
 	Dim params As Map
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
+	params.Put("think",False)
+	params.Put("stream",False)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
@@ -128,10 +122,7 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 			Dim json As JSONParser
 			json.Initialize(job.GetString)
 			Dim response As Map = json.NextObject
-			Dim choices As List
-			choices = response.Get("choices")
-			Dim choice As Map = choices.Get(0)
-			Dim message As Map = choice.Get("message")
+			Dim message As Map = response.Get("message")
 			Dim result As String = message.Get("content")
 			If textOnly Then
 				textResult = result
