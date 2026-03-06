@@ -44,7 +44,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return CreateMap("prompt": defaultPrompt, _
 			                 "prompt_location": defaultLocalizationPrompt, _
 							 "host":"http://localhost:11434", _
-							 "model":"qwen2.5vl:3b")
+							 "model":"qwen3-vl:4b-instruct")
 	End Select
 	Return ""
 End Sub
@@ -78,7 +78,7 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 	End If
 	Dim apikey As String = getMap("ollamaOCR",getMap("api",preferencesMap)).Get("key")
 	Dim host As String = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("host","http://localhost:11434")
-	Dim model As String = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("model","qwen2.5vl:3b")
+	Dim model As String = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("model","qwen3-vl:4b-instruct")
 	Dim prompt As String
 	If textOnly Then
 		prompt = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("prompt",defaultPrompt)
