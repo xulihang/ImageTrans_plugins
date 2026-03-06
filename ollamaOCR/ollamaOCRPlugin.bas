@@ -76,15 +76,31 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 		'map1.Put("model","glm-ocr")
 		preferencesMap = CreateMap("api":CreateMap("ollamaOCR":map1))
 	End If
-	Dim apikey As String = getMap("ollamaOCR",getMap("api",preferencesMap)).Get("key")
-	Dim host As String = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("host","http://localhost:11434")
-	Dim model As String = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("model","qwen3-vl:4b-instruct")
+	Dim apikey As String
+	Dim host As String
 	Dim prompt As String
-	If textOnly Then
-		prompt = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("prompt",defaultPrompt)
-	Else
-		prompt = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("prompt_location",defaultLocalizationPrompt)
-	End If
+	Dim model As String
+	Try
+		apikey = getMap("ollamaOCR",getMap("api",preferencesMap)).Get("key")
+		host = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("host","http://localhost:11434")
+		model = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("model","qwen3-vl:4b-instruct")
+		If textOnly Then
+			prompt = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("prompt",defaultPrompt)
+		Else
+			prompt = getMap("ollamaOCR",getMap("api",preferencesMap)).GetDefault("prompt_location",defaultLocalizationPrompt)
+		End If
+	Catch
+		Log(LastException)
+		'fallback
+		host = "http://localhost:11434"
+		model = "qwen3-vl:4b-instruct"
+		If textOnly Then
+			prompt = defaultPrompt
+		Else
+			prompt = defaultLocalizationPrompt
+		End If
+	End Try
+	
 	Dim url As String = host&"/api/chat"
 	
 	Dim imagesList As List
