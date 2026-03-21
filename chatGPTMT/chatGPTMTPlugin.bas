@@ -576,6 +576,7 @@ Sub transliterate(sourceList As List, sourceLang As String, targetLang As String
 			content = Regex.Replace("\n+",content,CRLF)
 			content = content.Trim
 			For Each line As String In Regex.Split(CRLF,content)
+				line = Regex.Replace("<p>\n+",line,"")
 				line = line.Replace("<p>","")
 				line = line.Replace("</p>","")
 				line = ReplaceStartingNumberedStrings(line)
