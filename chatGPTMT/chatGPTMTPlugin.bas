@@ -67,6 +67,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("prompt_with_term")
 			paramsList.Add("batch_prompt_with_term")
 			paramsList.Add("spell_checking_prompt")
+			paramsList.Add("transliteration_prompt")
 			paramsList.Add("host")
 			paramsList.Add("model")
 			paramsList.Add("force_no_think (yes or no)")
@@ -82,6 +83,9 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return targetList
 		Case "spellcheck"
 			wait for (spellCheck(Params.Get("source"),Params.Get("preferencesMap"))) complete (targetList As List)
+			Return targetList
+		Case "transliterate"
+			wait for (transliterate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"))) complete (targetList As List)
 			Return targetList
 		Case "translate"
 			Dim terms As Map
@@ -100,6 +104,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			                 "batch_prompt":defaultBatchPrompt, _ 
 							 "prompt_with_term":defaultBatchPromptWithTerm, _ 
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
+							 "transliteration_prompt":defaultTransliterationPrompt, _ 
 							 "force_no_think (yes or no)":"no", _ 
 			                 "host":"https://api.openai.com/v1", _
 							 "model":"gpt-4o")
@@ -501,7 +506,7 @@ Sub transliterate(sourceList As List, sourceLang As String, targetLang As String
 	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
 	
 	Dim prompt As String
-	prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("batch_prompt_with_term",defaultTransliterationPrompt)
+	prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("transliteration_prompt",defaultTransliterationPrompt)
 
 	
 	Dim noThink As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("force_no_think (yes or no)","no")
