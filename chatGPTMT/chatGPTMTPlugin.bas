@@ -581,6 +581,11 @@ Sub transliterate(sourceList As List, sourceLang As String, targetLang As String
 				line = line.Replace("</p>","")
 				line = ReplaceStartingNumberedStrings(line)
 				line = line.Replace("\n",CRLF)
+				If line.Trim = "" Then
+					Continue
+				End If
+				line = line.Trim
+				line = ReplaceStartingNumberedStrings(line)
 				targetList.Add(line)
 			Next
 			Do While targetList.Size < sourceList.Size

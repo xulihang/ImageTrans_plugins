@@ -37,15 +37,15 @@ Sub AppStart (Form1 As Form, Args() As String)
 	n.Initialize
 	Dim map1 As Map
 	map1.Initialize
-	map1.Put("key","key")
+	map1.Put("key","sk-")
 	map1.Put("host","https://api.deepseek.com")
 	map1.Put("model","deepseek-chat")
 	Dim textToTransliterate As List
 	textToTransliterate.Initialize
 	'textToTransliterate.Add("揉んでもいいですか?")
 	'textToTransliterate.Add("黙って受け止めろ")
-	textToTransliterate.Add("我爱我的祖国。")
-	textToTransliterate.Add("我想回家。")
+	textToTransliterate.Add("あたしはおねーちゃんと違って男なんか、")
+	textToTransliterate.Add("我跟那个姐姐不一样，我一点都不喜欢男人，  ")
 	wait for (n.transliterate(textToTransliterate,"","",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (items As List)
 	Log(items)
 	Log(items.Size)
