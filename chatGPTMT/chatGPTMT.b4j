@@ -16,7 +16,7 @@ Module1=chatGPTMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -40,6 +40,16 @@ Sub AppStart (Form1 As Form, Args() As String)
 	map1.Put("key","key")
 	map1.Put("host","https://api.deepseek.com")
 	map1.Put("model","deepseek-chat")
+	Dim textToTransliterate As List
+	textToTransliterate.Initialize
+	'textToTransliterate.Add("揉んでもいいですか?")
+	'textToTransliterate.Add("黙って受け止めろ")
+	textToTransliterate.Add("我爱我的祖国。")
+	textToTransliterate.Add("我想回家。")
+	wait for (n.transliterate(textToTransliterate,"","",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (items As List)
+	Log(items)
+	Log(items.Size)
+	Return
 	Dim textToCheck As List
 	textToCheck.Initialize
 	textToCheck.Add("THE END IS COMING, ACCURSED TEELA!")

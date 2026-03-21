@@ -33,6 +33,14 @@ Output ONLY the final translation. Do not include any explanations, notes, or th
 	**Requirements:**
 	Output ONLY the corrected text. Do Not include any explanations and notes. Do Not mix sentences And keep the original number of sentences.
 "$
+	Private defaultTransliterationPrompt As String = $"Mark the following text with HTML ruby:
+
+**Text:**
+{source}
+
+**Requirements:**
+Output ONLY the final transliteration. Use hiragana for Japanese and use pinyin for Chinese. Remember to use both ruby and rt. Do not translate the text. Do not include any explanations, notes, or the original text. Do not mix sentences and keep the original number of sentences.
+"$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -479,4 +487,108 @@ End Sub
 
 Sub getMap(key As String,parentmap As Map) As Map
 	Return parentmap.Get(key)
+End Sub
+
+
+Sub transliterate(sourceList As List, sourceLang As String, targetLang As String,preferencesMap As Map) As ResumableSub
+	Dim targetList As List
+	targetList.Initialize
+
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	
+	Dim apikey As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
+	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
+	
+	Dim prompt As String
+	prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("batch_prompt_with_term",defaultTransliterationPrompt)
+
+	
+	Dim noThink As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("force_no_think (yes or no)","no")
+	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-4o")
+
+	Dim url As String = host&"/chat/completions"
+	Dim messages As List
+	messages.Initialize
+	Dim message As Map
+	message.Initialize
+	message.Put("role","user")
+
+    
+	Dim sb As StringBuilder
+	sb.Initialize
+	Dim index As Int = 0
+	For Each source As String In sourceList
+		index = index + 1
+		source = source.Replace(CRLF,"\n")
+		sb.Append(index)
+		sb.Append(". ")
+		sb.Append(source)
+		sb.Append(CRLF)
+	Next
+	
+	Dim target As String = sb.ToString
+	message.Put("content",prompt.Replace("{source}",target))
+	
+	If noThink = "yes" Then
+		Dim msg As String = message.Get("content")
+		msg = msg & "/no_think"
+		message.Put("content",msg)
+	End If
+	
+	messages.Add(message)
+	Dim params As Map
+	params.Initialize
+	params.Put("model",model)
+	params.Put("messages",messages)
+	If url.Contains("siliconflow") Then
+		params.Put("enable_thinking",False)
+	End If
+	If noThink = "yes" Then
+		params.Put("enable_thinking",False)
+	End If
+	Log(params)
+	Dim jsonG As JSONGenerator
+	jsonG.Initialize(params)
+	job.PostString(url,jsonG.ToString)
+	Log(jsonG.ToString)
+	job.GetRequest.SetContentType("application/json")
+	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
+	job.GetRequest.Timeout = 1200000
+	wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Try
+			Log(job.GetString)
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			Dim response As Map = json.NextObject
+			Dim choices As List
+			choices = response.Get("choices")
+			Dim choice As Map = choices.Get(0)
+			Dim message As Map = choice.Get("message")
+			Dim content As String = message.Get("content")
+			content = RemoveThinkTags(content)
+			content = Regex.Replace("\n+",content,CRLF)
+			content = content.Trim
+			For Each line As String In Regex.Split(CRLF,content)
+				line = line.Replace("<p>","")
+				line = line.Replace("</p>","")
+				line = ReplaceStartingNumberedStrings(line)
+				line = line.Replace("\n",CRLF)
+				targetList.Add(line)
+			Next
+			Do While targetList.Size < sourceList.Size
+				targetList.Add("")
+			Loop
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	job.Release
+	If targetList.Size = 0 Then
+		For Each source As String In sourceList
+			targetList.Add("")
+		Next
+	End If
+	Return targetList
 End Sub
