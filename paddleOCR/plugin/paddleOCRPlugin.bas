@@ -104,9 +104,10 @@ Private Sub batch(lang As String, folder As String, crop As String, resultFolder
 		Dim json As JSONGenerator
 		json.Initialize(params)
 		Dim requestBody As String = json.ToPrettyString(0)
-        
+		Dim url As String = getUrl
+		url = url.Replace("ocr","batch_detect")
 		' 发送POST请求
-		job.PostString("http://127.0.0.1:8080/batch_detect", requestBody)
+		job.PostString(url, requestBody)
 		job.GetRequest.SetContentType("application/json")
         
 		' 等待响应
@@ -141,7 +142,8 @@ End Sub
 Private Sub cancelBatch As ResumableSub
 	Dim job As HttpJob
 	job.Initialize("", Me)
-	Dim url As String = "http://127.0.0.1:8080/batch_cancel_all"
+	Dim url As String = getUrl
+	url = url.Replace("ocr","batch_cancel_all")
 	job.PostString(url,"")
 	Wait For (job) JobDone(job As HttpJob)
     Return ""
@@ -156,7 +158,9 @@ Private Sub getBatchStatus(id As String) As ResumableSub
 		job.Initialize("batch_progress", Me)
         
 		' 发送GET请求
-		Dim url As String = $"http://127.0.0.1:8080/batch_progress/${id}"$
+
+		Dim url As String = getUrl
+		url = url.Replace("ocr",$"batch_progress/${id}"$)
 		job.Download(url)
         
 		' 等待响应
