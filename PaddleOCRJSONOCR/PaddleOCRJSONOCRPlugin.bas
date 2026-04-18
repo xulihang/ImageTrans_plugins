@@ -175,6 +175,9 @@ Sub ocr(img As B4XBitmap,lang As String, imgPath As String) As ResumableSub
 			boxes.Add(box)
 		Next
 	End If
+	If imgPath <> path Then
+		File.Delete(path,"")
+	End If
 	Return boxes
 End Sub
 
