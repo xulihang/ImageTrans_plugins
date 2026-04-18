@@ -7,6 +7,6 @@ ModuleBreakpoints2=
 ModuleClosedNodes0=
 ModuleClosedNodes1=
 ModuleClosedNodes2=
-NavigationStack=Main,AppStart,18,6,paddleOCRPlugin,GetTextWithLocation,360,5,paddleOCRPlugin,addBoxes,517,0,paddleOCRPlugin,ocr,379,0,paddleOCRPlugin,cancelBatch,137,6,paddleOCRPlugin,getBatchStatus,154,1,paddleOCRPlugin,batch,103,6,paddleOCRPlugin,getUrl,539,0,paddleOCRPlugin,getMap,535,0,paddleOCRPlugin,Run,33,6
+NavigationStack=Main,AppStart,18,6,paddleOCRPlugin,GetTextWithLocation,360,5,paddleOCRPlugin,addBoxes,517,0,paddleOCRPlugin,ocr,379,0,paddleOCRPlugin,cancelBatch,137,6,paddleOCRPlugin,getBatchStatus,154,1,paddleOCRPlugin,batch,103,6,paddleOCRPlugin,getUrl,539,0,paddleOCRPlugin,getMap,535,0,paddleOCRPlugin,Run,71,6
 SelectedBuild=0
 VisibleModules=1,2
