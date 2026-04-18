@@ -551,7 +551,7 @@ Sub getUrl As String
 			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp,"preferences.conf"))
 			url=getMap("paddleocr",getMap("api",preferencesMap)).GetDefault("url",url)
 		Catch
-			Log(LastException)
+			Return url
 		End Try
 	End If
 	Return url
