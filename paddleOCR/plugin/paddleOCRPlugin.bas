@@ -51,6 +51,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "batchStatus"
 			wait for (getBatchStatus(Params.Get("id"))) complete (status As String)
 			Return status
+		Case "batchCancel"
+			wait for (cancelBatch) complete (done As Object)
 		Case "getSetupParams"
 			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/paddleOCR")
 			Return o
@@ -134,6 +136,15 @@ Private Sub batch(lang As String, folder As String, crop As String, resultFolder
 	End Try
     
 	Return taskID
+End Sub
+
+Private Sub cancelBatch As ResumableSub
+	Dim job As HttpJob
+	job.Initialize("", Me)
+	Dim url As String = "http://127.0.0.1:8080/batch_cancel_all"
+	job.PostString(url,"")
+	Wait For (job) JobDone(job As HttpJob)
+    Return ""
 End Sub
 
 Private Sub getBatchStatus(id As String) As ResumableSub

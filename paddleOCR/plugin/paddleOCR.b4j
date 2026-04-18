@@ -35,14 +35,20 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As paddleOCRPlugin
 	n.Initialize
-	wait for (n.Run("batch",CreateMap("lang":"chinese_cht","folder":"C:\Users\HP\Desktop\繁体字幕","crop":"171,562,935,136","resultFolder":"C:\Users\HP\Desktop\繁体字幕\ocrResults"))) complete (id As String)
+	wait for (n.Run("batch",CreateMap("lang":"chinese_cht","folder":"C:\Users\HP\Desktop\繁体字幕10","crop":"171,562,935,136","resultFolder":"C:\Users\HP\Desktop\繁体字幕\ocrResults"))) complete (id As String)
 	
+	Dim index As Int = 0
 	Do While True
 		Sleep(500)
+		index = index + 1
 		wait for (n.Run("batchStatus",CreateMap("id":id))) complete (status As String)
 		Log(status)
 		Dim values() As String = Regex.Split("/",status)
 		If values(0) = values(1) Then
+			Exit
+		End If
+		If index > 25 Then
+			wait for (n.Run("batchCancel",CreateMap())) complete (done As Object)
 			Exit
 		End If
 	Loop

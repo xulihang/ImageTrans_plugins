@@ -37,7 +37,9 @@ class ProgressManager:
                 'start_time': time.time(),
                 'current_image': '',
                 'results': [],
-                'output_dir': None
+                'output_dir': None,
+                'cancelled': False,  # 添加取消标记
+                'cancel_requested': False  # 添加取消请求标记
             }
         return task_id
     
@@ -45,6 +47,10 @@ class ProgressManager:
         """更新任务进度"""
         with self.lock:
             if task_id in self.tasks:
+                # 如果任务已被取消，不再更新进度
+                if self.tasks[task_id].get('cancelled', False):
+                    return
+                    
                 self.tasks[task_id]['processed'] = processed
                 self.tasks[task_id]['success'] = success
                 self.tasks[task_id]['failed'] = failed
@@ -58,10 +64,43 @@ class ProgressManager:
                     self.tasks[task_id]['status'] = 'completed'
                     self.tasks[task_id]['end_time'] = time.time()
     
+    def request_cancel(self, task_id):
+        """请求取消任务"""
+        with self.lock:
+            if task_id in self.tasks:
+                task = self.tasks[task_id]
+                if task['status'] == 'running':
+                    task['cancel_requested'] = True
+                    return True
+                return False
+    
+    def is_cancelled(self, task_id):
+        """检查任务是否被请求取消"""
+        with self.lock:
+            if task_id in self.tasks:
+                return self.tasks[task_id].get('cancel_requested', False)
+            return False
+    
+    def cancel_task(self, task_id):
+        """取消任务"""
+        with self.lock:
+            if task_id in self.tasks:
+                task = self.tasks[task_id]
+                if task['status'] == 'running':
+                    task['status'] = 'cancelled'
+                    task['cancelled'] = True
+                    task['end_time'] = time.time()
+                    task['cancel_message'] = '任务已被用户取消'
+                    return True
+                return False
+    
     def update_error(self, task_id, error_message):
         """更新任务错误状态"""
         with self.lock:
             if task_id in self.tasks:
+                # 如果任务已被取消，不覆盖取消状态
+                if self.tasks[task_id].get('cancelled', False):
+                    return
                 self.tasks[task_id]['status'] = 'failed'
                 self.tasks[task_id]['error'] = error_message
                 self.tasks[task_id]['end_time'] = time.time()
@@ -88,7 +127,9 @@ class ProgressManager:
                 'elapsed_time': round(elapsed, 2),
                 'estimated_remaining': round((elapsed / task['processed']) * (task['total'] - task['processed']), 2) if task['processed'] > 0 else 0,
                 'output_dir': task.get('output_dir'),
-                'error': task.get('error', '')
+                'error': task.get('error', ''),
+                'cancel_message': task.get('cancel_message', ''),
+                'cancelled': task.get('cancelled', False)
             }
     
     def get_all_tasks(self):
@@ -103,7 +144,7 @@ class ProgressManager:
             current_time = time.time()
             to_delete = []
             for tid, task in self.tasks.items():
-                if task['status'] in ['completed', 'failed']:
+                if task['status'] in ['completed', 'failed', 'cancelled']:
                     task_age = current_time - task.get('end_time', task['start_time'])
                     if task_age > max_age_seconds:
                         to_delete.append(tid)
@@ -241,17 +282,42 @@ def adjust_coordinates(boxes, crop_params):
 def process_single_image_batch(args):
     """
     批量处理单张图片（用于多进程）
-    参数: (image_path, output_dir, lang, crop_params, threshold, threads, recognize)
+    参数: (image_path, output_dir, lang, crop_params, threshold, threads, recognize, task_id)
     """
-    image_path, output_dir, lang, crop_params, threshold, threads, recognize = args
+    image_path, output_dir, lang, crop_params, threshold, threads, recognize, task_id = args
     
     # 临时文件标记
     process_path = image_path
     is_temp = False
     
+    # 检查任务是否已被取消
+    if progress_manager.is_cancelled(task_id):
+        return {
+            "image": Path(image_path).name,
+            "image_path": image_path,
+            "success": False,
+            "error": "任务已取消",
+            "cancelled": True
+        }
+    
     try:
         # 裁剪图像（如果需要）
         process_path, is_temp = crop_image(image_path, crop_params)
+        
+        # 再次检查取消状态
+        if progress_manager.is_cancelled(task_id):
+            if is_temp and process_path and os.path.exists(process_path):
+                try:
+                    os.remove(process_path)
+                except:
+                    pass
+            return {
+                "image": Path(image_path).name,
+                "image_path": image_path,
+                "success": False,
+                "error": "任务已取消",
+                "cancelled": True
+            }
         
         # 使用进程级全局OCR实例（已在init_worker中创建）
         ocr = get_ocr_instance()
@@ -263,6 +329,21 @@ def process_single_image_batch(args):
         else:
             # 只进行检测
             result = ocr.ocr(process_path, rec=False, cls=True)
+        
+        # 再次检查取消状态
+        if progress_manager.is_cancelled(task_id):
+            if is_temp and process_path and os.path.exists(process_path):
+                try:
+                    os.remove(process_path)
+                except:
+                    pass
+            return {
+                "image": Path(image_path).name,
+                "image_path": image_path,
+                "success": False,
+                "error": "任务已取消",
+                "cancelled": True
+            }
         
         # 处理结果
         text_lines = []
@@ -651,9 +732,27 @@ def batch_detect_endpoint():
                     futures = {executor.submit(process_single_image_batch, task): task for task in tasks}
                     
                     for future in as_completed(futures):
+                        # 检查任务是否被取消
+                        if progress_manager.is_cancelled(task_id):
+                            # 取消剩余的任务
+                            for f in futures:
+                                f.cancel()
+                            # 标记任务为已取消
+                            progress_manager.cancel_task(task_id)
+                            break
+                            
                         result = future.result()
                         processed_count += 1
                         
+                        # 如果图片处理返回取消标记
+                        if result.get('cancelled'):
+                            # 取消剩余的任务
+                            for f in futures:
+                                f.cancel()
+                            # 标记任务为已取消
+                            progress_manager.cancel_task(task_id)
+                            break
+                            
                         if result.get('success'):
                             success_count += 1
                         
@@ -679,8 +778,10 @@ def batch_detect_endpoint():
             except Exception as e:
                 import traceback
                 traceback.print_exc()
-                error_msg = f"批量处理失败: {str(e)}"
-                progress_manager.update_error(task_id, error_msg)
+                # 如果任务未被取消，才更新错误
+                if not progress_manager.is_cancelled(task_id):
+                    error_msg = f"批量处理失败: {str(e)}"
+                    progress_manager.update_error(task_id, error_msg)
         
         # 启动后台线程
         thread = threading.Thread(target=process_in_background)
@@ -703,7 +804,37 @@ def batch_detect_endpoint():
         import traceback
         traceback.print_exc()
         return {"error": f"启动批量处理失败: {str(e)}"}, 500
-
+        
+@route('/batch_cancel_all', method='POST')
+def batch_cancel_all():
+    """取消所有运行中的任务"""
+    try:
+        tasks = progress_manager.get_all_tasks()
+        cancelled_tasks = []
+        
+        for task_id, task_info in tasks.items():
+            if task_info['status'] == 'running':
+                if progress_manager.request_cancel(task_id):
+                    cancelled_tasks.append(task_id)
+        
+        if cancelled_tasks:
+            return {
+                "success": True,
+                "message": f"已请求取消 {len(cancelled_tasks)} 个运行中的任务",
+                "cancelled_tasks": cancelled_tasks
+            }
+        else:
+            return {
+                "success": True,
+                "message": "没有运行中的任务需要取消",
+                "cancelled_tasks": []
+            }
+            
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return {"error": f"取消任务失败: {str(e)}"}, 500
+        
 @route('/batch_progress/<task_id>', method='GET')
 def batch_progress(task_id):
     """查询批量处理进度"""
@@ -754,6 +885,7 @@ if __name__ == "__main__":
     print(f"   POST /batch_detect           - 启动批量检测任务")
     print(f"   GET  /batch_progress/<task_id> - 查询任务进度")
     print(f"   GET  /batch_tasks             - 获取所有任务列表")
+    print(f"   POST /batch_cancel_all          - 取消所有运行中的任务")
     print(f"   POST /ocr                    - 识别图片中的文字")
     print(f"   POST /detect                 - 检测文字位置")
     print(f"   GET  /batch_status           - 获取服务状态")
