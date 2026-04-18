@@ -517,6 +517,9 @@ def batch_detect_endpoint():
     """
     批量检测接口（异步模式，立即返回task_id）
     支持识别模式：recognize参数控制是否识别文字内容
+    输入方式：
+        1. folder_path: 文件夹路径（处理文件夹内所有图片）
+        2. file_list_path: 文件列表文本路径（每行一个图片绝对路径）
     """
     import threading
     
@@ -527,24 +530,64 @@ def batch_detect_endpoint():
             return {"error": "请提供JSON格式的请求参数"}, 400
         
         folder_path = data.get('folder_path')
-        if not folder_path:
-            return {"error": "缺少必填参数: folder_path"}, 400
+        file_list_path = data.get('file_list_path')
         
-        # 检查文件夹是否存在
-        if not os.path.exists(folder_path):
-            return {"error": f"文件夹不存在: {folder_path}"}, 400
+        # 检查参数：必须提供 folder_path 或 file_list_path 其中之一
+        if not folder_path and not file_list_path:
+            return {"error": "缺少必填参数: 请提供 folder_path 或 file_list_path"}, 400
         
-        # 查找所有图片
-        images = find_images(folder_path)
-        if not images:
-            return {"error": "未找到支持的图片文件"}, 400
+        # 如果同时提供了两者，优先使用 file_list_path
+        if file_list_path:
+            # 检查文件列表是否存在
+            if not os.path.exists(file_list_path):
+                return {"error": f"文件列表不存在: {file_list_path}"}, 400
+            
+            # 读取文件列表
+            try:
+                with open(file_list_path, 'r', encoding='utf-8') as f:
+                    images = []
+                    for line in f:
+                        line = line.strip()
+                        # 跳过空行和注释行
+                        if line and not line.startswith('#'):
+                            # 检查文件是否存在
+                            if os.path.exists(line):
+                                # 检查是否为支持的图片格式
+                                ext = Path(line).suffix.lower()
+                                supported_formats = {'.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif'}
+                                if ext in supported_formats:
+                                    images.append(line)
+                                else:
+                                    print(f"警告: 不支持的文件格式 {line}")
+                            else:
+                                print(f"警告: 文件不存在 {line}")
+                
+                if not images:
+                    return {"error": "文件列表中未找到有效的图片文件"}, 400
+                
+                print(f"从文件列表读取到 {len(images)} 个图片")
+                
+            except Exception as e:
+                return {"error": f"读取文件列表失败: {str(e)}"}, 500
+        
+        else:
+            # 使用文件夹路径
+            if not os.path.exists(folder_path):
+                return {"error": f"文件夹不存在: {folder_path}"}, 400
+            
+            # 查找所有图片
+            images = find_images(folder_path)
+            if not images:
+                return {"error": "未找到支持的图片文件"}, 400
+            
+            print(f"从文件夹读取到 {len(images)} 个图片")
         
         # 创建任务
         task_id = progress_manager.create_task(len(images))
         
         # 获取参数（设置默认值）
         output_dir = data.get('output_dir', './batch_results')
-        recognize = data.get('recognize', 'false')  # 新增：是否识别文字
+        recognize = data.get('recognize', 'false')
         # 将字符串转换为布尔值
         if isinstance(recognize, str):
             recognize = recognize.lower() in ['true', '1', 'yes', 'on']
@@ -586,6 +629,9 @@ def batch_detect_endpoint():
                 with progress_manager.lock:
                     if task_id in progress_manager.tasks:
                         progress_manager.tasks[task_id]['output_dir'] = str(output_path)
+                        # 保存输入信息
+                        progress_manager.tasks[task_id]['input_type'] = 'file_list' if file_list_path else 'folder'
+                        progress_manager.tasks[task_id]['input_path'] = file_list_path if file_list_path else folder_path
                 
                 # 限制进程数
                 actual_workers = min(workers, len(images), mp.cpu_count())
@@ -647,6 +693,8 @@ def batch_detect_endpoint():
             "task_id": task_id,
             "message": f"批量处理任务已启动（{'识别模式' if recognize else '检测模式'}）",
             "total_images": len(images),
+            "input_type": "file_list" if file_list_path else "folder",
+            "input_path": file_list_path if file_list_path else folder_path,
             "recognize": recognize,
             "status_url": f"/batch_progress/{task_id}"
         }
