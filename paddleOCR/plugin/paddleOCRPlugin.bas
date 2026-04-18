@@ -45,7 +45,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			rotationDetection = False
 			Return regions
 		Case "batch"
-			wait for (batch(Params.Get("folder"),Params.Get("crop"),Params.Get("resultFolder"))) complete (id As String)
+			wait for (batch(Params.Get("lang"),Params.Get("folder"),Params.Get("crop"),Params.Get("resultFolder"))) complete (id As String)
+			detectOnly = False
 			Return id
 		Case "batchStatus"
 			wait for (getBatchStatus(Params.Get("id"))) complete (status As String)
@@ -76,7 +77,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	Return ""
 End Sub
 
-Private Sub batch(folder As String, crop As String, resultFolder As String) As ResumableSub
+Private Sub batch(lang As String, folder As String, crop As String, resultFolder As String) As ResumableSub
 	Dim taskID As String = ""
     
 	Try
@@ -87,9 +88,16 @@ Private Sub batch(folder As String, crop As String, resultFolder As String) As R
 		' 构建请求参数
 		Dim params As Map = CreateMap()
 		params.Put("folder_path", folder)
+		params.Put("lang", lang)
 		params.Put("output_dir", resultFolder)
 		params.Put("crop_params", crop)
-        
+
+		If detectOnly Then
+			params.Put("recognize", "false")
+		Else
+			params.Put("recognize", "true")
+		End If
+
 		' 转换为JSON
 		Dim json As JSONGenerator
 		json.Initialize(params)

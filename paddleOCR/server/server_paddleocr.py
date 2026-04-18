@@ -118,7 +118,7 @@ progress_manager = ProgressManager()
 _ocr_instance = None
 _ocr_config = None
 
-def init_worker(lang, threshold, threads):
+def init_worker(lang, threshold, threads, recognize):
     """
     进程初始化函数，在每个工作进程启动时调用
     为每个进程创建独立的OCR实例
@@ -127,8 +127,11 @@ def init_worker(lang, threshold, threads):
     _ocr_config = {
         'lang': lang,
         'threshold': threshold,
-        'threads': threads
+        'threads': threads,
+        'recognize': recognize
     }
+    
+    # 根据是否需要识别来创建OCR实例
     _ocr_instance = PaddleOCR(
         lang=lang,
         use_angle_cls=True,
@@ -138,9 +141,9 @@ def init_worker(lang, threshold, threads):
         use_mp=False,
         det_db_thresh=0.9,
         det_db_box_thresh=threshold,
-        rec=False
+        rec=recognize  # 根据参数决定是否启用识别
     )
-    print(f"Worker {os.getpid()} initialized with lang={lang}, threshold={threshold}")
+    print(f"Worker {os.getpid()} initialized with lang={lang}, threshold={threshold}, recognize={recognize}")
 
 def get_ocr_instance():
     """获取当前进程的OCR实例"""
@@ -227,7 +230,10 @@ def adjust_coordinates(boxes, crop_params):
             if f"x{idx}" in box and f"y{idx}" in box:
                 adjusted_box[f"x{idx}"] = box[f"x{idx}"] + x_offset
                 adjusted_box[f"y{idx}"] = box[f"y{idx}"] + y_offset
-        adjusted_box["text"] = box.get("text", "")
+        if "text" in box:
+            adjusted_box["text"] = box["text"]
+        if "confidence" in box:
+            adjusted_box["confidence"] = box["confidence"]
         adjusted_boxes.append(adjusted_box)
     
     return adjusted_boxes
@@ -235,10 +241,9 @@ def adjust_coordinates(boxes, crop_params):
 def process_single_image_batch(args):
     """
     批量处理单张图片（用于多进程）
-    参数: (image_path, output_dir, lang, crop_params, threshold, threads)
-    注意：lang和threshold参数主要用于传递配置，实际使用进程级OCR实例
+    参数: (image_path, output_dir, lang, crop_params, threshold, threads, recognize)
     """
-    image_path, output_dir, lang, crop_params, threshold, threads = args
+    image_path, output_dir, lang, crop_params, threshold, threads, recognize = args
     
     # 临时文件标记
     process_path = image_path
@@ -251,20 +256,41 @@ def process_single_image_batch(args):
         # 使用进程级全局OCR实例（已在init_worker中创建）
         ocr = get_ocr_instance()
         
-        # 执行检测
-        result = ocr.ocr(process_path, rec=False, cls=True)
+        # 执行检测（根据recognize参数决定是否识别）
+        if recognize:
+            # 同时进行检测和识别
+            result = ocr.ocr(process_path, cls=True)
+        else:
+            # 只进行检测
+            result = ocr.ocr(process_path, rec=False, cls=True)
         
         # 处理结果
         text_lines = []
         if result and result[0]:
-            for line in result[0]:
-                text_line = {}
-                for idx, coord in enumerate(line):
-                    text_line[f"x{idx}"] = int(coord[0])
-                    text_line[f"y{idx}"] = int(coord[1])
-                text_line["text"] = ""
-                text_lines.append(text_line)
+            if recognize:
+                # 有识别结果的情况
+                for line in result[0]:
+                    text_line = {}
+                    # 坐标信息
+                    for idx, coord in enumerate(line[0]):
+                        text_line[f"x{idx}"] = int(coord[0])
+                        text_line[f"y{idx}"] = int(coord[1])
+                    # 文字和置信度
+                    text_line["text"] = line[1][0]
+                    text_line["confidence"] = float(line[1][1])
+                    text_lines.append(text_line)
+            else:
+                # 只有检测结果的情况
+                for line in result[0]:
+                    text_line = {}
+                    for idx, coord in enumerate(line):
+                        text_line[f"x{idx}"] = int(coord[0])
+                        text_line[f"y{idx}"] = int(coord[1])
+                    text_line["text"] = ""
+                    text_line["confidence"] = 0.0
+                    text_lines.append(text_line)
             
+            # 如果进行了裁剪，调整坐标
             if crop_params is not None:
                 text_lines = adjust_coordinates(text_lines, crop_params)
         
@@ -276,10 +302,19 @@ def process_single_image_batch(args):
             "image": str(Path(image_path).absolute()),
             "cropped": crop_params is not None,
             "crop_params": crop_params if crop_params else None,
+            "recognized": recognize,  # 标记是否进行了识别
             "detected_boxes": text_lines,
             "box_count": len(text_lines),
             "process_time": time.strftime("%Y-%m-%d %H:%M:%S")
         }
+        
+        # 如果进行了识别，添加统计信息
+        if recognize:
+            texts = [box.get("text", "") for box in text_lines if box.get("text")]
+            result_data["statistics"] = {
+                "total_texts": len(texts),
+                "avg_confidence": sum(box.get("confidence", 0) for box in text_lines) / len(text_lines) if text_lines else 0
+            }
         
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(result_data, f, ensure_ascii=False, indent=2)
@@ -296,6 +331,7 @@ def process_single_image_batch(args):
             "image_path": image_path,
             "success": True,
             "box_count": len(text_lines),
+            "recognized": recognize,
             "output_file": str(output_file)
         }
         
@@ -364,7 +400,7 @@ def parse_crop_params(crop_str):
 current_lang = "ch"
 ocr = None
 
-def get_web_ocr_instance(lang, threshold=0.6):
+def get_web_ocr_instance(lang, threshold=0.6, recognize=False):
     """获取或创建Web服务的OCR实例（单例模式）"""
     global current_lang, ocr
     if ocr is None or current_lang != lang:
@@ -378,7 +414,7 @@ def get_web_ocr_instance(lang, threshold=0.6):
             use_mp=False,
             det_db_thresh=0.9,
             det_db_box_thresh=threshold,
-            rec=False
+            rec=recognize  # 根据参数决定是否启用识别
         )
     return ocr
 
@@ -390,7 +426,7 @@ def ocr_endpoint():
     print(lang)
     
     # 使用Web服务的OCR实例
-    ocr = get_web_ocr_instance(lang)
+    ocr = get_web_ocr_instance(lang, recognize=True)
         
     name, ext = os.path.splitext(upload.filename)
     print(ext.lower())
@@ -431,7 +467,7 @@ def detect_endpoint():
     threshold = float(request.forms.get('threshold', 0.6))
 
     # 使用Web服务的OCR实例
-    ocr = get_web_ocr_instance(lang, threshold)
+    ocr = get_web_ocr_instance(lang, threshold, recognize=False)
     
     file_path = ""
     if path != None and path != "":
@@ -480,6 +516,7 @@ def detect_endpoint():
 def batch_detect_endpoint():
     """
     批量检测接口（异步模式，立即返回task_id）
+    支持识别模式：recognize参数控制是否识别文字内容
     """
     import threading
     
@@ -507,6 +544,11 @@ def batch_detect_endpoint():
         
         # 获取参数（设置默认值）
         output_dir = data.get('output_dir', './batch_results')
+        recognize = data.get('recognize', 'false')  # 新增：是否识别文字
+        # 将字符串转换为布尔值
+        if isinstance(recognize, str):
+            recognize = recognize.lower() in ['true', '1', 'yes', 'on']
+        
         lang = data.get('lang', 'ch')
         crop_params = data.get('crop_params', None)
         threshold = float(data.get('threshold', 0.6))
@@ -548,9 +590,8 @@ def batch_detect_endpoint():
                 # 限制进程数
                 actual_workers = min(workers, len(images), mp.cpu_count())
                 
-                # 准备任务
-                # 注意：lang和threshold参数虽然传递但不会被重新创建OCR实例
-                tasks = [(img, str(output_path), lang, crop_params_list[i], threshold, threads_per_worker) 
+                # 准备任务（传递recognize参数）
+                tasks = [(img, str(output_path), lang, crop_params_list[i], threshold, threads_per_worker, recognize) 
                          for i, img in enumerate(images)]
                 
                 # 执行批量处理，使用进程初始化函数
@@ -559,7 +600,7 @@ def batch_detect_endpoint():
                 with ProcessPoolExecutor(
                     max_workers=actual_workers,
                     initializer=init_worker,
-                    initargs=(lang, threshold, threads_per_worker)
+                    initargs=(lang, threshold, threads_per_worker, recognize)
                 ) as executor:
                     futures = {executor.submit(process_single_image_batch, task): task for task in tasks}
                     
@@ -604,8 +645,9 @@ def batch_detect_endpoint():
         return {
             "success": True,
             "task_id": task_id,
-            "message": "批量处理任务已启动",
+            "message": f"批量处理任务已启动（{'识别模式' if recognize else '检测模式'}）",
             "total_images": len(images),
+            "recognize": recognize,
             "status_url": f"/batch_progress/{task_id}"
         }
         
@@ -653,8 +695,8 @@ def server_static(filepath):
 # ============ 主程序 ============
 
 if __name__ == "__main__":
-    # 初始化Web服务的OCR实例
-    ocr = get_web_ocr_instance(current_lang)
+    # 初始化Web服务的OCR实例（默认只检测不识别）
+    ocr = get_web_ocr_instance(current_lang, recognize=False)
     
     print("🚀 服务器启动")
     print(f"📖 默认语言: {current_lang}")

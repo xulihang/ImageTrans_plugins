@@ -35,7 +35,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As paddleOCRPlugin
 	n.Initialize
-	wait for (n.Run("batch",CreateMap("folder":"C:\Users\HP\Desktop\繁体字幕","crop":"171,562,935,136","resultFolder":"C:\Users\HP\Desktop\繁体字幕\ocrResults"))) complete (id As String)
+	wait for (n.Run("batch",CreateMap("lang":"chinese_cht","folder":"C:\Users\HP\Desktop\繁体字幕","crop":"171,562,935,136","resultFolder":"C:\Users\HP\Desktop\繁体字幕\ocrResults"))) complete (id As String)
 	
 	Do While True
 		Sleep(500)
