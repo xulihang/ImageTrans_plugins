@@ -35,7 +35,13 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As paddleOCRPlugin
 	n.Initialize
-	wait for (n.Run("batch",CreateMap("lang":"chinese_cht","folder":"C:\Users\HP\Desktop\繁体字幕10","crop":"171,562,935,136","resultFolder":"C:\Users\HP\Desktop\繁体字幕\ocrResults"))) complete (id As String)
+	Dim fileList As List
+	fileList.Initialize
+	fileList.Add("C:\Users\HP\Desktop\繁体字幕10\frame135.jpg")
+	fileList.Add("C:\Users\HP\Desktop\繁体字幕10\frame136.jpg")
+	File.WriteList(File.DirApp,"list.txt",fileList)
+	wait for (n.Run("batch",CreateMap("lang":"chinese_cht","file_list_path":File.Combine(File.DirApp,"list.txt"),"crop":"171,562,935,136","resultFolder":"C:\Users\HP\Desktop\繁体字幕\ocrResults"))) complete (id As String)
+	'wait for (n.Run("batch",CreateMap("lang":"chinese_cht","folder":"C:\Users\HP\Desktop\繁体字幕10","crop":"171,562,935,136","resultFolder":"C:\Users\HP\Desktop\繁体字幕\ocrResults"))) complete (id As String)
 	
 	Dim index As Int = 0
 	Do While True
