@@ -44,6 +44,12 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			detectOnly = False
 			rotationDetection = False
 			Return regions
+		Case "batch"
+			wait for (batch(Params.Get("folder"),Params.Get("crop"),Params.Get("resultFolder"))) complete (id As String)
+			Return id
+		Case "batchStatus"
+			wait for (getBatchStatus(Params.Get("id"))) complete (status As String)
+			Return status
 		Case "getSetupParams"
 			Dim o As Object = CreateMap("readme":"https://github.com/xulihang/ImageTrans_plugins/tree/master/paddleOCR")
 			Return o
@@ -58,6 +64,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return BuildCombinations
 		Case "Multiple"
 			Return True
+		Case "batchSupported"
+			Return True
 		Case "rotationDetectionSupported"
 			Return True
 		Case "detectRotation"
@@ -66,6 +74,116 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Return angle
 	End Select
 	Return ""
+End Sub
+
+Private Sub batch(folder As String, crop As String, resultFolder As String) As ResumableSub
+	Dim taskID As String = ""
+    
+	Try
+		' 创建HTTP请求
+		Dim job As HttpJob
+		job.Initialize("batch_detect", Me)
+        
+		' 构建请求参数
+		Dim params As Map = CreateMap()
+		params.Put("folder_path", folder)
+		params.Put("output_dir", resultFolder)
+		params.Put("crop_params", crop)
+        
+		' 转换为JSON
+		Dim json As JSONGenerator
+		json.Initialize(params)
+		Dim requestBody As String = json.ToPrettyString(0)
+        
+		' 发送POST请求
+		job.PostString("http://127.0.0.1:8080/batch_detect", requestBody)
+		job.GetRequest.SetContentType("application/json")
+        
+		' 等待响应
+		Wait For (job) JobDone(job As HttpJob)
+        
+		If job.Success Then
+			Dim response As String = job.GetString
+			Dim parser As JSONParser
+			parser.Initialize(response)
+			Dim root As Map = parser.NextObject
+            
+			If root.GetDefault("success", False) Then
+				taskID = root.Get("task_id")
+				Dim totalImages As Int = root.Get("total_images")
+				Log($"任务已启动: ${taskID}"$)
+				Log($"总共 ${totalImages} 张图片需要处理"$)
+			Else
+				Log($"启动失败: ${root.GetDefault("error", "未知错误")}"$)
+			End If
+		Else
+			Log($"HTTP请求失败: ${job.ErrorMessage}"$)
+		End If
+        
+		job.Release
+	Catch
+		Log($"批量处理异常: ${LastException.Message}"$)
+	End Try
+    
+	Return taskID
+End Sub
+
+Private Sub getBatchStatus(id As String) As ResumableSub
+	Dim status As String = "" '格式: "done/total"
+    
+	Try
+		' 创建HTTP请求
+		Dim job As HttpJob
+		job.Initialize("batch_progress", Me)
+        
+		' 发送GET请求
+		Dim url As String = $"http://127.0.0.1:8080/batch_progress/${id}"$
+		job.Download(url)
+        
+		' 等待响应
+		Wait For (job) JobDone(job As HttpJob)
+        
+		If job.Success Then
+			Dim response As String = job.GetString
+			Dim parser As JSONParser
+			parser.Initialize(response)
+			Dim root As Map = parser.NextObject
+            
+			Dim progress As Map = root.Get("progress")
+			Dim processed As Int = progress.Get("processed")
+			Dim total As Int = progress.Get("total")
+			Dim statusText As String = progress.Get("status")
+            
+			' 更新状态字符串
+			status = $"${processed}/${total}"$
+            
+			' 输出进度信息
+			Dim percent As Double = (processed * 100.0) / total
+			Dim success As Int = progress.Get("success")
+			Dim failed As Int = progress.Get("failed")
+			Dim currentImage As String = progress.Get("current_image")
+			Dim remainingTime As String = progress.Get("estimated_remaining")
+            
+			Log($"进度: ${processed}/${total} (${NumberFormat(percent, 1, 1)}%) - 成功: ${success} 失败: ${failed} - 当前: ${currentImage} - 剩余时间: ${remainingTime}秒"$)
+            
+			' 检查完成状态
+			If statusText = "completed" Then
+				Log($"✅ 处理完成！"$)
+				Log($"📊 最终结果: 成功 ${success}/${total}"$)
+				Log($"📁 结果保存在: ${progress.Get("output_dir")}"$)
+			Else If statusText = "failed" Then
+				Log($"❌ 处理失败！"$)
+			End If
+		Else
+			Log($"获取状态失败: ${job.ErrorMessage}"$)
+		End If
+        
+		job.Release
+	Catch
+		Log($"获取状态异常: ${LastException.Message}"$)
+	End Try
+    
+	Return status
 End Sub
 
 Sub DetectRotation(img As B4XBitmap, lang As String) As ResumableSub

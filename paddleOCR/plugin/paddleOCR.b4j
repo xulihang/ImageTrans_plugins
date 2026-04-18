@@ -35,9 +35,20 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As paddleOCRPlugin
 	n.Initialize
-	wait for (n.Run("SetCombination",CreateMap("combination":"+rotationDetection (paddleocr)"))) complete (done As Object)
-	wait for (n.GetTextWithLocation(fx.LoadImage(File.DirApp,"image.jpg"),"ch")) complete (result As List)
-	Log(result)
+	wait for (n.Run("batch",CreateMap("folder":"C:\Users\HP\Desktop\繁体字幕","crop":"171,562,935,136","resultFolder":"C:\Users\HP\Desktop\繁体字幕\ocrResults"))) complete (id As String)
+	
+	Do While True
+		Sleep(500)
+		wait for (n.Run("batchStatus",CreateMap("id":id))) complete (status As String)
+		Log(status)
+		Dim values() As String = Regex.Split("/",status)
+		If values(0) = values(1) Then
+			Exit
+		End If
+	Loop
+	'wait for (n.Run("SetCombination",CreateMap("combination":"+rotationDetection (paddleocr)"))) complete (done As Object)
+	'wait for (n.GetTextWithLocation(fx.LoadImage(File.DirApp,"image.jpg"),"ch")) complete (result As List)
+	'Log(result)
 	'wait for (n.translate("Hello","en","zh")) complete (result As String)
 	'Log(result)
 End Sub
