@@ -45,7 +45,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			rotationDetection = False
 			Return regions
 		Case "batch"
-			wait for (batch(Params.Get("lang"),Params.Get("file_list_path"),Params.Get("crop"),Params.Get("resultFolder"))) complete (id As String)
+			wait for (batch(Params.Get("lang"),Params.Get("fileListPath"),Params.Get("crop"),Params.Get("resultFolder"))) complete (id As String)
 			detectOnly = False
 			Return id
 		Case "batchStatus"
