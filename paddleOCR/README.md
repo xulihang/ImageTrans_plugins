@@ -20,5 +20,8 @@ You need to keep the server running in the background.
 
 PaddleOCR v3 has improved the recognition for vertical text.
 
-You can use PaddleOCR v3 for a better recognition rate. Windows package: <https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/PaddleOCRv3.zip>
+You can use PaddleOCR v3 for a better recognition rate. But its speed is slower. For subtitle OCR, you need to use v2 above.
+
+
+Windows package: <https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/PaddleOCRv3.zip>
 
