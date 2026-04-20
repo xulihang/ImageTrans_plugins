@@ -718,7 +718,7 @@ def batch_detect_endpoint():
                 actual_workers = min(workers, len(images), mp.cpu_count())
                 
                 # 准备任务（传递recognize参数）
-                tasks = [(img, str(output_path), lang, crop_params_list[i], threshold, threads_per_worker, recognize) 
+                tasks = [(img, str(output_path), lang, crop_params_list[i], threshold, threads_per_worker, recognize, task_id) 
                          for i, img in enumerate(images)]
                 
                 # 执行批量处理，使用进程初始化函数
