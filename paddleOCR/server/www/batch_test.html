@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Batch Detect Test</title>
+<style>
+body { font-family: Arial, sans-serif; margin: 24px; }
+label { display: block; margin-top: 12px; }
+input, textarea, button { width: 100%; max-width: 480px; padding: 8px; margin-top: 4px; }
+button { width: auto; }
+#result, #progress { margin-top: 16px; white-space: pre-wrap; background: #f8f8f8; border: 1px solid #ddd; padding: 12px; }
+</style>
+</head>
+<body>
+<h1>Batch Detect 接口测试</h1>
+<p>用于测试 `/batch_detect` 批量检测接口。请输入服务器可访问的本地目录路径，提交后会返回 task_id。</p>
+<form id="batchForm">
+  <label>批量图片目录 (folder_path)</label>
+  <input type="text" id="folderPath" placeholder="例如: ./uploaded 或 /Users/.../images" />
+
+  <label>输出目录 (output_dir)</label>
+  <input type="text" id="outputDir" placeholder="默认: ./batch_results" />
+
+  <label>是否识别文字 (recognize)</label>
+  <input type="checkbox" id="recognize" />
+
+  <label>语言 (lang)</label>
+  <input type="text" id="lang" value="ch" />
+
+  <label>进程数 (workers)</label>
+  <input type="number" id="workers" min="1" placeholder="默认: CPU 核心数" />
+
+  <label>每个进程线程数 (threads_per_worker)</label>
+  <input type="number" id="threadsPerWorker" min="1" value="4" />
+
+  <label>检测阈值 (threshold)</label>
+  <input type="text" id="threshold" value="0.6" />
+
+  <label>裁剪参数 (crop_params)</label>
+  <input type="text" id="cropParams" placeholder="例如: 100,50,800,600 或 空" />
+
+  <label>文件列表路径 (file_list_path)</label>
+  <input type="text" id="fileListPath" placeholder="可选，以文件列表为优先" />
+
+  <button type="submit">启动批量检测</button>
+</form>
+
+<div id="result"></div>
+<div id="progress"></div>
+
+<script>
+const form = document.getElementById('batchForm');
+const resultBox = document.getElementById('result');
+const progressBox = document.getElementById('progress');
+
+form.addEventListener('submit', async function(event) {
+  event.preventDefault();
+  resultBox.textContent = '';
+  progressBox.textContent = '';
+
+  const folderPath = document.getElementById('folderPath').value.trim();
+  const outputDir = document.getElementById('outputDir').value.trim();
+  const recognize = document.getElementById('recognize').checked;
+  const lang = document.getElementById('lang').value.trim();
+  const workers = document.getElementById('workers').value;
+  const threadsPerWorker = document.getElementById('threadsPerWorker').value;
+  const threshold = document.getElementById('threshold').value.trim();
+  const cropParams = document.getElementById('cropParams').value.trim();
+  const fileListPath = document.getElementById('fileListPath').value.trim();
+
+  const body = {};
+  if (fileListPath) {
+    body.file_list_path = fileListPath;
+  } else if (folderPath) {
+    body.folder_path = folderPath;
+  }
+  if (outputDir) body.output_dir = outputDir;
+  body.recognize = recognize;
+  if (lang) body.lang = lang;
+  if (workers) body.workers = parseInt(workers, 10);
+  if (threadsPerWorker) body.threads = parseInt(threadsPerWorker, 10);
+  if (threshold) body.threshold = parseFloat(threshold);
+  if (cropParams) body.crop_params = cropParams;
+
+  if (!body.folder_path && !body.file_list_path) {
+    resultBox.textContent = '请填写 folder_path 或 file_list_path。';
+    return;
+  }
+
+  try {
+    const res = await fetch('/batch_detect', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    resultBox.textContent = JSON.stringify(data, null, 2);
+
+    if (data.success && data.task_id) {
+      progressBox.textContent = '正在轮询进度...';
+      pollProgress(data.task_id);
+    }
+  } catch (error) {
+    resultBox.textContent = '请求失败: ' + error;
+  }
+});
+
+async function pollProgress(taskId) {
+  try {
+    const res = await fetch('/batch_progress/' + encodeURIComponent(taskId));
+    const data = await res.json();
+    progressBox.textContent = JSON.stringify(data, null, 2);
+
+    if (data.success && data.progress && data.progress.status === 'running') {
+      setTimeout(() => pollProgress(taskId), 2000);
+    }
+  } catch (error) {
+    progressBox.textContent = '查询进度失败: ' + error;
+  }
+}
+</script>
+</body>
+</html>
