@@ -7,9 +7,13 @@ The plugin is bundled with ImageTrans. You just need to start the PaddleOCR serv
 3. Install bottle and Paste: `pip install bottle Paste`
 4. Run the following to start the server: `python server_paddleocr.py`
 
-For convenience, you can directly use the Windows package: [link](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/PaddleOCR.zip).
+For convenience, you can directly use the pre-built packages for Windows and macOS:
 
-Unzip the file and start `run.bat` to run the server. You need to keep the server running in the background.
+* [Windows x64](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/PaddleOCR.zip). Unzip and execute `run.bat`.
+* [macOS Apple CPU](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/PaddleOCR-mac-arm.zip)
+
+
+You need to keep the server running in the background.
 
 
 ### PaddleOCR v3
