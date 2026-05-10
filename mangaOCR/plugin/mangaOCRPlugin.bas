@@ -72,6 +72,7 @@ Sub BuildCombinations As List
 	combs.Add("manga-ocr")
 	combs.Add("normal text (manga-ocr)")
 	combs.Add("long text (manga-ocr)")
+	combs.Add("recognize only (manga-ocr)")
 	Return combs
 End Sub
 
