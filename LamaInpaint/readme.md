@@ -29,7 +29,7 @@ Download link: <https://github.com/xulihang/ImageTrans_plugins/releases/download
 
 For Windows, you need to unzip it to the following path: `C:\Users\<your username>\.cache\torch\hub\checkpoints\big-lama.pt`.
 
-Fine-tuned Model for manga:
+###### Fine-Tuned Model for Manga
 
 There is also a model for manga, which restores screentones very well.
 
