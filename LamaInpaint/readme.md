@@ -29,6 +29,13 @@ Download link: <https://github.com/xulihang/ImageTrans_plugins/releases/download
 
 For Windows, you need to unzip it to the following path: `C:\Users\<your username>\.cache\torch\hub\checkpoints\big-lama.pt`.
 
+**Fine-Tuned Model for manga**:
+
+There is also a model for manga, which restores screentones very well.
+
+Download link: <https://github.com/Sanster/models/releases/download/AnimeMangaInpainting/anime-manga-big-lama.pt>
+
+Comparison with the default lama model: <https://github.com/xulihang/ImageTrans-docs/issues/1065#issuecomment-4417578352>
 
 ###### GPU
 
