@@ -10,6 +10,9 @@ Sub Class_Globals
 	Private defaultPromptWithTerm As String = $"With the help of the terms defined in JSON: {term}, translate the following into {langcode}: {source}"$
 	Private defaultBatchPrompt As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
 	Private defaultBatchPromptWithTerm As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should use the terms defined in JSON: {term}. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
+	Private defaultExtraFields As String = $"{
+	  "thinking": {"type": "disabled"}
+	}"$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -65,7 +68,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 							 "prompt_with_term":defaultPromptWithTerm, _
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _
 			                 "host":"https://api.deepseek.com", _
-							 "model":"deepseek-chat")
+							 "model":"deepseek-chat", _
+							 "extra_fields":defaultExtraFields)
 	End Select
 	Return ""
 End Sub
@@ -180,7 +184,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
-	Dim extraFieldsStr As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("extra_fields","")
+	Dim extraFieldsStr As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("extra_fields",defaultExtraFields)
 	If extraFieldsStr.Trim <> "" Then
 		Dim extraParser As JSONParser
 		extraParser.Initialize(extraFieldsStr)
@@ -294,7 +298,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
-	Dim extraFieldsStr As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("extra_fields","")
+	Dim extraFieldsStr As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("extra_fields",defaultExtraFields)
 	If extraFieldsStr.Trim <> "" Then
 		Dim extraParser As JSONParser
 		extraParser.Initialize(extraFieldsStr)
