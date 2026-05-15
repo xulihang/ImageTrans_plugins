@@ -71,6 +71,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("host")
 			paramsList.Add("model")
 			paramsList.Add("force_no_think (yes or no)")
+			paramsList.Add("extra_fields")
 			Return paramsList
 		Case "batchtranslate"
 			Dim terms As Map
@@ -336,6 +337,15 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	If noThink = "yes" Then
 		params.Put("enable_thinking",False)
 	End If
+	Dim extraFieldsStr As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("extra_fields","")
+	If extraFieldsStr.Trim <> "" Then
+		Dim extraParser As JSONParser
+		extraParser.Initialize(extraFieldsStr)
+		Dim extraMap As Map = extraParser.NextObject
+		For Each extraKey As String In extraMap.Keys
+			params.Put(extraKey, extraMap.Get(extraKey))
+		Next
+	End If
 	Log(params)
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
@@ -452,6 +462,15 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	End If
 	If noThink = "yes" Then
 		params.Put("enable_thinking",False)
+	End If
+	Dim extraFieldsStr As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("extra_fields","")
+	If extraFieldsStr.Trim <> "" Then
+		Dim extraParser As JSONParser
+		extraParser.Initialize(extraFieldsStr)
+		Dim extraMap As Map = extraParser.NextObject
+		For Each extraKey As String In extraMap.Keys
+			params.Put(extraKey, extraMap.Get(extraKey))
+		Next
 	End If
 	Log(params)
 	Dim jsonG As JSONGenerator
