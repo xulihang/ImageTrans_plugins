@@ -37,6 +37,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("batch_prompt_with_term")
 			paramsList.Add("host")
 			paramsList.Add("model")
+			paramsList.Add("extra_fields")
 			Return paramsList
 		Case "batchtranslate"
 			Dim terms As Map
@@ -59,10 +60,10 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "supportBatchTranslation"
 			Return True
 		Case "getDefaultParamValues"
-			Return CreateMap("prompt":defaultPrompt, _ 
-			                 "batch_prompt":defaultBatchPrompt, _ 
-							 "prompt_with_term":defaultPromptWithTerm, _ 
-			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
+			Return CreateMap("prompt":defaultPrompt, _
+			                 "batch_prompt":defaultBatchPrompt, _
+							 "prompt_with_term":defaultPromptWithTerm, _
+			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _
 			                 "host":"https://api.deepseek.com", _
 							 "model":"deepseek-chat")
 	End Select
@@ -113,20 +114,20 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		converted = True
 	End If
 
-    
+
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	
+
 	Dim apikey As String = getMap("deepseek",getMap("mt",preferencesMap)).Get("key")
 	Dim host As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("host","https://api.deepseek.com")
-	
+
 	Dim prompt As String
 	If terms.Size>0 Then
 		prompt = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("batch_prompt_with_term",defaultBatchPromptWithTerm)
 	Else
 		prompt = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
 	End If
-	
+
 	Dim model As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("model","deepseek-chat")
 
 	Dim url As String = host&"/chat/completions"
@@ -137,19 +138,19 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	message.Put("role","user")
 
     Dim keyvalues As Map
-	keyvalues.Initialize	
+	keyvalues.Initialize
 	Dim index As Int = 0
 	For Each source As String In sourceList
 		Dim key As String = index
 		keyvalues.Put(key,source)
 		index = index + 1
 	Next
-	
+
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(keyvalues)
 
 	Dim jsonString As String = jsonG.ToString
-	
+
 	If prompt.Contains("{langcode}") Then
 		If converted Then
 			message.Put("content",prompt.Replace("{langcode}",targetLang).Replace("{source}",jsonString))
@@ -164,7 +165,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	Else
 		message.Put("content",prompt.Replace("{source}",jsonString))
 	End If
-	
+
 	If terms.Size>0 Then
 		Dim termsJsonG As JSONGenerator
 		termsJsonG.Initialize(terms)
@@ -179,6 +180,15 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
+	Dim extraFieldsStr As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("extra_fields","")
+	If extraFieldsStr.Trim <> "" Then
+		Dim extraParser As JSONParser
+		extraParser.Initialize(extraFieldsStr)
+		Dim extraMap As Map = extraParser.NextObject
+		For Each extraKey As String In extraMap.Keys
+			params.Put(extraKey, extraMap.Get(extraKey))
+		Next
+	End If
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
@@ -239,7 +249,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Dim target As String
 	Dim job As HttpJob
 	job.Initialize("job",Me)
-	
+
 	Dim key As String = getMap("deepseek",getMap("mt",preferencesMap)).Get("key")
 	Dim prompt As String
 	If terms.Size>0 Then
@@ -247,7 +257,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Else
 		prompt = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("prompt",defaultPrompt)
 	End If
-	 
+
 	Dim host As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("host","https://api.deepseek.com")
 	Dim url As String = host&"/chat/completions"
 	Dim messages As List
@@ -265,12 +275,12 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 			Else
 				message.Put("content",$"Translate the following into the language whose ISO639-1 code is ${targetLang}: ${source}"$)
 			End If
-			
+
 		End If
 	Else
 		message.Put("content",prompt.Replace("{source}",source))
 	End If
-	
+
 	If terms.Size>0 Then
 		Dim termsJsonG As JSONGenerator
 		termsJsonG.Initialize(terms)
@@ -284,6 +294,15 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
+	Dim extraFieldsStr As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("extra_fields","")
+	If extraFieldsStr.Trim <> "" Then
+		Dim extraParser As JSONParser
+		extraParser.Initialize(extraFieldsStr)
+		Dim extraMap As Map = extraParser.NextObject
+		For Each extraKey As String In extraMap.Keys
+			params.Put(extraKey, extraMap.Get(extraKey))
+		Next
+	End If
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
