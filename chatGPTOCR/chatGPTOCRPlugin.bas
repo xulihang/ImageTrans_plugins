@@ -33,6 +33,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("prompt_location")			
 			paramsList.Add("host")
 			paramsList.Add("model")
+			paramsList.Add("extra_fields")
 			Return paramsList
 		Case "getText"
 			wait for (GetText(Params.Get("img"))) complete (result As String)
@@ -118,6 +119,15 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 	params.Initialize
 	params.Put("model",model)
 	params.Put("messages",messages)
+	Dim extraFieldsStr As String = getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("extra_fields","")
+	If extraFieldsStr.Trim <> "" Then
+		Dim extraParser As JSONParser
+		extraParser.Initialize(extraFieldsStr)
+		Dim extraMap As Map = extraParser.NextObject
+		For Each extraKey As String In extraMap.Keys
+			params.Put(extraKey, extraMap.Get(extraKey))
+		Next
+	End If
 	Dim jsonG As JSONGenerator
 	jsonG.Initialize(params)
 	job.PostString(url,jsonG.ToString)
