@@ -7,7 +7,7 @@ Version=4.2
 Sub Class_Globals
 	Private fx As JFX
 	Private defaultPrompt As String = $"Extract the text in the image (please only return the text)"$
-	Private defaultLocalizationPrompt As String = $"Extract the text in the image (please return the text and the coordinates in the following JSON format example: [{text:'text',bbox:{x:0,y:0,width:0,height:0}])"$
+	Private defaultLocalizationPrompt As String = $"Please return the text and coordinate information from the image as a JSON array. Each element must contain two fields: bbox_2d (an integer array in the format [x1, y1, x2, y2]) and text_content (a string)."$
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -75,9 +75,10 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 		Dim map1 As Map
 		map1.Initialize
 		map1.Put("key","")
-		map1.Put("host","http://localhost:11434/v1")
-		map1.Put("model","qwen3-vl:4b")
-		map1.Put("prompt","/set nothink Extract the text in the image (please only return the text)")
+		map1.Put("host","https://dashscope.aliyuncs.com/compatible-mode/v1")
+		map1.Put("model","qwen3.6-plus")
+		'map1.Put("prompt","/set nothink Extract the text in the image (please only return the text)")
+		map1.Put("extra_fields",$"{"enable_thinking":false}"$)
 		preferencesMap = CreateMap("api":CreateMap("chatGPTOCR":map1))
 	End If
 	Dim apikey As String = getMap("chatGPTOCR",getMap("api",preferencesMap)).Get("key")
@@ -158,14 +159,14 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 				parser.Initialize(result)
 				Dim boxes As List = parser.NextArray
 				For Each box As Map In boxes
-					Dim bbox As Map = box.Get("bbox")
+					Dim bbox As List = box.Get("bbox_2d")
 					Dim region As Map
 					region.Initialize
-					region.Put("text",box.Get("text"))
-					region.Put("X",bbox.Get("x"))
-					region.Put("Y",bbox.Get("y"))
-					region.Put("width",bbox.Get("width"))
-					region.Put("height",bbox.Get("height"))
+					region.Put("text",box.Get("text_content"))
+					region.Put("X",bbox.Get(0)/1000*img.Width)
+					region.Put("Y",bbox.Get(1)/1000*img.Height)
+					region.Put("width",(bbox.Get(2)-bbox.Get(0))/1000*img.Width)
+					region.Put("height",(bbox.Get(3)-bbox.Get(1))/1000*img.Height)
 					regions.Add(region)
 				Next
 			End If
