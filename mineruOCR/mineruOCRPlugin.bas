@@ -110,13 +110,16 @@ Sub parse(img As B4XBitmap, includeLocation As Boolean) As ResumableSub
 	Dim finalResult As Map
 	finalResult.Initialize
 
+	Dim imgW As Int = img.Width
+	Dim imgH As Int = img.Height
+
 	If isCloudApi Then
-		wait for (parseViaCloudApi(host, apikey, isOcr, enableFormula, enableTable, language)) complete (cloudResult As Map)
+		wait for (parseViaCloudApi(host, apikey, isOcr, enableFormula, enableTable, language, imgW, imgH)) complete (cloudResult As Map)
 		resultText = cloudResult.Get("text")
 		textWithLocation = cloudResult.Get("textWithLocation")
 		layout = textWithLocation
 	Else
-		wait for (parseViaFileParse(host, isOcr, enableFormula, enableTable, language)) complete (localResult As Map)
+		wait for (parseViaFileParse(host, isOcr, enableFormula, enableTable, language, imgW, imgH)) complete (localResult As Map)
 		resultText = localResult.Get("text")
 		textWithLocation = localResult.Get("textWithLocation")
 		layout = localResult.Get("textWithLocation")
@@ -128,7 +131,7 @@ Sub parse(img As B4XBitmap, includeLocation As Boolean) As ResumableSub
 	Return finalResult
 End Sub
 
-Sub parseViaFileParse(host As String, isOcr As Boolean, enableFormula As Boolean, enableTable As Boolean, language As String) As ResumableSub
+Sub parseViaFileParse(host As String, isOcr As Boolean, enableFormula As Boolean, enableTable As Boolean, language As String, imgWidth As Int, imgHeight As Int) As ResumableSub
 	Dim resultText As String = ""
 	Dim textWithLocation As List
 	textWithLocation.Initialize
@@ -173,7 +176,7 @@ Sub parseViaFileParse(host As String, isOcr As Boolean, enableFormula As Boolean
 			resultText = response.GetDefault("md", "")
 			If response.ContainsKey("content_list") Then
 				Dim contentList As List = response.Get("content_list")
-				textWithLocation = ProcessContentList(contentList, 0, 0)
+				textWithLocation = ProcessContentList(contentList, imgWidth, imgHeight)
 			End If
 		Catch
 			Log(LastException)
@@ -188,7 +191,7 @@ Sub parseViaFileParse(host As String, isOcr As Boolean, enableFormula As Boolean
 	Return resultMap
 End Sub
 
-Sub parseViaCloudApi(host As String, apikey As String, isOcr As Boolean, enableFormula As Boolean, enableTable As Boolean, language As String) As ResumableSub
+Sub parseViaCloudApi(host As String, apikey As String, isOcr As Boolean, enableFormula As Boolean, enableTable As Boolean, language As String, imgWidth As Int, imgHeight As Int) As ResumableSub
 	Dim resultText As String = ""
 	Dim textWithLocation As List
 	textWithLocation.Initialize
@@ -298,7 +301,7 @@ Sub parseViaCloudApi(host As String, apikey As String, isOcr As Boolean, enableF
 						completed = True
 						Dim fullZipUrl As String = firstResult.GetDefault("full_zip_url", "")
 						If fullZipUrl <> "" Then
-							wait for (DownloadAndExtractZip(fullZipUrl, apikey)) complete (extracted As Map)
+							wait for (DownloadAndExtractZip(fullZipUrl, apikey, imgWidth, imgHeight)) complete (extracted As Map)
 							resultText = extracted.Get("text")
 							textWithLocation = extracted.Get("textWithLocation")
 						End If
@@ -322,7 +325,7 @@ Sub parseViaCloudApi(host As String, apikey As String, isOcr As Boolean, enableF
 	Return resultMap
 End Sub
 
-Sub DownloadAndExtractZip(zipUrl As String, apikey As String) As ResumableSub
+Sub DownloadAndExtractZip(zipUrl As String, apikey As String, imgWidth As Int, imgHeight As Int) As ResumableSub
 	Dim resultText As String = ""
 	Dim textWithLocation As List
 	textWithLocation.Initialize
@@ -357,7 +360,7 @@ Sub DownloadAndExtractZip(zipUrl As String, apikey As String) As ResumableSub
 						Dim json As JSONParser
 						json.Initialize(contentJson)
 						Dim contentList As List = json.NextArray
-						textWithLocation = ProcessContentList(contentList, 0, 0)
+						textWithLocation = ProcessContentList(contentList, imgWidth, imgHeight)
 					End If
 				End If
 
@@ -409,6 +412,14 @@ Private Sub ProcessContentList(contentList As List, imgWidth As Int, imgHeight A
 			Dim y1 As Float = bbox.Get(1)
 			Dim x2 As Float = bbox.Get(2)
 			Dim y2 As Float = bbox.Get(3)
+
+			' MinerU normalizes coordinates to 0-1000, convert to actual pixels
+			If imgWidth > 0 And imgHeight > 0 Then
+				x1 = x1 / 1000 * imgWidth
+				y1 = y1 / 1000 * imgHeight
+				x2 = x2 / 1000 * imgWidth
+				y2 = y2 / 1000 * imgHeight
+			End If
 
 			Dim box As Map
 			box.Initialize
