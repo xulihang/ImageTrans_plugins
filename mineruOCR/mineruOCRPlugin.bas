@@ -56,7 +56,8 @@ End Sub
 
 Sub DetectLayout(img As B4XBitmap) As ResumableSub
 	wait for (parse(img, True)) complete (result As Map)
-	Return result.Get("layout")
+	Dim layout As List =  result.Get("layout")
+	Return layout
 End Sub
 
 Sub GetText(img As B4XBitmap) As ResumableSub
