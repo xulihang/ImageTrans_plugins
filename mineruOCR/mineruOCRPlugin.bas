@@ -406,6 +406,17 @@ Private Sub ProcessContentList(contentList As List, imgWidth As Int, imgHeight A
 		If block.ContainsKey("table_body") Then
 			text = block.Get("table_body")
 		End If
+		If block.ContainsKey("text_level") Then
+			Dim sb As StringBuilder
+			sb.Initialize
+			Dim level As Int = block.Get("text_level")
+			For i = 0 To level - 1
+				sb.Append("#")
+			Next
+			sb.Append(" ")
+			sb.Append(text)
+			text = sb.ToString
+		End If
 		Dim bbox As List = block.Get("bbox")
 
 		If bbox.Size >= 4 Then
