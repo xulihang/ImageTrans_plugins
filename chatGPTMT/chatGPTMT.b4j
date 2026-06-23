@@ -16,7 +16,7 @@ Module1=chatGPTMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=8.8
+Version=10.5
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -37,13 +37,26 @@ Sub AppStart (Form1 As Form, Args() As String)
 	n.Initialize
 	Dim map1 As Map
 	map1.Initialize
-	map1.Put("key","sk-")
-	map1.Put("host","https://api.deepseek.com")
-	map1.Put("model","deepseek-v4-pro")
+	map1.Put("key","")
+	map1.Put("host","https://open.bigmodel.cn/api/paas/v4")
+	map1.Put("model","glm-5v-turbo")
 	map1.Put("extra_fields",$"{
 	  "thinking": {"type": "disabled"}
 	}
 	"$)
+	Dim boxes As List
+	
+	Dim json As JSONParser
+	json.Initialize(File.ReadString(File.DirApp,"2.itp"))
+	Dim m As Map = json.NextObject
+	Dim imgMap As Map = m.Get("images")
+	Dim oneImg As Map = imgMap.GetValueAt(0)
+	boxes = oneImg.Get("boxes")
+	Dim img As B4XBitmap = fx.LoadImage(File.DirApp,"0 (1).jpg")
+	Log(boxes)
+	wait for (n.visionTranslate(boxes,img,"zh","en",CreateMap("mt":CreateMap("chatGPT":map1)),CreateMap())) complete (items As List)
+	Log(items)
+	Return
 	Dim textToTransliterate As List
 	textToTransliterate.Initialize
 	textToTransliterate.Add("揉んでもいいですか?")

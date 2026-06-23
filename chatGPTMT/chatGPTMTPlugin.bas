@@ -6,6 +6,25 @@ Version=4.2
 @EndOfDesignText@
 Sub Class_Globals
 	Private fx As JFX
+	Private defaultVisionBatchPrompt As String = $"You are a professional AI translator. Translate the image into {langcode} with the JSON providing the source text.
+
+**Source Text:**
+{source}
+
+**Requirements:**
+Output ONLY the translated text one box per line. Do not include any explanations or notes. Do not mix sentences.
+"$
+	Private defaultVisionBatchPromptWithTerm As String = $"You are a professional AI translator. Translate the image into {langcode} with the JSON providing the source text.
+
+**Source Text:**
+{source}
+
+**Requirements:**
+1. Strictly adhere to the provided glossary for term translation.
+2. Output ONLY the translated text one box per line. Do not include any explanations or notes. Do not mix sentences.
+
+**Glossary (JSON):**
+{term}"$
 	Private defaultBatchPrompt As String = $"You are a professional AI translator. Translate the following text into {langcode}.
 
 **Source Text:**
@@ -65,7 +84,9 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("prompt")
 			paramsList.Add("batch_prompt")
 			paramsList.Add("prompt_with_term")
+			paramsList.Add("vision_batch_prompt")
 			paramsList.Add("batch_prompt_with_term")
+			paramsList.Add("vision_batch_prompt_with_term")
 			paramsList.Add("spell_checking_prompt")
 			paramsList.Add("transliteration_prompt")
 			paramsList.Add("host")
@@ -97,14 +118,27 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			End If
 			wait for (translate(Params.Get("source"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),terms)) complete (result As String)
 			Return result
+		Case "visionTranslate"
+			Dim terms As Map
+			If Params.ContainsKey("terms") Then
+				terms = Params.Get("terms")
+			Else
+				terms.Initialize
+			End If
+			wait for (visionTranslate(Params.Get("source"),Params.Get("img"),Params.Get("sourceLang"),Params.Get("targetLang"),Params.Get("preferencesMap"),terms)) complete (targetList As List)
+			Return targetList
+		Case "supportVisionTranslation"
+			Return True
 		Case "supportBatchTranslation"
 			Return True
 		Case "getDefaultParamValues"
 			Return CreateMap("prompt":defaultBatchPrompt, _
 							 "spell_checking_prompt": defaultSpellCheckingPrompt, _
 			                 "batch_prompt":defaultBatchPrompt, _ 
+							 "vision_batch_prompt":defaultVisionBatchPrompt, _ 
 							 "prompt_with_term":defaultBatchPromptWithTerm, _ 
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
+							 "vision_batch_prompt_with_term":defaultVisionBatchPromptWithTerm, _ 
 							 "transliteration_prompt":defaultTransliterationPrompt, _ 
 							 "force_no_think (yes or no)":"no", _ 
 			                 "host":"https://api.openai.com/v1", _
@@ -248,6 +282,165 @@ Sub spellCheck(sourceList As List,preferencesMap As Map) As ResumableSub
 	Return targetList
 End Sub
 
+Sub visionTranslate(boxes As List, img As B4XBitmap,sourceLang As String, targetLang As String,preferencesMap As Map,terms As Map) As ResumableSub
+	Dim targetList As List
+	targetList.Initialize
+	Dim converted As Boolean
+	Dim langCode As String = targetLang
+	targetLang = ConvertLang(targetLang)
+	If langCode <> targetLang Then
+		converted = True
+	End If
+
+    
+	Dim job As HttpJob
+	job.Initialize("job",Me)
+	
+	Dim apikey As String = getMap("chatGPT",getMap("mt",preferencesMap)).Get("key")
+	Dim host As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
+	
+	Dim prompt As String
+	If terms.Size>0 Then
+		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("vision_batch_prompt_with_term",defaultVisionBatchPromptWithTerm)
+	Else
+		prompt = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("vision_batch_prompt",defaultVisionBatchPrompt)
+	End If
+	
+	Dim noThink As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("force_no_think (yes or no)","no")
+	Dim model As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("model","gpt-4o")
+
+	Dim url As String = host&"/chat/completions"
+
+	Dim contentList As List
+	contentList.Initialize
+	Dim messages As List
+	messages.Initialize
+	Dim message As Map
+	message.Initialize
+	message.Put("role","user")
+	
+	Dim map1 As Map
+	map1.Initialize
+	map1.Put("boxes",boxes)
+	Dim jsonG As JSONGenerator
+	jsonG.Initialize(map1)
+	Dim target As String = jsonG.ToString
+	Dim userMessage As String
+	If prompt.Contains("{langcode}") Then
+		If converted Then
+			userMessage = prompt.Replace("{langcode}",targetLang).Replace("{source}",target)
+			'$"Translate the following into ${targetLang}: ${source}"$
+		Else
+			If terms.Size>0 Then
+				userMessage = defaultVisionBatchPromptWithTerm.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",target)
+			Else
+				userMessage = defaultVisionBatchPrompt.Replace("{langcode}",$"the language whose ISO639-1 code is ${targetLang}"$).Replace("{source}",target)
+			End If
+		End If
+	Else
+		userMessage = prompt.Replace("{source}",target)
+	End If
+	
+	If terms.Size>0 Then
+		Dim termsJsonG As JSONGenerator
+		termsJsonG.Initialize(terms)
+		userMessage = userMessage.Replace("{term}",termsJsonG.ToString)
+	End If
+	
+	If noThink = "yes" Then
+		userMessage = userMessage & "/no_think"
+	End If
+	
+	Dim text As Map
+	text.Initialize
+	text.Put("type","text")
+	text.Put("text",userMessage)
+	
+	Dim su As StringUtils
+	Dim base64 As String=su.EncodeBase64(ImageToBytes(img))
+	Dim urlMap As Map
+	urlMap.Initialize
+	urlMap.Put("url","data:image/jpeg;base64,"&base64)
+	Dim image As Map
+	image.Initialize
+	image.Put("type","image_url")
+	image.Put("image_url",urlMap)
+	contentList.Add(text)
+	contentList.Add(image)
+	message.Put("content",contentList)
+	
+	messages.Add(message)
+	
+	Dim params As Map
+	params.Initialize
+	params.Put("model",model)
+	params.Put("messages",messages)
+	If url.Contains("siliconflow") Then
+		params.Put("enable_thinking",False)
+	End If
+	If noThink = "yes" Then
+		params.Put("enable_thinking",False)
+	End If
+	Dim extraFieldsStr As String = getMap("chatGPT",getMap("mt",preferencesMap)).GetDefault("extra_fields","")
+	If extraFieldsStr.Trim <> "" Then
+		Dim extraParser As JSONParser
+		extraParser.Initialize(extraFieldsStr)
+		Dim extraMap As Map = extraParser.NextObject
+		For Each extraKey As String In extraMap.Keys
+			params.Put(extraKey, extraMap.Get(extraKey))
+		Next
+	End If
+	Log(params)
+	Dim jsonG As JSONGenerator
+	jsonG.Initialize(params)
+	job.PostString(url,jsonG.ToString)
+	Log(jsonG.ToString)
+	job.GetRequest.SetContentType("application/json")
+	job.GetRequest.SetHeader("Authorization","Bearer "&apikey)
+	job.GetRequest.Timeout = 1200000
+	wait For (job) JobDone(job As HttpJob)
+	If job.Success Then
+		Try
+			Log(job.GetString)
+			Dim json As JSONParser
+			json.Initialize(job.GetString)
+			Dim response As Map = json.NextObject
+			Dim choices As List
+			choices = response.Get("choices")
+			Dim choice As Map = choices.Get(0)
+			Dim message As Map = choice.Get("message")
+			Dim content As String = message.Get("content")
+			content = RemoveThinkTags(content)
+			content = Regex.Replace("\n+",content,CRLF)
+			content = content.Trim
+			For Each line As String In Regex.Split(CRLF,content)
+				line = ReplaceStartingNumberedStrings(line)
+				line = line.Replace("\n",CRLF)
+				targetList.Add(line)
+			Next
+			Do While targetList.Size < boxes.Size
+				targetList.Add("")
+			Loop
+		Catch
+			Log(LastException)
+		End Try
+	End If
+	job.Release
+	If targetList.Size = 0 Then
+		For Each source As String In boxes
+			targetList.Add("")
+		Next
+	End If
+	Return targetList
+End Sub
+
+private Sub ImageToBytes(Image As B4XBitmap) As Byte()
+	Dim out As OutputStream
+	out.InitializeToBytesArray(0)
+	Image.WriteToStream(out, 100, "JPEG")
+	out.Close
+	Return out.ToBytesArray
+End Sub
 
 Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As String,preferencesMap As Map,terms As Map) As ResumableSub
 	Dim targetList As List
