@@ -25,8 +25,13 @@ End Sub
 
 Private Sub InitIfNeeded
 	If engine.IsInitialized = False Then
-		engine.Initialize
-		Log(engine.folder)
+		Try
+			engine.Initialize
+			Log(engine.folder)
+		Catch
+			Log(LastException)
+			engine = Null
+		End Try
 	End If
 End Sub
 

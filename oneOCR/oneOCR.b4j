@@ -18,7 +18,7 @@ Module3=oneOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=3
-Version=8.8
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
