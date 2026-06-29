@@ -16,9 +16,15 @@ Public Sub Initialize
 	Dim finder As JavaObject
 	finder.InitializeStatic("com.xulihang.oneocr.OneOCREngine")
 	Dim dllFolder As JavaObject = finder.RunMethod("findSnippingToolDir",Null)
-	folder = dllFolder.RunMethodJO("toAbsolutePath",Null).RunMethod("toString",Null)
-	engine.InitializeNewInstance("com.xulihang.oneocr.OneOCREngine",Array(dllFolder))
-	engine.RunMethod("load", Null)
+	Try
+		folder = dllFolder.RunMethodJO("toAbsolutePath",Null).RunMethod("toString",Null)
+	Catch
+		Log(LastException)
+	End Try
+	If File.Exists(folder,"") Then
+		engine.InitializeNewInstance("com.xulihang.oneocr.OneOCREngine",Array(dllFolder))
+		engine.RunMethod("load", Null)
+	End If
 End Sub
 
 Sub DoProcessingAsync(map1 As Map) As ResumableSub

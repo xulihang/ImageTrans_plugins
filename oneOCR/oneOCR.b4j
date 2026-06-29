@@ -41,6 +41,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	Dim o As jOneOCR
 	o.Initialize
 	Log(o.folder)
+	Log(o.IsInitialized)
 	Dim lines As List = o.recognize(fx.LoadImage(File.DirApp,"18_094.jpg"))
 	GetResult(lines,False)
 	GetResult(lines,True)

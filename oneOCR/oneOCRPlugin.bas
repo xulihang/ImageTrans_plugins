@@ -28,9 +28,14 @@ Private Sub InitIfNeeded
 		Try
 			engine.Initialize
 			Log(engine.folder)
+            If File.Exists(engine.folder,"") = False Then
+				engine = Null
+				Dim engine As jOneOCR
+			End If
 		Catch
 			Log(LastException)
 			engine = Null
+			Dim engine as jOneOCR
 		End Try
 	End If
 End Sub
