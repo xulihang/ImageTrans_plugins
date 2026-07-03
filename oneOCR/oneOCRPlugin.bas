@@ -72,7 +72,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim comb As String=Params.Get("combination")
 			wordLevel = comb.Contains("word-level")
 			rotationDetection = False
-			If comb.Contains("rotationDetection") Then
+			If comb.ToLowerCase.Contains("rotationdetection") Then
 				rotationDetection = True
 			End If
 		Case "GetCombinations"
@@ -109,7 +109,7 @@ Sub BuildCombinations As List
 	combs.Initialize
 	combs.Add("oneocr")
 	combs.Add("word-level (oneocr)")
-	combs.Add("rotationDetection (oneocr)")
+	combs.Add("rotationdetection (oneocr)")
 	Return combs
 End Sub
 
