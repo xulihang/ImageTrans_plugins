@@ -109,7 +109,7 @@ Sub BuildCombinations As List
 	combs.Initialize
 	combs.Add("oneocr")
 	combs.Add("word-level (oneocr)")
-	combs.Add("rotationdetection (oneocr)")
+	combs.Add("rotationDetection (oneocr)")
 	Return combs
 End Sub
 
