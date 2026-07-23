@@ -119,7 +119,7 @@ Public Sub decode(bufferedImage As JavaObject, enableTryHarder As Boolean, _
 	map1.Put("tryDownscale", enableTryDownscale)
 	map1.Put("includeLocation", IncludeLocation)
 	decodeUsingMap(map1)
-	Return boxes
+	Return map1.Get("boxes")
 End Sub
 
 
@@ -145,6 +145,7 @@ Private Sub decodeUsingMap(map1 As Map)
 	Else
 		Dim barcodeList As JavaObject = engine.RunMethod("readBarcodesAsList", Array(bufferedImage, Null))
 	End If
+	Log("====")
 	Log(barcodeList)
 	Dim listSize As Int = barcodeList.RunMethod("size", Null)
 	Dim boxes As List
