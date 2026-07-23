@@ -7,10 +7,10 @@ Version=10.5
 Sub Class_Globals
 	Private fx As JFX
 	Private decoder As jZXingCPP
-	Private enableTryHarder As Boolean = True
-	Private enableTryRotate As Boolean = True
-	Private enableTryInvert As Boolean = True
-	Private enableTryDownscale As Boolean = True
+	Private enableTryHarder As Boolean = False
+	Private enableTryRotate As Boolean = False
+	Private enableTryInvert As Boolean = False
+	Private enableTryDownscale As Boolean = False
 	Private formatFilter As String
 End Sub
 
@@ -50,10 +50,10 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			wait for (GetTextWithLocation(Params.Get("img"))) complete (regions As List)
 			Return regions
 		Case "getDefaultParamValues"
-			Return CreateMap("tryHarder":"true", _
-			                 "tryRotate":"true", _
-			                 "tryInvert":"true", _
-			                 "tryDownscale":"true", _
+			Return CreateMap("tryHarder":"false", _
+			                 "tryRotate":"false", _
+			                 "tryInvert":"false", _
+			                 "tryDownscale":"false", _
 			                 "formats":"")
 	End Select
 	Return ""
@@ -121,10 +121,10 @@ Private Sub LoadPreferences
 		If File.Exists(File.DirApp, "preferences.conf") Then
 			Dim preferencesMap As Map = readJsonAsMap(File.ReadString(File.DirApp, "preferences.conf"))
 			Dim apiMap As Map = getMap("zxingcpp", getMap("api", preferencesMap))
-			enableTryHarder = apiMap.GetDefault("tryHarder", "true") = "true"
-			enableTryRotate = apiMap.GetDefault("tryRotate", "true") = "true"
-			enableTryInvert = apiMap.GetDefault("tryInvert", "true") = "true"
-			enableTryDownscale = apiMap.GetDefault("tryDownscale", "true") = "true"
+			enableTryHarder = apiMap.GetDefault("tryHarder", "false") = "true"
+			enableTryRotate = apiMap.GetDefault("tryRotate", "false") = "true"
+			enableTryInvert = apiMap.GetDefault("tryInvert", "false") = "true"
+			enableTryDownscale = apiMap.GetDefault("tryDownscale", "false") = "true"
 			formatFilter = apiMap.GetDefault("formats", "")
 		End If
 	Catch

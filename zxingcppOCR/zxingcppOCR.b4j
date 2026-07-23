@@ -17,7 +17,7 @@ Module2=zxingcppOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=2
-Version=10.5
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -45,7 +45,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	'Log(result)
 	'p.Run("SetCombination",CreateMap("combination":"long text (manga-ocr)"))
 	'wait for (p.GetTextLongTextMode(fx.LoadImage(File.DirApp,"test.jpg"))) Complete (result As String)
-	wait for (p.GetText(fx.LoadImage(File.DirApp,"17-damaged-barcodes.png"))) Complete (result As String)
+	wait for (p.GetText(fx.LoadImage(File.DirApp,"2.jpg"))) Complete (result As String)
 	Log(result)
 End Sub
 
