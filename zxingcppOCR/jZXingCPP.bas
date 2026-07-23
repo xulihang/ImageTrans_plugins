@@ -16,10 +16,11 @@ Public Sub Initialize
 	th.Initialise("th")
 	Dim libPath As String = FindNativeLibrary
 	If libPath <> "" Then
+		' Set jna.library.path so ZXingCpp constructor can find it via Native.load()
 		Dim sysCls As JavaObject
 		sysCls.InitializeStatic("java.lang.System")
-		sysCls.RunMethod("load", Array(libPath))
-		Log("Loaded native library: " & libPath)
+		sysCls.RunMethod("setProperty", Array("jna.library.path", File.DirApp))
+		Log("Native library directory: " & File.DirApp)
 	Else
 		Log("Native library not found in Files dir, will try JAR embedded library")
 	End If
@@ -131,15 +132,20 @@ Private Sub decodeUsingMap(map1 As Map)
 	Dim tryInvert As Boolean = map1.Get("tryInvert")
 	Dim tryDownscale As Boolean = map1.Get("tryDownscale")
 	Dim includeLocation As Boolean = map1.Get("includeLocation")
-	' Create reader options
-	Dim readerOpts As JavaObject = engine.RunMethod("createReaderOptions", Null)
 
-	engine.RunMethod("setTryHarder", Array(readerOpts, tryHarder))
-	engine.RunMethod("setTryRotate", Array(readerOpts, tryRotate))
-	engine.RunMethod("setTryInvert", Array(readerOpts, tryInvert))
-	engine.RunMethod("setTryDownscale", Array(readerOpts, tryDownscale))
-
-	Dim barcodeList As JavaObject = engine.RunMethod("readBarcodesAsList", Array(bufferedImage, readerOpts))
+	' Only create ReaderOptions if at least one option is enabled; otherwise use defaults (Null)
+	Dim needOpts As Boolean = tryHarder Or tryRotate Or tryInvert Or tryDownscale
+	If needOpts Then
+		Dim readerOpts As JavaObject = engine.RunMethod("createReaderOptions", Null)
+		engine.RunMethod("setTryHarder", Array(readerOpts, tryHarder))
+		engine.RunMethod("setTryRotate", Array(readerOpts, tryRotate))
+		engine.RunMethod("setTryInvert", Array(readerOpts, tryInvert))
+		engine.RunMethod("setTryDownscale", Array(readerOpts, tryDownscale))
+		Dim barcodeList As JavaObject = engine.RunMethod("readBarcodesAsList", Array(bufferedImage, readerOpts))
+	Else
+		Dim barcodeList As JavaObject = engine.RunMethod("readBarcodesAsList", Array(bufferedImage, Null))
+	End If
+	Log(barcodeList)
 	Dim listSize As Int = barcodeList.RunMethod("size", Null)
 	Dim boxes As List
 	boxes.Initialize
