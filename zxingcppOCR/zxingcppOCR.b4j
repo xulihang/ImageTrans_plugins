@@ -45,7 +45,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	'Log(result)
 	'p.Run("SetCombination",CreateMap("combination":"long text (manga-ocr)"))
 	'wait for (p.GetTextLongTextMode(fx.LoadImage(File.DirApp,"test.jpg"))) Complete (result As String)
-	wait for (p.GetTextWithLocation(fx.LoadImage(File.DirApp,"2.png"))) Complete (result As Object)
+	wait for (p.GetTextWithLocation(fx.LoadImage(File.DirApp,"2.jpg"))) Complete (result As Object)
 	Log(result)
 End Sub
 

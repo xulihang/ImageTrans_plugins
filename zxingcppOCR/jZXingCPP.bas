@@ -7,7 +7,6 @@ Version=10.5
 Sub Class_Globals
 	Private engine As JavaObject
 	Private th As Thread
-	Public mInitialized As Boolean
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -145,8 +144,7 @@ Private Sub decodeUsingMap(map1 As Map)
 	Else
 		Dim barcodeList As JavaObject = engine.RunMethod("readBarcodesAsList", Array(bufferedImage, Null))
 	End If
-	Log("====")
-	Log(barcodeList)
+
 	Dim listSize As Int = barcodeList.RunMethod("size", Null)
 	Dim boxes As List
 	boxes.Initialize
