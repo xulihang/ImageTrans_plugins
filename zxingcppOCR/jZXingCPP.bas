@@ -13,13 +13,14 @@ End Sub
 Public Sub Initialize
 	Log("initialize cpp")
 	th.Initialise("th")
-	Dim libPath As String = FindNativeLibrary
-	If libPath <> "" Then
-		' Set jna.library.path so ZXingCpp constructor can find it via Native.load()
+
+	' Plugin loads the native library itself via System.load()
+	Dim libName As String = getNativeLibName
+	If File.Exists(File.DirApp, libName) Then
 		Dim sysCls As JavaObject
 		sysCls.InitializeStatic("java.lang.System")
-		sysCls.RunMethod("setProperty", Array("jna.library.path", File.DirApp))
-		Log("Native library directory: " & File.DirApp)
+		sysCls.RunMethod("load", Array(File.Combine(File.DirApp, libName)))
+		Log("Loaded native library: " & File.Combine(File.DirApp, libName))
 	Else
 		Log("Native library not found in Files dir, will try JAR embedded library")
 	End If
@@ -29,15 +30,6 @@ Public Sub Initialize
 	Dim version As String = jo.RunMethod("getVersion", Null)
 	Log("zxing-cpp version: " & version)
 	engine = jo
-End Sub
-
-' Find the native library in Files directory
-Private Sub FindNativeLibrary As String
-	Dim libName As String = getNativeLibName
-	If File.Exists(File.DirApp, libName) Then
-		Return File.Combine(File.DirApp, libName)
-	End If
-	Return ""
 End Sub
 
 Private Sub getNativeLibName As String
