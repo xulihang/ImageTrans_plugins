@@ -43,6 +43,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("tryDownscale")
 			paramsList.Add("formats")
 			Return paramsList
+		Case "getLangs"
+			Return getLangs(Params.Get("loc"))
 		Case "getText"
 			wait for (GetText(Params.Get("img"))) complete (result As String)
 			Return result
@@ -58,6 +60,21 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 	End Select
 	Return ""
 End Sub
+
+
+Sub getLangs(loc As Localizator) As Map
+	Dim result As Map
+	result.Initialize
+	Dim names,codes As List
+	names.Initialize
+	codes.Initialize
+	codes.Add("barcode")
+	names.Add(loc.Localize("条码"))
+	result.Put("names",names)
+	result.Put("codes",codes)
+	Return result
+End Sub
+
 
 Sub GetText(img As B4XBitmap) As ResumableSub
 	wait for (scan(img, False)) complete (boxes As List)

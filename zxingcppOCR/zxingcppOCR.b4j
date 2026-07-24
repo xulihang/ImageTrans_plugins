@@ -13,11 +13,12 @@ Library7=jstringutils
 Library8=jxmlsax
 Library9=jxui
 Module1=jZXingCPP
-Module2=zxingcppOCRPlugin
+Module2=Localizator
+Module3=zxingcppOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
-NumberOfModules=2
-Version=8.8
+NumberOfModules=3
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
