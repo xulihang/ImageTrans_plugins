@@ -15,10 +15,7 @@ Public Sub Initialize
 	th.Initialise("th")
 	If File.Exists(File.DirApp,"oneocr") Then
 		folder = File.Combine(File.DirApp,"oneocr")
-		Dim jo As JavaObject = Me
-		Dim path As JavaObject = jo.RunMethod("convertToPath",Array(folder))
-		Log(path)
-		engine.InitializeNewInstance("com.xulihang.oneocr.OneOCREngine",Array(path))
+		engine.InitializeNewInstance("com.xulihang.oneocr.OneOCREngine",Array(folder))
 		engine.RunMethod("load", Null)
 	End If
 End Sub
@@ -77,16 +74,3 @@ Private Sub convertImageToBufferedBitmap(img As Image) As JavaObject
 	jo.InitializeStatic("javafx.embed.swing.SwingFXUtils")
 	Return jo.RunMethod("fromFXImage",Array(img,Null))
 End Sub
-
-#If Java
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-public static Path convertToPath(String pathString) {
-    // 直接转换
-    Path path = Paths.get(pathString);
-    
-    return path;
-}
-
-#End If
