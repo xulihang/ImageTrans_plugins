@@ -68,7 +68,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 							 "prompt_with_term":defaultPromptWithTerm, _
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _
 			                 "host":"https://api.deepseek.com", _
-							 "model":"deepseek-chat", _
+							 "model":"deepseek-v4-flash", _
 							 "extra_fields":defaultExtraFields)
 	End Select
 	Return ""
@@ -132,7 +132,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 		prompt = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("batch_prompt",defaultBatchPrompt)
 	End If
 
-	Dim model As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("model","deepseek-chat")
+	Dim model As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("model","deepseek-v4-flash")
 
 	Dim url As String = host&"/chat/completions"
 	Dim messages As List
@@ -294,7 +294,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	End If
 	Log(message)
 	messages.Add(message)
-	Dim model As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("model","deepseek-chat")
+	Dim model As String = getMap("deepseek",getMap("mt",preferencesMap)).GetDefault("model","deepseek-v4-flash")
 	Dim params As Map
 	params.Initialize
 	params.Put("model",model)
