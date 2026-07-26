@@ -35,7 +35,7 @@ Private Sub InitIfNeeded
 		Catch
 			Log(LastException)
 			engine = Null
-			Dim engine as jOneOCR
+			Dim engine As jOneOCR
 		End Try
 	End If
 End Sub

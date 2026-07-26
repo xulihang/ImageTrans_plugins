@@ -13,16 +13,11 @@ End Sub
 'Initializes the object. You can add parameters to this method if needed.
 Public Sub Initialize
 	th.Initialise("th")
-	Dim finder As JavaObject
-	finder.InitializeStatic("com.xulihang.oneocr.OneOCREngine")
-	Dim dllFolder As JavaObject = finder.RunMethod("findSnippingToolDir",Null)
-	Try
-		folder = dllFolder.RunMethodJO("toAbsolutePath",Null).RunMethod("toString",Null)
-	Catch
-		Log(LastException)
-	End Try
+	If File.Exists(File.DirApp,"oneocr") Then
+		folder = File.Combine(File.DirApp,"oneocr")
+	End If
 	If File.Exists(folder,"") Then
-		engine.InitializeNewInstance("com.xulihang.oneocr.OneOCREngine",Array(dllFolder))
+		engine.InitializeNewInstance("com.xulihang.oneocr.OneOCREngine",Array(folder))
 		engine.RunMethod("load", Null)
 	End If
 End Sub
@@ -54,6 +49,7 @@ Public Sub recognizeAsync(img As Image) As ResumableSub
 	Dim map1 As Map
 	map1.Initialize
 	map1.Put("image",img)
+	map1.Put("lines",lines)
 	DoProcessingAsync(map1)
 	wait for Recognized(Success As Boolean)
 	If Success=True Then
