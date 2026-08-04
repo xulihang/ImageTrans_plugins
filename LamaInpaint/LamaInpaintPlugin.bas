@@ -172,7 +172,7 @@ Sub inpaint(origin As B4XBitmap,mask As B4XBitmap,settings As Map) As ResumableS
 		Wait For (LoadLamaIfNeeded) complete (done As Object)
 		
 		Dim originMat As cvMat = Image2cvMat2(paddedSrc)
-		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_UNCHANGED")
+		Dim maskMat As cvMat = cv2.bytesToMat2(ImageToPNGBytes(mask),"IMREAD_GRAYSCALE")
 		wait for (engine.inpaintAsync(originMat,maskMat)) complete (resultMat As cvMat)
 		'Dim resultMat As cvMat = engine.inpaint(originMat,maskMat)
 		originMat.release
