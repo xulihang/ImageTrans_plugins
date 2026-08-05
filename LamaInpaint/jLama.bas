@@ -38,7 +38,6 @@ Public Sub inpaintAsync(image As cvMat,mask As cvMat) As ResumableSub
 	map1.Initialize
 	map1.Put("image",image)
 	map1.Put("mask",mask)
-	Log(map1)
 	th.Start(Me,"inpaintUsingMap",Array As Map(map1))
 	wait for th_Ended(endedOK As Boolean, error As String)
 	Log(endedOK)
