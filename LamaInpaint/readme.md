@@ -2,6 +2,8 @@
 
 ### How to use
 
+An int8 ONNX version model of lama is included by default since ImageTrans v6.3.0. You can use a different version to improve speed and quality. Remember to remove `big-lama.onnx` under ImageTrans's root before trying other versions. 
+
 #### For macOS
 
 Use the CoreML version for macOS to utilize the GPU. You need to download and unzip the model to ImageTrans's folder. Download link: <https://github.com/xulihang/CoreMLaMa/releases/download/build/LaMa.mlmodelc.zip>
@@ -61,10 +63,9 @@ Starting from ImageTrans v4.2.0, you can directly run Lama Inpaint in ImageTrans
 
 You need to put `big-lama.onnx` under ImageTrans's folder. You need to extract it from [big-lama-dynamic.zip](https://github.com/xulihang/ImageTrans_plugins/releases/download/plugins/big-lama-dynamic.zip). 
 
-This way is easy to use but is slow. So it is recommended to use the Python version.
+This way is easy to use, but it is slow. So it is recommended to use the Python version.
 
-
-PS: lama will resize images too large, so it is recommended to process by text areas for large images. You can enable this in the project settings.
+There are other versions of the ONNX model that may perform quicker with CPU. You can find them here: <https://hf-mirror.com/g-ronimo/lama/tree/main>
 
 
 
