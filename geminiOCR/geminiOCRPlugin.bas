@@ -42,7 +42,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getDefaultParamValues"
 			Return CreateMap("prompt": defaultPrompt, _
 			                 "prompt_location": defaultLocalizationPrompt, _
-			                 "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent")
+			                 "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent")
 	End Select
 	Return ""
 End Sub
@@ -76,7 +76,7 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 	End If
 	Log(preferencesMap)
 	Dim apikey As String = getMap("geminiOCR",getMap("api",preferencesMap)).Get("key")
-	Dim endpoint As String = getMap("geminiOCR",getMap("api",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent")
+	Dim endpoint As String = getMap("geminiOCR",getMap("api",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent")
 	Dim prompt As String
 	If textOnly Then
 		prompt = getMap("geminiOCR",getMap("api",preferencesMap)).GetDefault("prompt",defaultPrompt)
