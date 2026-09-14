@@ -62,7 +62,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			                 "batch_prompt": defaultBatchPrompt, _ 
 							 "prompt_with_term":defaultPromptWithTerm, _ 
 			                 "batch_prompt_with_term":defaultBatchPromptWithTerm, _ 
-			                 "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
+			                 "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent")
 	End Select
 	Return ""
 End Sub
@@ -114,7 +114,7 @@ Sub batchTranslate(sourceList As List, sourceLang As String, targetLang As Strin
 	job.Initialize("job",Me)
 	
 	Dim apikey As String = getMap("gemini",getMap("mt",preferencesMap)).Get("key")
-	Dim endpoint As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
+	Dim endpoint As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent")
 	Dim prompt As String
 	If terms.Size>0 Then
 		prompt = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("batch_prompt_with_term",defaultBatchPromptWithTerm)
@@ -235,7 +235,7 @@ Sub translate(source As String,sourceLang As String,targetLang As String,prefere
 	Else
 		prompt = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("prompt",defaultPrompt)
 	End If
-	Dim endpoint As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent")
+	Dim endpoint As String = getMap("gemini",getMap("mt",preferencesMap)).GetDefault("endpoint","https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent")
 	Dim url As String = endpoint&"?key="&key
 	Dim body As Map
 	body.Initialize
