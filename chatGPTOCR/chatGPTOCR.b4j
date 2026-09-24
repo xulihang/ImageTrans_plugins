@@ -1,22 +1,23 @@
 ﻿AppType=JavaFX
 Build1=Default,org.xulihang.imagetrans,HU2_ACCEPTALL
 Group=Default Group
-Library1=jcore
-Library10=byteconverter
-Library11=encryption
-Library2=jfx
-Library3=json
-Library4=jxmlsax
-Library5=xmlbuilder
-Library6=jxui
-Library7=javaobject
-Library8=jokhttputils2
-Library9=jstringutils
+Library1=byteconverter
+Library10=jxui
+Library11=xmlbuilder
+Library12=jbitmapcreator
+Library2=encryption
+Library3=javaobject
+Library4=jcore
+Library5=jfx
+Library6=jokhttputils2
+Library7=json
+Library8=jstringutils
+Library9=jxmlsax
 Module1=chatGPTOCRPlugin
 NumberOfFiles=0
-NumberOfLibraries=11
+NumberOfLibraries=12
 NumberOfModules=1
-Version=8.8
+Version=10.5
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -34,10 +35,72 @@ Sub AppStart (Form1 As Form, Args() As String)
 	MainForm.Show
     Dim n As chatGPTOCRPlugin
 	n.Initialize
-	Dim img As B4XBitmap = fx.LoadImage(File.DirApp,"0.jpg")
-	wait for (n.GetTextWithLocation(img)) complete (result As Object)
-	'wait for (n.batchTranslate(Array("BasicCAT Documentation.","Sentence2."),"en","zh",CreateMap("mt":CreateMap("gemini":map1)))) complete (result As List)
-	Log(result)
+	Dim img As B4XBitmap = fx.LoadImage(File.DirApp,"capture001.jpg")
+	Dim boxes As List
+	boxes.Initialize
+	Dim box1 As Map
+	box1.Initialize
+	box1.Put("geometry",CreateMap("X":37,"Y":0,"width":126,"height":102))
+	boxes.Add(box1)
+	Dim box2 As Map
+	box2.Initialize
+	box2.Put("geometry",CreateMap("X":54,"Y":95,"width":95,"height":272))
+	boxes.Add(box2)
+	Dim imgAnnotated As B4XBitmap = AnnotateImage(img,boxes)
+	Dim out As OutputStream = File.OpenOutput(File.DirApp,"out.jpg",False)
+	imgAnnotated.WriteToStream(out,100,"JPEG")
+	out.Close
+	wait for (n.GetTextFromWholeImage(imgAnnotated,boxes)) complete (success As Boolean)
+	Log("success: " & success)
+	For Each box As Map In boxes
+		Log(box.Get("text"))
+	Next
+End Sub
+
+'Draws the boxes on a copy of the image with a red rectangle and a red id next to it.
+'The source image is left untouched. Keep this in sync with the annotation convention
+'described in the plugin's prompt_whole_image text.
+Public Sub AnnotateImage(img As B4XBitmap, boxes As List) As B4XBitmap
+	Dim bc As BitmapCreator
+	bc.Initialize(img.Width,img.Height)
+	Dim full As B4XRect
+	full.Initialize(0,0,img.Width,img.Height)
+	bc.DrawBitmap(img,full,True)
+	Dim xui As XUI
+	Dim num As Int = 1
+	For Each box As Map In boxes
+		Dim boxGeometry As Map = box.Get("geometry")
+		Dim X,Y,width,height As Int
+		X = boxGeometry.Get("X")
+		Y = boxGeometry.Get("Y")
+		width = boxGeometry.Get("width")
+		height = boxGeometry.Get("height")
+
+		Dim r As B4XRect
+		r.Initialize(X,Y,X+width,Y+height)
+		bc.DrawRect(r,xui.Color_Red,False,2)
+		Dim numImg As B4XBitmap = TextImage(num,fx.DefaultFont(16),fx.Colors.Red)
+		Dim numRect As B4XRect
+		Dim numLeft As Int = Max(0,X - 16)
+		Dim numTop As Int = Max(0,Y)
+		If height > width Then
+			numLeft = Max(0,X)
+			numTop = Max(0,Y - 16)
+		End If
+		numRect.Initialize(numLeft,numTop,16+numLeft,16+numTop)
+		bc.DrawBitmap(numImg,numRect,True)
+		num = num + 1
+	Next
+	Return bc.Bitmap
+End Sub
+
+public Sub TextImage(s As String,f As Font,stroke As Paint) As B4XBitmap
+	Dim text As JavaObject
+	text.InitializeNewInstance("javafx.scene.text.Text", Array(s))
+	text.RunMethod("setFont", Array(f))
+	text.RunMethod("setStroke",Array(stroke))
+	Dim n As Node = text
+	Return n.Snapshot2(fx.Colors.White)
 End Sub
 
 'Return true to allow the default exceptions handler to handle the uncaught exception.
