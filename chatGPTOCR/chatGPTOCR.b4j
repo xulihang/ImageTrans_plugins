@@ -17,7 +17,7 @@ Module1=chatGPTOCRPlugin
 NumberOfFiles=0
 NumberOfLibraries=12
 NumberOfModules=1
-Version=10.5
+Version=8.9
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -41,19 +41,23 @@ Sub AppStart (Form1 As Form, Args() As String)
 	Dim box1 As Map
 	box1.Initialize
 	box1.Put("geometry",CreateMap("X":37,"Y":0,"width":126,"height":102))
-	boxes.Add(box1)
+	
 	Dim box2 As Map
 	box2.Initialize
 	box2.Put("geometry",CreateMap("X":54,"Y":95,"width":95,"height":272))
+	
 	boxes.Add(box2)
+	boxes.Add(box1)
+	
 	Dim imgAnnotated As B4XBitmap = AnnotateImage(img,boxes)
 	Dim out As OutputStream = File.OpenOutput(File.DirApp,"out.jpg",False)
 	imgAnnotated.WriteToStream(out,100,"JPEG")
 	out.Close
-	wait for (n.GetTextFromWholeImage(imgAnnotated,boxes)) complete (success As Boolean)
+	wait for (n.GetTextFromWholeImage(imgAnnotated,boxes,False,"zh")) complete (success As Boolean)
 	Log("success: " & success)
 	For Each box As Map In boxes
 		Log(box.Get("text"))
+		Log(box.Get("target"))
 	Next
 End Sub
 
@@ -67,6 +71,18 @@ Public Sub AnnotateImage(img As B4XBitmap, boxes As List) As B4XBitmap
 	full.Initialize(0,0,img.Width,img.Height)
 	bc.DrawBitmap(img,full,True)
 	Dim xui As XUI
+	'Vision models scale the page down so that its longest side fits modelMaxSide, so a label
+	'drawn at a fixed size shrinks along with the rest of the page. Pick the label big enough
+	'to still read at roughly labelTargetSize after that scaling.
+	Dim modelMaxSide As Double = 2048
+	Dim labelTargetSize As Int = 24
+	Dim labelMinSize As Int = 14
+	Dim maxSide As Int = Max(img.Width,img.Height)
+	Dim ratio As Double = 1.0 * maxSide / modelMaxSide
+	Dim baseSize As Int = Round(labelTargetSize * ratio)
+	If baseSize < labelMinSize Then
+		baseSize = labelMinSize
+	End If
 	Dim num As Int = 1
 	For Each box As Map In boxes
 		Dim boxGeometry As Map = box.Get("geometry")
@@ -79,15 +95,28 @@ Public Sub AnnotateImage(img As B4XBitmap, boxes As List) As B4XBitmap
 		Dim r As B4XRect
 		r.Initialize(X,Y,X+width,Y+height)
 		bc.DrawRect(r,xui.Color_Red,False,2)
-		Dim numImg As B4XBitmap = TextImage(num,fx.DefaultFont(16),fx.Colors.Red)
-		Dim numRect As B4XRect
-		Dim numLeft As Int = Max(0,X - 16)
+
+		'A label bigger than its box would cover the neighbouring boxes, so cap it by the
+		'smaller side of the box and keep the readability floor.
+		Dim labelSize As Int = Min(baseSize,Min(width,height))
+		If labelSize < labelMinSize Then
+			labelSize = labelMinSize
+		End If
+		Dim numImg As B4XBitmap = TextImage(num,fx.DefaultFont(labelSize),fx.Colors.Red)
+		'Keep the digits unstretched, otherwise two digit ids get squeezed and become unreadable.
+		Dim numWidth As Int = labelSize
+		If numImg.Height > 0 Then
+			Dim aspect As Double = 1.0 * numImg.Width / numImg.Height
+			numWidth = Max(labelSize,Round(labelSize * aspect))
+		End If
+		Dim numLeft As Int = Max(0,X - numWidth)
 		Dim numTop As Int = Max(0,Y)
 		If height > width Then
 			numLeft = Max(0,X)
-			numTop = Max(0,Y - 16)
+			numTop = Max(0,Y - labelSize)
 		End If
-		numRect.Initialize(numLeft,numTop,16+numLeft,16+numTop)
+		Dim numRect As B4XRect
+		numRect.Initialize(numLeft,numTop,numLeft + numWidth,numTop + labelSize)
 		bc.DrawBitmap(numImg,numRect,True)
 		num = num + 1
 	Next
