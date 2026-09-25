@@ -8,6 +8,7 @@ Sub Class_Globals
 	Private fx As JFX
 	Private defaultPrompt As String = $"Extract the text in the image (please only return the text)"$
 	Private defaultLocalizationPrompt As String = $"Please return the text and coordinate information from the image as a JSON array. Each element must contain two fields: text (a string) and bbox (an object with the integer fields x, y, width and height). Give the coordinates on a 0-1000 scale, where 0 and 1000 are the left/top and right/bottom edges of the image, so that they do not depend on the image's pixel size."$
+	Private defaultLocalizationTranslatePrompt As String = $"Please return the text and coordinate information from the image as a JSON array. Each element must contain three fields: text (a string), target (the translation of text into {targetLang}) and bbox (an object with the integer fields x, y, width and height). Translate the meaning, not word by word. Do not add explanations or notes. Give the coordinates on a 0-1000 scale, where 0 and 1000 are the left/top and right/bottom edges of the image, so that they do not depend on the image's pixel size."$
 	Private defaultWholeImagePrompt As String = $"This image has numbered text areas marked on it.
 
 Annotation convention:
@@ -75,6 +76,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("key")
 			paramsList.Add("prompt")
 			paramsList.Add("prompt_location")
+			paramsList.Add("prompt_location_translate")
 			paramsList.Add("prompt_whole_image")
 			paramsList.Add("prompt_whole_image_translate")
 			paramsList.Add("sort_reading_order")
@@ -86,7 +88,9 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			wait for (GetText(Params.Get("img"))) complete (result As String)
 			Return result
 		Case "getTextWithLocation"
-			wait for (GetTextWithLocation(Params.Get("img"))) complete (regions As List)
+			Dim translate As Boolean = toBoolean(Params.Get("translate"),False)
+			Dim targetLang As String = toText(Params.Get("targetLang"))
+			wait for (GetTextWithLocation(Params.Get("img"),translate,targetLang)) complete (regions As List)
 			Return regions
 		Case "getTextFromWholeImage"
 			Dim translate As Boolean = toBoolean(Params.Get("translate"),False)
@@ -98,6 +102,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getDefaultParamValues"
 			Return CreateMap("prompt": defaultPrompt, _
 			                 "prompt_location": defaultLocalizationPrompt, _
+			                 "prompt_location_translate": defaultLocalizationTranslatePrompt, _
 			                 "prompt_whole_image": defaultWholeImagePrompt, _
 			                 "prompt_whole_image_translate": defaultWholeImageTranslatePrompt, _
 			                 "sort_reading_order":"false", _
@@ -109,12 +114,21 @@ End Sub
 
 
 Sub GetText(img As B4XBitmap) As ResumableSub
-	wait for (ocr(img,True)) complete (text As String)
+	wait for (ocr(img,True,False,"")) complete (text As String)
 	Return text
 End Sub
 
-Sub GetTextWithLocation(img As B4XBitmap) As ResumableSub
-	wait for (ocr(img,False)) complete (regions As List)
+'Returns the regions of the image: a list of maps with text, X, Y, width and height, in the
+'order the model gave them. When translate is True and targetLang is not empty, each region
+'also carries an "extra" map holding its translation under "target", in the same single
+'request. A region without a translation is still returned, only its extra is left out.
+Sub GetTextWithLocation(img As B4XBitmap, translate As Boolean, targetLang As String) As ResumableSub
+	Dim lang As String = targetLang.Trim
+	Dim doTranslate As Boolean = translate And lang <> ""
+	If translate And doTranslate = False Then
+		Log("Translation was requested but targetLang is empty, only recognizing text.")
+	End If
+	wait for (ocr(img,False,doTranslate,lang)) complete (regions As List)
 	Return regions
 End Sub
 
@@ -429,7 +443,7 @@ Private Sub readChatGPTOCRConfig(promptKey As String,fallbackPrompt As String) A
 		"prompt":api.GetDefault(promptKey,fallbackPrompt))
 End Sub
 
-Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
+Sub ocr(img As B4XBitmap,textOnly As Boolean,translate As Boolean,targetLang As String) As ResumableSub
 	saveImgToDiskWithSizeCheck(img,100,5000000)
 	Dim textResult As String
 	Dim regions As List
@@ -456,7 +470,14 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 	If textOnly Then
 		prompt = getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("prompt",defaultPrompt)
 	Else
-		prompt = getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("prompt_location",defaultLocalizationPrompt)
+		If translate Then
+			prompt = getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("prompt_location_translate",defaultLocalizationTranslatePrompt)
+		Else
+			prompt = getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("prompt_location",defaultLocalizationPrompt)
+		End If
+	End If
+	If translate Then
+		prompt = prompt.Replace("{targetLang}",targetLang)
 	End If
 	Dim url As String = host&"/chat/completions"
 	
@@ -547,6 +568,15 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 					region.Put("Y",y/1000*img.Height)
 					region.Put("width",w/1000*img.Width)
 					region.Put("height",h/1000*img.Height)
+					If translate Then
+						Dim target As String = toText(box.Get("target"))
+						If target <> "" Then
+							Dim extra As Map
+							extra.Initialize
+							extra.Put("target",target)
+							region.Put("extra",extra)
+						End If
+					End If
 					regions.Add(region)
 				Next
 			End If
