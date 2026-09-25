@@ -223,8 +223,8 @@ End Sub
 'caller's concern and must match the annotation convention described in the prompt.
 'When translate is True and targetLang is not empty, the boxes also get a "target" filled with
 'the translation of their text, in the same single request.
-'When a colour is asked for, it is put in the box's "extra" map, under "textColor" or
-'"shadowColor", the same place the other OCR plugins report colours from.
+'When a colour is asked for, it is put on the box itself, under "textColor" or "shadowColor",
+'next to the text and the target this path already writes there.
 'When the sort_reading_order setting is on, the model also returns the reading order and the
 'boxes list is reordered in place to follow it. An unusable order is ignored, never guessed at:
 'the texts are still written, only the order is left alone.
@@ -272,14 +272,22 @@ Sub GetTextFromWholeImage(annotatedImg As B4XBitmap, boxes As List, translate As
 					missingTargets.Add(key)
 				End If
 			End If
+			'The colours go straight onto the box, next to the text and the target, because this
+			'path fills the caller's own boxes rather than building regions. A colour the model
+			'left out is skipped rather than stored empty.
 			If colors.ContainsKey(key) Then
 				Dim boxColor As Map = colors.Get(key)
-				Dim extra As Map = box.Get("extra")
-				If extra.IsInitialized = False Then
-					extra.Initialize
+				If detectTextColor Then
+					Dim textColor As String = toText(boxColor.Get("textColor"))
+					If textColor <> "" Then
+						box.Put("textColor",textColor)
+					End If
 				End If
-				If putColors(extra,boxColor,detectTextColor,detectStrokeColor) Then
-					box.Put("extra",extra)
+				If detectStrokeColor Then
+					Dim shadowColor As String = toText(boxColor.Get("shadowColor"))
+					If shadowColor <> "" Then
+						box.Put("shadowColor",shadowColor)
+					End If
 				End If
 			End If
 		Next
