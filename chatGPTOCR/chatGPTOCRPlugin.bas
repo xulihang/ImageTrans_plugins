@@ -47,6 +47,24 @@ Response contract: return one JSON object with exactly two fields, and nothing e
 - "targets": an object containing every ID from 1 to {N} exactly once, mapped to the {targetLang} translation of that ID's text.
 
 Return only the JSON object. Do not wrap it in markdown, do not add explanations, and do not add, omit, rename, renumber, or coerce any ID or value."$
+	'Appended to the prompt when the colour settings are on. There are two sets, because the two
+	'kinds of request answer in different shapes: the whole image one returns an object keyed by
+	'id, and the localization one returns an array of elements. Both report colours in the
+	'decimal "r,g,b" format the other OCR plugins use.
+	Private colorTextRequirement As String = $"Additional requirement, which extends the response contract above: also return the colour of the text itself, as a field named "textColors".
+- "textColors": an object containing every ID from 1 to {N} exactly once, mapped to that area's text colour.
+- Each colour is a string in the "r,g,b" format, with each value between 0 and 255 and no spaces.
+- Judge the colour of the strokes that make up the characters, not of the background behind them.
+
+The response object therefore contains one more field than described above. Everything else in the contract is unchanged, including this final rule: return only the JSON object, do not wrap it in markdown, do not add explanations, and do not add, omit, rename, renumber, or coerce any ID or value."$
+	Private colorShadowRequirement As String = $"Additional requirement, which extends the response contract above: also return the colour of the outline or shadow drawn around the text, as a field named "shadowColors".
+- "shadowColors": an object containing every ID from 1 to {N} exactly once, mapped to the colour of the outline or shadow around that area's text.
+- Each colour is a string in the "r,g,b" format, with each value between 0 and 255 and no spaces.
+- Use an empty string for an area whose text has no outline or shadow.
+
+The response object therefore contains one more field than described above. Everything else in the contract is unchanged, including this final rule: return only the JSON object, do not wrap it in markdown, do not add explanations, and do not add, omit, rename, renumber, or coerce any ID or value."$
+	Private colorTextElementRequirement As String = $"Additional requirement, which extends the response contract above: each element must also contain a field named "textColor". Its value is a string in the "r,g,b" format, with each value between 0 and 255 and no spaces, giving the colour of the strokes that make up the characters, not of the background behind them."$
+	Private colorShadowElementRequirement As String = $"Additional requirement, which extends the response contract above: each element must also contain a field named "shadowColor". Its value is a string in the "r,g,b" format, with each value between 0 and 255 and no spaces, giving the colour of the outline or shadow drawn around the characters. Use an empty string when the text has no outline or shadow."$
 	'Appended to the prompt when sort_reading_order is on. It restates the final rule at its own
 	'end, so that a guard clause is still the last thing the model reads.
 	Private readingOrderRequirement As String = $"Additional requirement, which extends the response contract above: also return the natural reading order of the marked areas.
@@ -80,6 +98,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("prompt_whole_image")
 			paramsList.Add("prompt_whole_image_translate")
 			paramsList.Add("sort_reading_order")
+			paramsList.Add("detect_text_color")
+			paramsList.Add("detect_stroke_color")
 			paramsList.Add("host")
 			paramsList.Add("model")
 			paramsList.Add("extra_fields")
@@ -108,6 +128,8 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			                 "prompt_whole_image": defaultWholeImagePrompt, _
 			                 "prompt_whole_image_translate": defaultWholeImageTranslatePrompt, _
 			                 "sort_reading_order":"false", _
+			                 "detect_text_color":"false", _
+			                 "detect_stroke_color":"false", _
 			                 "host":"https://api.openai.com/v1", _
 							 "model":"gpt-4o")
 	End Select
@@ -115,45 +137,67 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 End Sub
 
 
-'Returns the whole text of the image. Without translation this is the model's plain text
-'answer, returned as it came. When translate is True and targetLang is not empty, the text is
-'built by joining the regions instead, so that the translation can be returned alongside it as
-'a JSON object with a "text" field and an "extra" map holding "target", the same shape the
-'other OCR plugins use for a translated result.
+'Returns the whole text of the image. When nothing extra is asked for, this is the model's
+'plain text answer, returned as it came. When translate is on with a targetLang, or when a
+'colour is asked for, the text is built by joining the regions instead, so that the extra
+'values can be returned alongside it as a JSON object with a "text" field and an "extra" map
+'holding "target" and the colours, the same shape the other OCR plugins use.
 Sub GetText(img As B4XBitmap, translate As Boolean, targetLang As String) As ResumableSub
 	Dim lang As String = targetLang.Trim
 	Dim doTranslate As Boolean = translate And lang <> ""
 	If translate And doTranslate = False Then
 		Log("Translation was requested but targetLang is empty, only recognizing text.")
 	End If
-	If doTranslate = False Then
+	Dim config As Map = readChatGPTOCRConfig("prompt_location",defaultLocalizationPrompt)
+	Dim detectColor As Boolean = toBoolean(config.Get("detect_text_color"),False) Or toBoolean(config.Get("detect_stroke_color"),False)
+	If doTranslate = False And detectColor = False Then
 		wait for (ocr(img,True,False,"")) complete (text As String)
 		Return text
 	End If
-	wait for (GetTextWithLocation(img,True,lang)) complete (regions As List)
+	wait for (GetTextWithLocation(img,doTranslate,lang)) complete (regions As List)
+	'Nothing to report, so fall back to the plain text rather than returning an empty result.
+	If regions.Size = 0 Then
+		wait for (ocr(img,True,False,"")) complete (text As String)
+		Return text
+	End If
 	Dim textSB As StringBuilder
 	textSB.Initialize
 	Dim targetSB As StringBuilder
 	targetSB.Initialize
+	Dim extra As Map
+	extra.Initialize
 	For i = 0 To regions.Size - 1
 		Dim region As Map = regions.Get(i)
 		textSB.Append(region.GetDefault("text",""))
-		Dim extra As Map = region.Get("extra")
-		If extra.IsInitialized Then
-			targetSB.Append(extra.GetDefault("target",""))
+		Dim regionExtra As Map = region.Get("extra")
+		If regionExtra.IsInitialized Then
+			targetSB.Append(regionExtra.GetDefault("target",""))
 		End If
 		If i <> regions.Size - 1 Then
 			textSB.Append(CRLF)
 			targetSB.Append(CRLF)
 		End If
 	Next
-	Dim extra As Map
-	extra.Initialize
-	extra.Put("target",targetSB.ToString)
+	If doTranslate Then
+		extra.Put("target",targetSB.ToString)
+	End If
+	'Only the first region's colours are reported: the result of this call is a single text
+	'with a single extra, and a colour that varies per region has nowhere else to go.
+	Dim firstRegion As Map = regions.Get(0)
+	Dim firstExtra As Map = firstRegion.Get("extra")
+	If firstExtra.IsInitialized Then
+		For Each colorKey As String In Array As String("textColor","shadowColor")
+			If firstExtra.ContainsKey(colorKey) Then
+				extra.Put(colorKey,firstExtra.Get(colorKey))
+			End If
+		Next
+	End If
 	Dim m As Map
 	m.Initialize
 	m.Put("text",textSB.ToString)
-	m.Put("extra",extra)
+	If extra.Size > 0 Then
+		m.Put("extra",extra)
+	End If
 	Dim j As JSONGenerator
 	j.Initialize(m)
 	Return j.ToString
@@ -161,8 +205,9 @@ End Sub
 
 'Returns the regions of the image: a list of maps with text, X, Y, width and height, in the
 'order the model gave them. When translate is True and targetLang is not empty, each region
-'also carries an "extra" map holding its translation under "target", in the same single
-'request. A region without a translation is still returned, only its extra is left out.
+'also carries an "extra" map holding its translation under "target", and when a colour is
+'asked for it is added to the same map under "textColor" or "shadowColor". All of it comes
+'back from the same single request. A value the model left out is simply absent.
 Sub GetTextWithLocation(img As B4XBitmap, translate As Boolean, targetLang As String) As ResumableSub
 	Dim lang As String = targetLang.Trim
 	Dim doTranslate As Boolean = translate And lang <> ""
@@ -178,6 +223,8 @@ End Sub
 'caller's concern and must match the annotation convention described in the prompt.
 'When translate is True and targetLang is not empty, the boxes also get a "target" filled with
 'the translation of their text, in the same single request.
+'When a colour is asked for, it is put in the box's "extra" map, under "textColor" or
+'"shadowColor", the same place the other OCR plugins report colours from.
 'When the sort_reading_order setting is on, the model also returns the reading order and the
 'boxes list is reordered in place to follow it. An unusable order is ignored, never guessed at:
 'the texts are still written, only the order is left alone.
@@ -189,12 +236,16 @@ Sub GetTextFromWholeImage(annotatedImg As B4XBitmap, boxes As List, translate As
 	If translate And doTranslate = False Then
 		Log("Translation was requested but targetLang is empty, only recognizing text.")
 	End If
+	Dim config As Map = readChatGPTOCRConfig("prompt_whole_image",defaultWholeImagePrompt)
+	Dim detectTextColor As Boolean = toBoolean(config.Get("detect_text_color"),False)
+	Dim detectStrokeColor As Boolean = toBoolean(config.Get("detect_stroke_color"),False)
 	Dim filled As Int = 0
 	Dim translated As Int = 0
 	If count > 0 Then
 		wait for (requestBoxTexts(annotatedImg,count,doTranslate,lang)) complete (response As Map)
 		Dim texts As Map = response.Get("texts")
 		Dim targets As Map = response.Get("targets")
+		Dim colors As Map = response.Get("colors")
 		Dim order As List = response.Get("order")
 		Dim missing As List
 		missing.Initialize
@@ -219,6 +270,16 @@ Sub GetTextFromWholeImage(annotatedImg As B4XBitmap, boxes As List, translate As
 					translated = translated + 1
 				Else
 					missingTargets.Add(key)
+				End If
+			End If
+			If colors.ContainsKey(key) Then
+				Dim boxColor As Map = colors.Get(key)
+				Dim extra As Map = box.Get("extra")
+				If extra.IsInitialized = False Then
+					extra.Initialize
+				End If
+				If putColors(extra,boxColor,detectTextColor,detectStrokeColor) Then
+					box.Put("extra",extra)
 				End If
 			End If
 		Next
@@ -252,14 +313,17 @@ Sub GetTextFromWholeImage(annotatedImg As B4XBitmap, boxes As List, translate As
 	Return False
 End Sub
 
-'Sends the annotated image and returns a map with the "texts" and "targets" id to string maps
-'and the "order" list of ids. All three are always present, and all are empty when the request
-'or the parsing failed. "order" is only ever filled when sort_reading_order is on.
+'Sends the annotated image and returns a map with the "texts" and "targets" id to string maps,
+'the "colors" id to map map and the "order" list of ids. All of them are always present, and all
+'are empty when the request or the parsing failed. "order" is only ever filled when
+'sort_reading_order is on, and "colors" only when a colour setting is on.
 Sub requestBoxTexts(annotatedImg As B4XBitmap, count As Int, translate As Boolean, targetLang As String) As ResumableSub
 	Dim texts As Map
 	texts.Initialize
 	Dim targets As Map
 	targets.Initialize
+	Dim colors As Map
+	colors.Initialize
 	Dim order As List
 	order.Initialize
 	Dim promptKey As String
@@ -273,12 +337,20 @@ Sub requestBoxTexts(annotatedImg As B4XBitmap, count As Int, translate As Boolea
 	End If
 	Dim config As Map = readChatGPTOCRConfig(promptKey,fallbackPrompt)
 	Dim sortReadingOrder As Boolean = toBoolean(config.Get("sort_reading_order"),False)
+	Dim detectTextColor As Boolean = toBoolean(config.Get("detect_text_color"),False)
+	Dim detectStrokeColor As Boolean = toBoolean(config.Get("detect_stroke_color"),False)
 	Dim prompt As String = config.Get("prompt")
 	If prompt.Trim = "" Then
 		prompt = fallbackPrompt
 	End If
 	If sortReadingOrder Then
 		prompt = prompt & CRLF & CRLF & readingOrderRequirement
+	End If
+	If detectTextColor Then
+		prompt = prompt & CRLF & CRLF & colorTextRequirement
+	End If
+	If detectStrokeColor Then
+		prompt = prompt & CRLF & CRLF & colorShadowRequirement
 	End If
 	prompt = prompt.Replace("{N}","" & count)
 	prompt = prompt.Replace("{targetLang}",targetLang)
@@ -369,12 +441,45 @@ Sub requestBoxTexts(annotatedImg As B4XBitmap, count As Int, translate As Boolea
 					order.Add(toText(parsedOrder.Get(i)))
 				Next
 			End If
+			'The colours are keyed by id, the same way "texts" is, so they are read from a
+			'"textColors" or "shadowColors" map. A single colour for the whole image, which
+			'nothing here asks for, is ignored rather than guessed at.
+			If detectTextColor Then
+				readColors(result,"textColors","textColor",colors)
+			End If
+			If detectStrokeColor Then
+				readColors(result,"shadowColors","shadowColor",colors)
+			End If
 		Catch
 			Log(LastException)
 		End Try
 	End If
 	job.Release
-	Return CreateMap("texts":texts,"targets":targets,"order":order)
+	Return CreateMap("texts":texts,"targets":targets,"colors":colors,"order":order)
+End Sub
+
+'Reads a per id colour map out of the response into colors, under the key the plugin uses.
+'Ids may come back as numbers rather than strings, so they are normalized the way the order is.
+Private Sub readColors(result As Map, sourceKey As String, targetKey As String, colors As Map)
+	Dim source As Map = result.Get(sourceKey)
+	If source.IsInitialized = False Then
+		Return
+	End If
+	For Each id As String In source.Keys
+		Dim key As String = toText(id)
+		Dim value As String = toText(source.Get(id))
+		If value = "" Then
+			Continue
+		End If
+		Dim entry As Map
+		If colors.ContainsKey(key) Then
+			entry = colors.Get(key)
+		Else
+			entry.Initialize
+			colors.Put(key,entry)
+		End If
+		entry.Put(targetKey,value)
+	Next
 End Sub
 
 'True when the ids form exactly the set 1..N, each of them once. A partly valid order is worse
@@ -419,6 +524,28 @@ Private Sub toBoolean(v As Object, defaultValue As Boolean) As Boolean
 		Return False
 	End If
 	Return defaultValue
+End Sub
+
+'Adds the requested colours to an extra map, in the "r,g,b" format the other OCR plugins use.
+'A colour the model left out is skipped rather than stored empty, so a missing colour never
+'costs the region its text or its translation. Returns whether anything was added.
+Private Sub putColors(extra As Map, box As Map, detectTextColor As Boolean, detectStrokeColor As Boolean) As Boolean
+	Dim added As Boolean = False
+	If detectTextColor Then
+		Dim textColor As String = toText(box.Get("textColor"))
+		If textColor <> "" Then
+			extra.Put("textColor",textColor)
+			added = True
+		End If
+	End If
+	If detectStrokeColor Then
+		Dim shadowColor As String = toText(box.Get("shadowColor"))
+		If shadowColor <> "" Then
+			extra.Put("shadowColor",shadowColor)
+			added = True
+		End If
+	End If
+	Return added
 End Sub
 
 Private Sub toText(v As Object) As String
@@ -481,6 +608,8 @@ Private Sub readChatGPTOCRConfig(promptKey As String,fallbackPrompt As String) A
 		"model":api.GetDefault("model","gpt-4o"), _
 		"extra_fields":api.GetDefault("extra_fields",""), _
 		"sort_reading_order":api.GetDefault("sort_reading_order","false"), _
+		"detect_text_color":api.GetDefault("detect_text_color","false"), _
+		"detect_stroke_color":api.GetDefault("detect_stroke_color","false"), _
 		"prompt":api.GetDefault(promptKey,fallbackPrompt))
 End Sub
 
@@ -507,6 +636,8 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean,translate As Boolean,targetLang As 
 	Dim apikey As String = getMap("chatGPTOCR",getMap("api",preferencesMap)).Get("key")
 	Dim host As String = getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("host","https://api.openai.com/v1")
 	Dim model As String = getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("model","gpt-4o")
+	Dim detectTextColor As Boolean = toBoolean(getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("detect_text_color","false"),False)
+	Dim detectStrokeColor As Boolean = toBoolean(getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("detect_stroke_color","false"),False)
 	Dim prompt As String
 	If textOnly Then
 		prompt = getMap("chatGPTOCR",getMap("api",preferencesMap)).GetDefault("prompt",defaultPrompt)
@@ -519,6 +650,12 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean,translate As Boolean,targetLang As 
 	End If
 	If translate Then
 		prompt = prompt.Replace("{targetLang}",targetLang)
+	End If
+	If textOnly = False And detectTextColor Then
+		prompt = prompt & CRLF & CRLF & colorTextElementRequirement
+	End If
+	If textOnly = False And detectStrokeColor Then
+		prompt = prompt & CRLF & CRLF & colorShadowElementRequirement
 	End If
 	Dim url As String = host&"/chat/completions"
 	
@@ -609,14 +746,23 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean,translate As Boolean,targetLang As 
 					region.Put("Y",y/1000*img.Height)
 					region.Put("width",w/1000*img.Width)
 					region.Put("height",h/1000*img.Height)
+					'The translation and the colours share one extra map, so that neither of them
+					'overwrites an extra the other one put there.
+					Dim extra As Map
+					extra.Initialize
+					Dim hasExtra As Boolean = False
 					If translate Then
 						Dim target As String = toText(box.Get("target"))
 						If target <> "" Then
-							Dim extra As Map
-							extra.Initialize
 							extra.Put("target",target)
-							region.Put("extra",extra)
+							hasExtra = True
 						End If
+					End If
+					If putColors(extra,box,detectTextColor,detectStrokeColor) Then
+						hasExtra = True
+					End If
+					If hasExtra Then
+						region.Put("extra",extra)
 					End If
 					regions.Add(region)
 				Next
