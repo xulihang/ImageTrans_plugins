@@ -85,7 +85,9 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			paramsList.Add("extra_fields")
 			Return paramsList
 		Case "getText"
-			wait for (GetText(Params.Get("img"))) complete (result As String)
+			Dim translate As Boolean = toBoolean(Params.Get("translate"),False)
+			Dim targetLang As String = toText(Params.Get("targetLang"))
+			wait for (GetText(Params.Get("img"),translate,targetLang)) complete (result As String)
 			Return result
 		Case "getTextWithLocation"
 			Dim translate As Boolean = toBoolean(Params.Get("translate"),False)
@@ -113,9 +115,48 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 End Sub
 
 
-Sub GetText(img As B4XBitmap) As ResumableSub
-	wait for (ocr(img,True,False,"")) complete (text As String)
-	Return text
+'Returns the whole text of the image. Without translation this is the model's plain text
+'answer, returned as it came. When translate is True and targetLang is not empty, the text is
+'built by joining the regions instead, so that the translation can be returned alongside it as
+'a JSON object with a "text" field and an "extra" map holding "target", the same shape the
+'other OCR plugins use for a translated result.
+Sub GetText(img As B4XBitmap, translate As Boolean, targetLang As String) As ResumableSub
+	Dim lang As String = targetLang.Trim
+	Dim doTranslate As Boolean = translate And lang <> ""
+	If translate And doTranslate = False Then
+		Log("Translation was requested but targetLang is empty, only recognizing text.")
+	End If
+	If doTranslate = False Then
+		wait for (ocr(img,True,False,"")) complete (text As String)
+		Return text
+	End If
+	wait for (GetTextWithLocation(img,True,lang)) complete (regions As List)
+	Dim textSB As StringBuilder
+	textSB.Initialize
+	Dim targetSB As StringBuilder
+	targetSB.Initialize
+	For i = 0 To regions.Size - 1
+		Dim region As Map = regions.Get(i)
+		textSB.Append(region.GetDefault("text",""))
+		Dim extra As Map = region.Get("extra")
+		If extra.IsInitialized Then
+			targetSB.Append(extra.GetDefault("target",""))
+		End If
+		If i <> regions.Size - 1 Then
+			textSB.Append(CRLF)
+			targetSB.Append(CRLF)
+		End If
+	Next
+	Dim extra As Map
+	extra.Initialize
+	extra.Put("target",targetSB.ToString)
+	Dim m As Map
+	m.Initialize
+	m.Put("text",textSB.ToString)
+	m.Put("extra",extra)
+	Dim j As JSONGenerator
+	j.Initialize(m)
+	Return j.ToString
 End Sub
 
 'Returns the regions of the image: a list of maps with text, X, Y, width and height, in the
