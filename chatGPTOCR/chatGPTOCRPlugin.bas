@@ -7,7 +7,7 @@ Version=4.2
 Sub Class_Globals
 	Private fx As JFX
 	Private defaultPrompt As String = $"Extract the text in the image (please only return the text)"$
-	Private defaultLocalizationPrompt As String = $"Please return the text and coordinate information from the image as a JSON array. Each element must contain two fields: bbox_2d (an integer array in the format [x1, y1, x2, y2]) and text_content (a string)."$
+	Private defaultLocalizationPrompt As String = $"Please return the text and coordinate information from the image as a JSON array. Each element must contain two fields: text (a string) and bbox (an object with the integer fields x, y, width and height). Give the coordinates on a 0-1000 scale, where 0 and 1000 are the left/top and right/bottom edges of the image, so that they do not depend on the image's pixel size."$
 	Private defaultWholeImagePrompt As String = $"This image has numbered text areas marked on it.
 
 Annotation convention:
@@ -384,6 +384,18 @@ Private Sub ExtractJSONObject(s As String) As String
 	Return s.Trim
 End Sub
 
+'Keeps only the outermost JSON array. Models wrap it in a code fence in several ways
+'(```json, ```JSON, a bare ```, or no fence at all) and sometimes put a sentence before it,
+'so the array is located by its brackets instead of by matching a fence.
+Private Sub ExtractJSONArray(s As String) As String
+	Dim start As Int = s.IndexOf("[")
+	Dim e As Int = s.LastIndexOf("]")
+	If start > -1 And e > start Then
+		Return s.SubString2(start,e + 1)
+	End If
+	Return s.Trim
+End Sub
+
 'Reads the chatGPTOCR section of preferences.conf, falling back to the same defaults as ocr.
 Private Sub readChatGPTOCRConfig(promptKey As String,fallbackPrompt As String) As Map
 	Dim preferencesMap As Map
@@ -507,22 +519,34 @@ Sub ocr(img As B4XBitmap,textOnly As Boolean) As ResumableSub
 			If textOnly Then
 				textResult = result
 			Else
-				If result.StartsWith("```json") Then
-					result = result.Replace("```json","")
-					result = result.Replace("```","")
-				End If
 				Dim parser As JSONParser
-				parser.Initialize(result)
+				parser.Initialize(ExtractJSONArray(result))
 				Dim boxes As List = parser.NextArray
 				For Each box As Map In boxes
-					Dim bbox As List = box.Get("bbox_2d")
+					'bbox holds x, y, width and height on a 0-1000 scale, so they are scaled to the
+					'image here. A [x1, y1, x2, y2] array is still accepted, since models
+					'sometimes return the coordinates that way instead.
+					Dim bbox As Object = box.Get("bbox")
+					If bbox Is List Then
+						Dim corners As List = bbox
+						Dim x As Double = corners.Get(0)
+						Dim y As Double = corners.Get(1)
+						Dim w As Double = corners.Get(2) - corners.Get(0)
+						Dim h As Double = corners.Get(3) - corners.Get(1)
+					Else
+						Dim rect As Map = bbox
+						Dim x As Double = rect.Get("x")
+						Dim y As Double = rect.Get("y")
+						Dim w As Double = rect.Get("width")
+						Dim h As Double = rect.Get("height")
+					End If
 					Dim region As Map
 					region.Initialize
-					region.Put("text",box.Get("text_content"))
-					region.Put("X",bbox.Get(0)/1000*img.Width)
-					region.Put("Y",bbox.Get(1)/1000*img.Height)
-					region.Put("width",(bbox.Get(2)-bbox.Get(0))/1000*img.Width)
-					region.Put("height",(bbox.Get(3)-bbox.Get(1))/1000*img.Height)
+					region.Put("text",box.Get("text"))
+					region.Put("X",x/1000*img.Width)
+					region.Put("Y",y/1000*img.Height)
+					region.Put("width",w/1000*img.Width)
+					region.Put("height",h/1000*img.Height)
 					regions.Add(region)
 				Next
 			End If
