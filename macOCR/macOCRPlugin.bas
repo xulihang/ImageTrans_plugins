@@ -8,6 +8,7 @@ Sub Class_Globals
 	Private fx As JFX
 	Private rotationDetection As Boolean = False
 	Private wordLevel As Boolean = False
+	Private accurate As Boolean = False
 End Sub
 
 'Initializes the object. You can NOT add parameters to this method!
@@ -34,11 +35,13 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			wait for (GetText(Params.Get("img"),Params.Get("lang"),Params.GetDefault("imgName",""))) complete (result As String)
 			rotationDetection = False
 			wordLevel = False
+			accurate = False
 			Return result
 		Case "getTextWithLocation"
 			wait for (GetTextWithLocation(Params.Get("img"),Params.Get("lang"),Params.GetDefault("imgName",""))) complete (regions As List)
 			rotationDetection = False
 			wordLevel = False
+			accurate = False
 			Return regions
 		Case "isUsingShell"
 			Return True
@@ -62,6 +65,7 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 			Dim comb As String=Params.Get("combination")
 			rotationDetection = comb.Contains("rotationDetection")
 			wordLevel = comb.Contains("word level")
+			accurate = comb.Contains("accurate")
 		Case "rotationDetectionSupported"
 			Return True
 		Case "detectRotation"
@@ -77,6 +81,8 @@ Sub BuildCombinations As List
 	combs.Initialize
 	combs.Add("mac")
 	combs.Add("word level (mac)")
+	combs.Add("accurate (mac)")
+	combs.Add("accurate word level (mac)")
 	Return combs
 End Sub
 
@@ -372,11 +378,18 @@ Sub ocr(img As B4XBitmap, Lang As String,imgName As String) As ResumableSub
 	executable="./OCR"
 	Dim sh As Shell
 	
-	' Livetext 为默认引擎；系统不支持时 OCR 会自动回退到 accurate 模式
-	If wordLevel Then
-		sh.Initialize("sh",executable,Array(Lang,"livetext","true","true",imgName,imgName&"-out.json"))
+	' 默认用 Livetext；勾选 accurate 组合则改用 accurate 模式
+	' Livetext 在系统不支持时 OCR 会自动回退到 accurate
+	Dim mode As String
+	If accurate Then
+		mode = "accurate"
 	Else
-		sh.Initialize("sh",executable,Array(Lang,"livetext","true",imgName,imgName&"-out.json"))
+		mode = "livetext"
+	End If
+	If wordLevel Then
+		sh.Initialize("sh",executable,Array(Lang,mode,"true","true",imgName,imgName&"-out.json"))
+	Else
+		sh.Initialize("sh",executable,Array(Lang,mode,"true",imgName,imgName&"-out.json"))
 	End If
 	
 	sh.WorkingDirectory=File.DirApp
