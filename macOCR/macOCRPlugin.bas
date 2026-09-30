@@ -372,10 +372,11 @@ Sub ocr(img As B4XBitmap, Lang As String,imgName As String) As ResumableSub
 	executable="./OCR"
 	Dim sh As Shell
 	
+	' Livetext 为默认引擎；系统不支持时 OCR 会自动回退到 accurate 模式
 	If wordLevel Then
-		sh.Initialize("sh",executable,Array(Lang,"false","true","true",imgName,imgName&"-out.json"))
+		sh.Initialize("sh",executable,Array(Lang,"livetext","true","true",imgName,imgName&"-out.json"))
 	Else
-		sh.Initialize("sh",executable,Array(Lang,"false","true",imgName,imgName&"-out.json"))
+		sh.Initialize("sh",executable,Array(Lang,"livetext","true",imgName,imgName&"-out.json"))
 	End If
 	
 	sh.WorkingDirectory=File.DirApp
