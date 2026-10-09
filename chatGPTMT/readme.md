@@ -6,7 +6,8 @@ Related issue: <https://github.com/xulihang/ImageTrans-docs/issues/375>
 Usage:
 
 1. Enter your key in the API preference settings.
-2. You can customize the prompt in the settings as well. The default prompt is `Translate the following into {langcode}: {source}`. `{langcode}` and `{source}` will be replaced with the name of the target language and the source text. An example after replacing is like this: `Translate the following into Chinese: Hello world!`.
+2. You can customize the prompt in the settings as well. `{langcode}`, `{source}` and `{term}` will be replaced with the name of the target language, the source text and the glossary. Batch translation sends the source as numbered lines (`1. ...`, `2. ...`) and the default prompts ask for one numbered line per item back. Matching by that number keeps a comic page aligned even when a translation wraps onto a second line or the model echoes part of the instruction, which is what used to scramble the order. A JSON answer keyed by id is understood as well.
+   - If you customized `batch_prompt` / `vision_batch_prompt` (or their `_with_term` variants) before, your saved prompt is used as is. The plugin still understands a plain one-line-per-item answer, but it will not get the numbered alignment unless you reset the prompt to the new default.
 3. You can use third-party ChatGPT hosts by setting the host parameter.
 
 ### Blog
