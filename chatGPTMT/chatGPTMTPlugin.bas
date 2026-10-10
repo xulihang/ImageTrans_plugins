@@ -687,12 +687,11 @@ Private Sub parseNumberedLines(content As String,count As Int) As Map
 			buffer.Initialize
 			buffer.Append(rest)
 		Else
-			'Not a new item: keep the whole line, including anything that looked like a number, so
-			'text such as "3.6x" is not cut open by the parser.
+			'Not a new item. The line continues the item above, and it is kept as a line of its own:
+			'the model wrote a line break where the source had one, which is a break that has to be
+			'kept, not a space to glue the halves together with.
 			If currentKey <> "" And line <> "" Then
-				If buffer.Length > 0 Then
-					buffer.Append(" ")
-				End If
+				buffer.Append(CRLF)
 				buffer.Append(line)
 			End If
 		End If
