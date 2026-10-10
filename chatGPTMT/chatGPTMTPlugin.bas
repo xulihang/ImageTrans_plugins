@@ -16,6 +16,7 @@ Sub Class_Globals
 
 **Requirements:**
 - Output one line per numbered item, in the same order, each starting with its number and a period, like this: 1. translated text
+- A source line may contain \n, which stands for a line break that is part of that item's text. Keep it in the translation at the position where the break belongs, and do not turn it into a real line break or drop it.
 - Keep the original number of items. Do not merge, split or reorder items, and do not mix their translations.
 - Output only the translated lines. Do not include explanations, notes or the source text.
 "$
@@ -27,8 +28,9 @@ Sub Class_Globals
 **Requirements:**
 1. Strictly adhere to the provided glossary for term translation.
 2. Output one line per numbered item, in the same order, each starting with its number and a period, like this: 1. translated text
-3. Keep the original number of items. Do not merge, split or reorder items, and do not mix their translations.
-4. Output only the translated lines. Do not include explanations, notes or the source text.
+3. A source line may contain \n, which stands for a line break that is part of that item's text. Keep it in the translation at the position where the break belongs, and do not turn it into a real line break or drop it.
+4. Keep the original number of items. Do not merge, split or reorder items, and do not mix their translations.
+5. Output only the translated lines. Do not include explanations, notes or the source text.
 
 **Glossary (JSON):**
 {term}"$
@@ -39,6 +41,7 @@ Sub Class_Globals
 
 **Requirements:**
 - Output one line per numbered item, in the same order, each starting with its number and a period, like this: 1. translated text
+- A source line may contain \n, which stands for a line break that is part of that item's text. Keep it in the translation at the position where the break belongs, and do not turn it into a real line break or drop it.
 - Keep the original number of items. Do not merge, split or reorder items, and do not mix their translations.
 - Output only the translated lines. Do not include explanations, notes or the source text.
 "$
@@ -50,8 +53,9 @@ Sub Class_Globals
 **Requirements:**
 1. Strictly adhere to the provided glossary for term translation.
 2. Output one line per numbered item, in the same order, each starting with its number and a period, like this: 1. translated text
-3. Keep the original number of items. Do not merge, split or reorder items, and do not mix their translations.
-4. Output only the translated lines. Do not include explanations, notes or the source text.
+3. A source line may contain \n, which stands for a line break that is part of that item's text. Keep it in the translation at the position where the break belongs, and do not turn it into a real line break or drop it.
+4. Keep the original number of items. Do not merge, split or reorder items, and do not mix their translations.
+5. Output only the translated lines. Do not include explanations, notes or the source text.
 
 **Glossary (JSON):**
 {term}"$
@@ -62,7 +66,7 @@ Sub Class_Globals
 {source}
 
 **Requirements:**
-Output ONLY the final translation. Do not include any explanations, notes, or the original text.
+Output ONLY the final translation. Do not include any explanations, notes, or the original text. Keep any \n in the source, which stands for a line break, at the position where the break belongs.
 "$
 	Private defaultPromptWithTerm As String = $"You are a professional AI translator. Translate the following text into {langcode}.
 
@@ -71,7 +75,7 @@ Output ONLY the final translation. Do not include any explanations, notes, or th
 
 **Requirements:**
 1. Strictly adhere to the provided glossary for term translation.
-2. Output ONLY the final translation. Do not include any explanations, notes, or the original text.
+2. Output ONLY the final translation. Do not include any explanations, notes, or the original text. Keep any \n in the source, which stands for a line break, at the position where the break belongs.
 
 **Glossary (JSON):**
 {term}"$
@@ -242,22 +246,21 @@ Sub spellCheck(sourceList As List,preferencesMap As Map) As ResumableSub
 	Dim index As Int = 0
 	For Each source As String In sourceList
 		index = index + 1
-		source = source.Replace(CRLF,"\n")
 		sb.Append(index)
 		sb.Append(". ")
-		sb.Append(source)
+		sb.Append(OneLine(source))
 		sb.Append(CRLF)
 	Next
-	
+
 	Dim target As String = sb.ToString
 	message.Put("content",prompt.Replace("{source}",target))
-	
+
 	If noThink = "yes" Then
 		Dim msg As String = message.Get("content")
 		msg = msg & "/no_think"
 		message.Put("content",msg)
 	End If
-	
+
 	messages.Add(message)
 	Dim params As Map
 	params.Initialize
@@ -294,8 +297,7 @@ Sub spellCheck(sourceList As List,preferencesMap As Map) As ResumableSub
 			content = content.Trim
 			For Each line As String In Regex.Split(CRLF,content)
 				line = ReplaceStartingNumberedStrings(line)
-				line = line.Replace("\n",CRLF)
-				targetList.Add(line)
+				targetList.Add(ReplaceLineBreakMarkers(line))
 			Next
 			Do While targetList.Size < sourceList.Size
 				targetList.Add("")
@@ -630,8 +632,7 @@ Private Sub parseBatchResult(content As String,count As Int,targetList As List)
 	content = content.Trim
 	For Each line As String In Regex.Split(CRLF,content)
 		line = ReplaceStartingNumberedStrings(line)
-		line = line.Replace("\n",CRLF)
-		targetList.Add(line)
+		targetList.Add(ReplaceLineBreakMarkers(line))
 	Next
 	Do While targetList.Size < count
 		targetList.Add("")
@@ -647,7 +648,7 @@ Private Sub fillFromMap(values As Map,count As Int,targetList As List)
 			Dim valueMap As Map = value
 			value = valueMap.GetDefault("target",valueMap.GetDefault("text",""))
 		End If
-		targetList.Add(toText(value))
+		targetList.Add(ReplaceLineBreakMarkers(toText(value)))
 	Next
 End Sub
 
@@ -716,11 +717,24 @@ Private Sub isComplete(m As Map,count As Int) As Boolean
 	Return True
 End Sub
 
-'Collapses the line breaks inside a source string, so that one item is always one line on the way out
-'and cannot be split into two by a break the model copies from the source.
+'Marks the line breaks inside a source string with the literal \n, so that one item stays one line in
+'the request: an item cannot be split into two, and "1." at the start of a line inside an item cannot be
+'mistaken for the number of the next item. The marker is what the model sees and is asked to put back,
+'which is how a line break inside a translation survives a round trip:
+'  "a<CRLF>b" -> "a\nb" -> model -> "x\ny" -> "x<CRLF>y"
+'A blank line inside an item becomes the marker on its own, "\n\n", and reads back as one break again.
 Private Sub OneLine(s As String) As String
-	Dim t As String = s.Replace(CRLF," ").Replace("\n"," ")
+	Dim t As String = s.Replace(CRLF,"\n")
 	Return t.Trim
+End Sub
+
+'Turns the \n markers the model was asked to keep back into real line breaks inside a translation, so
+'that an item whose source had a break gets a break in the same place. A run of markers becomes the one
+'break that was in the source, since that is how OneLine wrote a blank line out. "\n" in a translation
+'is always a break: the prompts give the model no other meaning for it, and leaving the marker in the
+'text would show the reader a literal backslash n.
+Private Sub ReplaceLineBreakMarkers(s As String) As String
+	Return Regex.Replace("\\n+",s,CRLF)
 End Sub
 
 'Reads the translations out of an answer, accepting either a JSON object keyed by id or a JSON array
@@ -955,13 +969,12 @@ Sub transliterate(sourceList As List, sourceLang As String, targetLang As String
 	Dim index As Int = 0
 	For Each source As String In sourceList
 		index = index + 1
-		source = source.Replace(CRLF,"\n")
 		sb.Append(index)
 		sb.Append(". ")
-		sb.Append(source)
+		sb.Append(OneLine(source))
 		sb.Append(CRLF)
 	Next
-	
+
 	Dim target As String = sb.ToString
 	message.Put("content",prompt.Replace("{source}",target))
 	
@@ -1010,13 +1023,12 @@ Sub transliterate(sourceList As List, sourceLang As String, targetLang As String
 				line = line.Replace("<p>","")
 				line = line.Replace("</p>","")
 				line = ReplaceStartingNumberedStrings(line)
-				line = line.Replace("\n",CRLF)
 				If line.Trim = "" Then
 					Continue
 				End If
 				line = line.Trim
 				line = ReplaceStartingNumberedStrings(line)
-				targetList.Add(line)
+				targetList.Add(ReplaceLineBreakMarkers(line))
 			Next
 			Do While targetList.Size < sourceList.Size
 				targetList.Add("")
