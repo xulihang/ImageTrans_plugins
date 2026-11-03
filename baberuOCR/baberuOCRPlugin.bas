@@ -18,7 +18,7 @@ End Sub
 
 ' must be available
 public Sub GetNiceName() As String
-	Return "baberu-ocr"
+	Return "baberu-ocrOCR"
 End Sub
 
 ' must be available
@@ -47,20 +47,10 @@ public Sub Run(Tag As String, Params As Map) As ResumableSub
 		Case "getIsInstalledOrRunning"
 			Wait For (CheckIsRunning) complete (running As Boolean)
 			Return running
-		Case "GetCombinations"
-			Return BuildCombinations
-		Case "Multiple"
-			Return True
 	End Select
 	Return ""
 End Sub
 
-Sub BuildCombinations As List
-	Dim combs As List
-	combs.Initialize
-	combs.Add("baberu-ocr")
-	Return combs
-End Sub
 
 Sub getLangs(loc As Localizator) As Map
 	Dim result As Map
