@@ -20,7 +20,7 @@ Module5=Localizator
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=5
-Version=8.9
+Version=8.8
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -50,7 +50,7 @@ Sub AppStart (Form1 As Form, Args() As String)
 	'Log(result)
 	'p.Run("SetCombination",CreateMap("combination":"long text (manga-ocr)"))
 	'wait for (p.GetTextLongTextMode(fx.LoadImage(File.DirApp,"test.jpg"))) Complete (result As String)
-	wait for (p.GetText(fx.LoadImage(File.DirApp,"test.png"))) Complete (result As String)
+	wait for (p.GetText(fx.LoadImage(File.DirApp,"image.jpg"))) Complete (result As String)
 	Log(result)
 End Sub
 

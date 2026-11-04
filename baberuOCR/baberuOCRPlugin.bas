@@ -71,7 +71,7 @@ Private Sub LoadBaberuOCRIfNeeded As ResumableSub
 		Dim visionModel As String = File.Combine(baberuOCRDir,"vision_int4.onnx")
 		Dim prefillModel As String = File.Combine(baberuOCRDir,"decoder_prefill_int8.onnx")
 		Dim stepModelPath As String = File.Combine(baberuOCRDir,"decoder_step_int8.onnx")
-		Dim vocabs As List = readVocab(File.ReadString(baberuOCRDir,"vocab.txt"))
+		Dim vocabs As List = readVocab(File.ReadString(baberuOCRDir,getVocabFileName(baberuOCRDir)))
 		engine.Initialize
 		wait for (engine.loadModelWithPathAsync(visionModel,prefillModel,stepModelPath,vocabs)) complete (done As Object)
 	End If
@@ -132,16 +132,32 @@ End Sub
 
 Private Sub readVocab(s As String) As List
 	Dim vocabs As List
-	vocabs.Initialize
-	' B4X strings only use CRLF as the line break (the file's line breaks are normalized on read)
-	' vocab.txt has one character per line; skip the empty element after the last line break
-	Dim lines() As String = Regex.Split(CRLF,s)
-	For i = 0 To lines.Length - 1
-		If i < lines.Length - 1 Or lines(i) <> "" Then
-			vocabs.Add(lines(i))
-		End If
-	Next
+	If s.Trim.StartsWith("[") Then
+		' JSON string array (tokenizer_vocab.txt), e.g. ["\t", " ", ...]. JSONParser decodes
+		' the escapes, so control characters such as \n are kept as real characters and
+		' can be emitted by the model for multi-line bubbles.
+		Dim parser As JSONParser
+		parser.Initialize(s)
+		vocabs = parser.NextArray
+	Else
+		' Legacy vocab.txt with one character per line; skip the empty element after the last line break.
+		' B4X strings only use CRLF as the line break (the file's line breaks are normalized on read).
+		vocabs.Initialize
+		Dim lines() As String = Regex.Split(CRLF,s)
+		For i = 0 To lines.Length - 1
+			If i < lines.Length - 1 Or lines(i) <> "" Then
+				vocabs.Add(lines(i))
+			End If
+		Next
+	End If
 	Return vocabs
+End Sub
+
+Private Sub getVocabFileName(dir As String) As String
+	If File.Exists(dir,"tokenizer_vocab.txt") Then
+		Return "tokenizer_vocab.txt"
+	End If
+	Return "vocab.txt"
 End Sub
 
 Sub getUrl As String
@@ -159,7 +175,7 @@ End Sub
 
 Private Sub ONNXExists As Boolean
 	Dim baberuOCRDir As String = File.Combine(File.DirApp,"baberuocr")
-	If File.Exists(baberuOCRDir,"vision_int4.onnx") And File.Exists(baberuOCRDir,"decoder_prefill_int8.onnx") And File.Exists(baberuOCRDir,"decoder_step_int8.onnx") And File.Exists(baberuOCRDir,"vocab.txt") Then
+	If File.Exists(baberuOCRDir,"vision_int4.onnx") And File.Exists(baberuOCRDir,"decoder_prefill_int8.onnx") And File.Exists(baberuOCRDir,"decoder_step_int8.onnx") And (File.Exists(baberuOCRDir,"tokenizer_vocab.txt") Or File.Exists(baberuOCRDir,"vocab.txt")) Then
 		Return True
 	End If
 	Return False
