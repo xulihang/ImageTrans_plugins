@@ -1,8 +1,10 @@
 # BaberuOCR
 
-This OCR is good for recognizing manga text, including sound effects words.
+This OCR is good for recognizing manga text, including sound effect words.
 
 It is not suitable for long text strips.
+
+The model only recognizes text. It needs to be used together with text detection models. It is recommended to use [koharu-layout-rfdetr-seg-2xl-1152](https://github.com/xulihang/balloon-dataset/), which can detect sound effect words.
 
 ## How to Use
 
