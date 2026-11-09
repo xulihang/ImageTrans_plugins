@@ -8,8 +8,8 @@ Sub Class_Globals
 	Private fx As JFX
 	Private defaultPrompt As String = $"Translate the following into {langcode}: {source}"$
 	Private defaultPromptWithTerm As String = $"With the help of the terms defined in JSON: {term}, translate the following into {langcode}: {source}"$
-	Private defaultBatchPrompt As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
-	Private defaultBatchPromptWithTerm As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should use the terms defined in JSON: {term}. You should not mix the values of different keys into one. Here is the JSON string to translate: {source}"$
+	Private defaultBatchPrompt As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should not mix the values of different keys into one. Meanwhile, try to keep the number of lines when translating from Japanese to Chinese. Here is the JSON string to translate: {source}"$
+	Private defaultBatchPromptWithTerm As String = $"Your task is to translate a text in JSON format into {langcode} and return the text in valid JSON format. You should use the terms defined in JSON: {term}. You should not mix the values of different keys into one. Meanwhile, try to keep the number of lines when translating from Japanese to Chinese. Here is the JSON string to translate: {source}"$
 	Private defaultExtraFields As String = $"{
 	  "thinking": {"type": "disabled"}
 	}"$

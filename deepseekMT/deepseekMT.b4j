@@ -16,7 +16,7 @@ Module1=deepseekMTPlugin
 NumberOfFiles=0
 NumberOfLibraries=11
 NumberOfModules=1
-Version=8.9
+Version=10.5
 @EndOfDesignText@
 #Region Project Attributes 
 	#MainFormWidth: 600
@@ -42,14 +42,21 @@ Sub AppStart (Form1 As Form, Args() As String)
 	Dim terms As Map
 	terms.Initialize
 	'map1.Put("host","https://37cb-35-243-195-191.ngrok-free.app")
-	map1.Put("model","deepseek-v4-pro")
+	'map1.Put("model","deepseek-v4-pro")
 	'map1.Put("prompt",$"翻译下述内容至中文: {source}"$)
 	'wait for (n.translate("Do you want to have more cake, Jenny?","en","zh",CreateMap("mt":CreateMap("deepseek":map1)),CreateMap("Jenny":"珍妮"))) complete (result As String)
 	'wait for (n.batchTranslate(Array("Do you want to have more cake, Jenny?"),"en","zh",CreateMap("mt":CreateMap("chatGPT":map1)),CreateMap("Jenny":"珍妮"))) complete (result As Object)
 	'wait for (n.translate("BasicCAT Documentation."&CRLF&"Sentence 2.","en","zh",CreateMap("mt":CreateMap("deepseek":map1)),terms)) complete (result As String)
 	'Dim terms As Map
 	'terms.Initialize
-	Dim textToTranslate As List = Array("お前には夏休みの間","我が天文部手伝いをしてもらう","いつか必ず","地に落ちるのだから","失敗です!!","有人ロケット「あさがお」が爆発!","日本初の有人宇宙飛行は失敗しました!!")
+	'Dim textToTranslate As List = Array("お前には"&CRLF&"夏休みの間","我が天文部"&CRLF&"手伝いをしてもらう")
+	Dim s1 As String = $"あたしは
+おねーちゃんと
+違って
+男なんか、"$
+	Dim s2 As String = $"大っ嫌い
+なの."$
+	Dim textToTranslate As List = Array(s1,s2)
 	'wait for (n.batchTranslate(Array("BasicCAT Documentation."&CRLF&"Sentence2.","Paragraph2"),"en","zh",CreateMap("mt":CreateMap("chatGPT":map1)))) complete (result As Object)
 	wait for (n.batchTranslate(textToTranslate,"ja","zh",CreateMap("mt":CreateMap("deepseek":map1)),terms)) complete (result As Object)
 	Log(result)
